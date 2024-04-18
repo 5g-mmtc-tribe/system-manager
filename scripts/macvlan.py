@@ -1,19 +1,24 @@
 import subprocess
 
 class MacVlan:
+    def __init__(self, interface_name, macvlan_name):
+        self.interface_name = interface_name
+        self.macvlan_name = macvlan_name
 
-    def __init__(self):
-        pass
+    def create_macvlan(self):
+        self.add_macvlan()
+        self.set_macvlan_up()
 
+    def add_macvlan(self):
+        command = ["sudo", "ip", "link", "add", self.macvlan_name, "link", self.interface_name, "type", "macvlan", "mode", "bridge"]
+        subprocess.run(command, check=True)
 
-    def create_macvlan(self, interface_name, parent_interface, macvlan_name):
-
-        subprocess.run(["sudo", "ip", "link", "add", parent_interface, macvlan_name, "type", "macvlan"], check = True)
-        subprocess.run(["sudo", "ip", "link", "set", "dev", macvlan_name, "up"], check=True)
-
-
-
+    def set_macvlan_up(self):
+        command = ["sudo", "ip", "link", "set", "dev", self.macvlan_name, "up"]
+        subprocess.run(command, check=True)
 
 # Example usage
-creator = MacVlan()
-creator.create_macvlan("enp2s0", "macvlan1")
+interface_name = "enp2s0"
+macvlan = "macvlan1"
+creator = MacVlan(interface_name, macvlan)
+creator.create_macvlan()
