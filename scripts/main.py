@@ -1,6 +1,6 @@
 import subprocess
 from network_interface import NetworkInterface
-
+from macvlan import MacVlan
 
 
 def main():
@@ -8,10 +8,20 @@ def main():
 
     interface_name = "enp2s0"
     #interface_name = "enx3c18a0b38076"
-    interface = NetworkInterface(interface_name) # Replace with your interface name
+
+    macvlan_name = "macvlan1"
+    interface = NetworkInterface(interface_name) 
     if interface.check_interface_exists():
         if interface.check_interface_up():
             print(f"Interface {interface.interface_name} exists and is up.")
+            # Check if the macvlan exists
+            macvlan = MacVlan(interface_name, macvlan_name)
+            if not macvlan.macvlan_exists():
+                print(f"Creating macvlan {macvlan_name} for interface {interface_name}.")
+                macvlan.create_macvlan()
+                print(f"Macvlan {macvlan_name} created.")
+            else:
+                print(f"Macvlan {macvlan_name} already exists.")
         else:
             print(f"Interface {interface.interface_name} exists but is not up.")
     else:
