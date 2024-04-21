@@ -17,12 +17,18 @@ class Container:
         command = ['lxc', 'delete', container_name, '--force']
         subprocess.run(command, check=True)
 
-distribution = 'ubuntu:22.04'
-container_name = 'testcontainers'
 
-container = Container(distribution, container_name)
+def main():
+    distribution = 'ubuntu:22.04'
+    container_name = 'testcontainers'
 
-container.start_container(distribution,container_name)
-print("container started successfully")
-container.delete_container(container_name)
-print("container deleted")
+    container = Container(distribution, container_name)
+
+    container.start_container(distribution,container_name)
+    print("container started successfully")
+    container.delete_container(container_name)
+    print("container deleted")
+
+
+if __name__=="__main__":
+    main()
