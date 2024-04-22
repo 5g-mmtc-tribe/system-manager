@@ -20,15 +20,31 @@ class NetworkInterface:
         except subprocess.CalledProcessError:
             return False
 
+
+    def connected(self):
+        command = ["sudo", "ethtool", self.interface_name]
+        print(command)
+        output = subprocess.run(command, stdout=subprocess.PIPE, text=True)
+        lines = output.stdout.splitlines()
+        for line in lines:
+            if "Link detected" in line:
+                return line
+        return None
+
+
 # Example usage
 
-# interface_name = "enp2s0"
-# #interface_name = "enx3c18a0b38076"
-# interface = NetworkInterface(interface_name) # Replace with your interface name
-# if interface.check_interface_exists():
-#     if interface.check_interface_up():
-#         print(f"Interface {interface.interface_name} exists and is up.")
-#     else:
-#         print(f"Interface {interface.interface_name} exists but is not up.")
-# else:
-#     print(f"Interface {interface.interface_name} does not exist.")
+interface_name = "enp2s0"
+#interface_name = "enx3c18a0b38076"
+interface = NetworkInterface(interface_name) # Replace with your interface name
+if interface.check_interface_exists():
+    if interface.check_interface_up():
+        print(f"Interface {interface.interface_name} exists and is up.")
+    else:
+        print(f"Interface {interface.interface_name} exists but is not up.")
+else:
+    print(f"Interface {interface.interface_name} does not exist.")
+
+
+output = interface.connected()
+print(output)
