@@ -1,7 +1,7 @@
 import subprocess
 from network_interface import NetworkInterface
 from macvlan import MacVlan
-
+from container_create import Container
 
 def main():
 
@@ -33,6 +33,18 @@ def main():
     # IP address allocation
     macvlan.set_ip_addr(ip_addr, macvlan_name)
     print("ip address attributed")
+
+    print("macvlan created successfully, now creating container")
+
+    distribution = 'ubuntu:22.04'
+    container_name = 'testcontainers'
+
+    container = Container(distribution, container_name)
+
+    container.start_container(distribution,container_name)
+    print("container started successfully")
+    container.delete_container(container_name)
+    print("container deleted")
 
 
 if __name__== "__main__":

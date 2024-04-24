@@ -18,17 +18,17 @@ class Container:
         subprocess.run(command, check=True)
 
 
-def main():
-    distribution = 'ubuntu:22.04'
-    container_name = 'testcontainers'
+# def main():
+#     distribution = 'ubuntu:22.04'
+#     container_name = 'testcontainers'
 
-    container = Container(distribution, container_name)
+#     container = Container(distribution, container_name)
 
-    container.start_container(distribution,container_name)
-    print("container started successfully")
-    container.delete_container(container_name)
-    print("container deleted")
+#     #container.start_container(distribution,container_name)
+#     #print("container started successfully")
+#     container.delete_container(container_name)
+#     print("container deleted")
 
 
-if __name__=="__main__":
-    main()
+# if __name__=="__main__":
+#     main()
