@@ -10,6 +10,8 @@ def main():
     #interface_name = "enx3c18a0b38076"
 
     macvlan_name = "macvlan1"
+    ip_addr = "192.168.100.9/24"
+
     interface = NetworkInterface(interface_name) 
     if interface.check_interface_exists():
         if interface.check_interface_up():
@@ -28,6 +30,9 @@ def main():
         print(f"Interface {interface.interface_name} does not exist.")
 
 
+    # IP address allocation
+    macvlan.set_ip_addr(ip_addr, macvlan_name)
+    print("ip address attributed")
 
 
 if __name__== "__main__":

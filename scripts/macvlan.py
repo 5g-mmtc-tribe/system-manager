@@ -30,14 +30,14 @@ class MacVlan:
     
     def set_ip_addr(self, ip_addr, macvlan_name):
         command = ["sudo", "ip", "addr",  "add", ip_addr ,"dev", macvlan_name]
-        print(command)
+        #print(command)
         subprocess.run(command, check=True)
 
-# Example usage
-interface_name = "enp2s0"
-macvlan = "macvlan1"
-ip_addr = "192.168.100.8/24"
-creator = MacVlan(interface_name, macvlan)
-creator.create_macvlan()
+# # Example usage
+# interface_name = "enp2s0"
+# macvlan = "macvlan1"
+# ip_addr = "192.168.100.8/24"
+# creator = MacVlan(interface_name, macvlan)
+# creator.create_macvlan()
 
-creator.set_ip_addr(ip_addr, macvlan)
+# creator.set_ip_addr(ip_addr, macvlan)
