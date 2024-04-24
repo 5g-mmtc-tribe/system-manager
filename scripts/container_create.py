@@ -58,25 +58,30 @@ class Container:
         else:
             print("Command failed with error:", result.stderr)
 
-        return network_interfaces[0]
-    
-    
-    
+        return network_interfaces
     
 
 
-def main():
-    distribution = 'ubuntu:22.04'
-    container_name = 'testcontainers'
+    def assign_ip_address(self, container_name, network_interface, ip_address):
 
-    container = Container(distribution, container_name)
-
-    #container.start_container(distribution,container_name)
-    #print("container started successfully")
-    #container.delete_container(container_name)
-    #print("container deleted")
-    print(container.get_network_interfaces("demo"))
+        command = ["lxc", "exec", container_name, "--", "ip", "addr", "add", ip_address, "dev", network_interface]
+        subprocess.run(command, check=True)
+    
+    
 
 
-if __name__=="__main__":
-    main()
+# def main():
+#     distribution = 'ubuntu:22.04'
+#     container_name = 'testcontainers'
+
+#     container = Container(distribution, container_name)
+
+#     #container.start_container(distribution,container_name)
+#     #print("container started successfully")
+#     #container.delete_container(container_name)
+#     #print("container deleted")
+#     print(container.get_network_interfaces("demo"))
+
+
+# if __name__=="__main__":
+#     main()
