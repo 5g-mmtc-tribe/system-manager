@@ -37,6 +37,7 @@ class MacVlan:
     def delete_macvlan(self, macvlan_name):
         command = ["sudo", "ip", "link", "del", macvlan_name]
         subprocess.run(command, check=True)
+        print("Macvlan destroyed")
 
 # # Example usage
 # interface_name = "enp2s0"
