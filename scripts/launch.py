@@ -7,7 +7,7 @@ app = FastAPI()
 async def launch_script():
     try:
         run(["python", "main.py"], check=True)
-        return {"message": "Script launched successfully"}
+        return {"message": "User environment configured properly"}
     except CalledProcessError as e:
         return {"error": f"Error launching script: {e}"}
 
@@ -17,7 +17,7 @@ async def launch_script():
 async def launch_script():
     try:
         run(["python", "destroy_env.py"], check=True)
-        return {"message": "Script launched successfully"}
+        return {"message": "User env destroyed successfully"}
     except CalledProcessError as e:
         return {"error": f"Error launching script: {e}"}
 
