@@ -1,5 +1,5 @@
 from macvlan import MacVlan
-
+from container_create import Container
 
 
 def main():
@@ -20,6 +20,12 @@ def main():
     macvlan = MacVlan(interface_name, macvlan_name)
 
     macvlan.delete_macvlan(macvlan_name)
+
+    print("Attempting to delete container...")
+    container = Container(distribution, container_name)
+    container.delete_container(container_name)
+    print("Container deleted successfully!")
+
 
 
 
