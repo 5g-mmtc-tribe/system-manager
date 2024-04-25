@@ -3,13 +3,20 @@ from network_interface import NetworkInterface
 from macvlan import MacVlan
 from container_create import Container
 
+
+def attatch_macvlan_container(macvlan_name, container_name, container_veth):
+
+    command = ["sudo", "lxc", "network", "attach", macvlan_name, container_name, container_veth]
+    subprocess.run(command, check = True)
+
+
 def main():
 
 
     interface_name = "enp2s0"
     #interface_name = "enx3c18a0b38076"
 
-    macvlan_name = "macvlan1"
+    macvlan_name = "demomacvlan1"
     ip_addr = "192.168.100.9/24"
 
     interface = NetworkInterface(interface_name) 
@@ -37,14 +44,27 @@ def main():
     print("macvlan created successfully, now creating container")
 
     distribution = 'ubuntu:22.04'
-    container_name = 'testcontainers'
+    container_name = 'demo'
 
     container = Container(distribution, container_name)
 
     container.start_container(distribution,container_name)
     print("container started successfully")
-    container.delete_container(container_name)
-    print("container deleted")
+    #container.delete_container(container_name)
+    #print("container deleted")
+
+    print("Attempt to attach macvlan to container")
+    container_veth = container.get_network_interfaces(container_name)[0]
+    print(f"the container_veth is {container_veth}")
+    print("Attaching macvlan to container")
+    attatch_macvlan_container(macvlan_name, container_name, container_veth)
+    print("Attachment successful")
+
+
+    print("assignment of ip address to veth of container")
+    ip_addr_veth = "192.168.100.30/24"
+    container.assign_ip_address(container_name, container_veth, ip_addr_veth)
+    print("Assignment successful")
 
 
 if __name__== "__main__":

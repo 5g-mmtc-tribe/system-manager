@@ -19,8 +19,7 @@ class Container:
         subprocess.run(command, check=True)
 
     def list_containers(self):
-        #command = ["lxc", "list"]
-        command = f"lxc list"
+        command = ["lxc", "list"]
         subprocess.run(command, check=True)
 
 
