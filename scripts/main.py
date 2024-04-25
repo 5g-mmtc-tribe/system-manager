@@ -19,6 +19,12 @@ def main():
     macvlan_name = "demomacvlan1"
     ip_addr = "192.168.100.9/24"
 
+
+    # container
+    distribution = 'ubuntu:22.04'
+    container_name = 'demo'
+    ip_addr_veth = "192.168.100.30/24"
+
     interface = NetworkInterface(interface_name) 
     if interface.check_interface_exists():
         if interface.check_interface_up():
@@ -43,8 +49,7 @@ def main():
 
     print("macvlan created successfully, now creating container")
 
-    distribution = 'ubuntu:22.04'
-    container_name = 'demo'
+    
 
     container = Container(distribution, container_name)
 
@@ -62,7 +67,6 @@ def main():
 
 
     print("assignment of ip address to veth of container")
-    ip_addr_veth = "192.168.100.30/24"
     container.assign_ip_address(container_name, container_veth, ip_addr_veth)
     print("Assignment successful")
 
