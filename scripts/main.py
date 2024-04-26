@@ -10,6 +10,14 @@ def attatch_macvlan_container(macvlan_name, container_name, container_veth):
     subprocess.run(command, check = True)
 
 
+def attach_container_bridge(container_name, interface_name, bridge):
+    command = ["sudo", "lxc", "config", "device", "add" ,container_name, interface_name, "nic", "nictype=bridged", "parent="+ bridge]
+    subprocess.run(command, check= True)
+
+def dhcp(container_name, interface_dhcp):
+    command = ["sudo", "lxc", "exec", container_name,  "--" ,"dhclient", interface_dhcp]
+    subprocess.run(command, check= True)
+
 def main():
 
 
@@ -69,6 +77,15 @@ def main():
     print("assignment of ip address to veth of container")
     container.assign_ip_address(container_name, container_veth, ip_addr_veth)
     print("Assignment successful")
+
+    print("Connecting the container to the bridge")
+    bridge = "lxdbr0"
+    interface_dhcp = "eth1"
+    attach_container_bridge(container_name, interface_dhcp, bridge)
+
+    print("dhcp request...")    
+    dhcp(container_name, interface_dhcp)
+    print("container ready for use!")
 
 
 if __name__== "__main__":
