@@ -22,7 +22,13 @@ async def launch_script():
 @app.post("/destroy_user_env")
 async def launch_script():
     try:
-        run(["python", "destroy_env.py"], check=True)
+        # Construct the path to the scripts directory relative to this script
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        scripts_dir = os.path.join(script_dir, "../scripts")
+        
+        # Construct the path to main.py
+        destroy_script_path = os.path.join(scripts_dir, "destroy_env.py")
+        run(["python", destroy_script_path], check=True)
         return {"message": "User env destroyed successfully"}
     except CalledProcessError as e:
         return {"error": f"Error launching script: {e}"}
