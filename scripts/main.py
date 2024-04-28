@@ -2,7 +2,7 @@ import subprocess
 from network_interface import NetworkInterface
 from macvlan import MacVlan
 from container_create import Container
-
+import argparse
 
 def attatch_macvlan_container(macvlan_name, container_name, container_veth):
 
@@ -20,18 +20,28 @@ def dhcp(container_name, interface_dhcp):
 
 def main():
 
+    # Create the parser
+    parser = argparse.ArgumentParser(description='Process network configuration arguments.')
 
-    interface_name = "enp2s0"
-    #interface_name = "enx3c18a0b38076"
+    # Add the arguments with default values
+    parser.add_argument('--interface_name', type=str, default='enp2s0', help='The name of the network interface.')
+    parser.add_argument('--macvlan_name', type=str, default='demomacvlan1', help='The name of the macvlan interface.')
+    parser.add_argument('--ip_addr', type=str, default='192.168.100.9/24', help='The IP address for the interface.')
+    parser.add_argument('--distribution', type=str, default='ubuntu:22.04', help='The container distribution.')
+    parser.add_argument('--container_name', type=str, default='demo', help='The name of the container.')
+    parser.add_argument('--ip_addr_veth', type=str, default='192.168.100.30/24', help='The IP address for the veth interface.')
 
-    macvlan_name = "demomacvlan1"
-    ip_addr = "192.168.100.9/24"
+    # Parse the arguments
+    args = parser.parse_args()
 
+    # Access the arguments
+    interface_name = args.interface_name
+    macvlan_name = args.macvlan_name
+    ip_addr = args.ip_addr
+    distribution = args.distribution
+    container_name = args.container_name
+    ip_addr_veth = args.ip_addr_veth
 
-    # container
-    distribution = 'ubuntu:22.04'
-    container_name = 'demo'
-    ip_addr_veth = "192.168.100.30/24"
 
     interface = NetworkInterface(interface_name) 
     if interface.check_interface_exists():
