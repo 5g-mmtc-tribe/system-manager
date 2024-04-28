@@ -1,12 +1,18 @@
 from fastapi import FastAPI
 from subprocess import run, CalledProcessError
-
+import os
 app = FastAPI()
 
 @app.post("/launch_user_env")
 async def launch_script():
     try:
-        run(["python", "main.py"], check=True)
+        # Construct the path to the scripts directory relative to this script
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+        scripts_dir = os.path.join(script_dir, "../scripts")
+        
+        # Construct the path to main.py
+        main_script_path = os.path.join(scripts_dir, "main.py")
+        run(["python", main_script_path], check=True)
         return {"message": "User environment configured properly"}
     except CalledProcessError as e:
         return {"error": f"Error launching script: {e}"}
