@@ -30,7 +30,10 @@ def main():
     parser.add_argument('--distribution', type=str, default='ubuntu:22.04', help='The container distribution.')
     parser.add_argument('--container_name', type=str, default='demo', help='The name of the container.')
     parser.add_argument('--ip_addr_veth', type=str, default='192.168.100.30/24', help='The IP address for the veth interface.')
+    parser.add_argument('--bridge', type=str, default='lxdbr0', help='Add default bridge to which the container connnects')
+    parser.add_argument('--interface_dhcp', type=str, default='eth1', help='Name of dhcp interface')
 
+    
     # Parse the arguments
     args = parser.parse_args()
 
@@ -41,6 +44,8 @@ def main():
     distribution = args.distribution
     container_name = args.container_name
     ip_addr_veth = args.ip_addr_veth
+    bridge = args.bridge
+    interface_dhcp = args.interface_dhcp
 
 
     interface = NetworkInterface(interface_name) 
@@ -89,8 +94,8 @@ def main():
     print("Assignment successful")
 
     print("Connecting the container to the bridge")
-    bridge = "lxdbr0"
-    interface_dhcp = "eth1"
+    # bridge = "lxdbr0"
+    # interface_dhcp = "eth1"
     attach_container_bridge(container_name, interface_dhcp, bridge)
 
     print("dhcp request...")    
