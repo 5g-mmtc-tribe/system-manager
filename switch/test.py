@@ -22,26 +22,20 @@ def enable_device(net_con, enable_password):
     out += net_con.read_channel()
     return out
 
-def poe_off(netCon):
+def poe_off(netCon, interface):
     conf_t = "conf t"
     sendCommandTiming(netCon, conf_t)
-
-    interface = "interface GigabitEthernet 1/0/13"
-
-    sendCommandTiming(netCon, interface)
-
+    sendCommandTiming(netCon, "interface " +interface)
     power_off = "power inline never"
     sendCommandTiming(netCon, power_off)
     sendCommandTiming(netCon, "end")
 
 
-def poe_on(netCon):
+def poe_on(netCon, interface):
     conf_t = "conf t"
     sendCommandTiming(netCon, conf_t)
-
-    interface = "interface GigabitEthernet 1/0/13"
-
-    sendCommandTiming(netCon, interface)
+    #sendCommandTiming(netCon, interface)
+    sendCommandTiming(netCon, "interface " +interface)
 
     power_on = "power inline auto"
     sendCommandTiming(netCon, power_on)
@@ -82,16 +76,25 @@ sendCommandTiming(netCon, command)
 print(netCon.check_enable_mode())
 
 # poe
+
+
 print(netCon.check_enable_mode())
 enable_device(netCon, "tribe")
 print(netCon.check_enable_mode())
 
 
+#interface = "GigabitEthernet 1/0/16"
+interface = "GigabitEthernet 1/0/21"
 
-print("Turning on")
-poe_on(netCon)
 
-
-time.sleep(10)
-print("turning off")
-#poe_off(netCon)
+print("Turning on 1")
+poe_on(netCon, interface)
+time.sleep(20)
+print("turning off 2")
+poe_off(netCon, interface)
+time.sleep(20)
+print("turning on 3")
+poe_on(netCon, interface)
+time.sleep(20)
+print("final turning off")
+poe_off(netCon, interface)
