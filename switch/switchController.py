@@ -16,6 +16,10 @@ class SwitchManager():
 
 
 
+    def checker(self):
+        return self.netCon.check_enable_mode()
+
+
     def sendCommandTiming(self, cmd):
         self.netCon.write_channel(cmd+'\n')
         time.sleep(0.1)
@@ -83,15 +87,20 @@ switch_obj = SwitchManager(device_type = device['device_type'],
 out = switch_obj.sendCommandTiming('show ip int bri')
 print(out)
 
+
+print(switch_obj.checker())
 print("Actual fun here")
-#out = sendCommandTiming(netCon, 'enable')
-# #print(out)
-# print(enable_device("tribe"))
+# #out = sendCommandTiming(netCon, 'enable')
+# # #print(out)
+# # print(enable_device("tribe"))
 print(switch_obj.enable_device('tribe'))
+print(switch_obj.checker())
 
 
-# command = "disable"
-# sendCommandTiming(netCon, command)
+command = "disable"
+out = switch_obj.sendCommandTiming(command)
+print(switch_obj.checker())
+
 # print(netCon.check_enable_mode())
 
 # # poe
