@@ -40,6 +40,17 @@ class SwitchManager():
         out += self.netCon.read_channel()
         return out
 
+
+    def configure_vlan(self, vlan_id, vlan_name):
+        if not self.check_enable_mode():
+            self.enable_device()
+
+        conf_t = "configure terminal"
+        self.sendCommand(conf_t)
+        self.sendCommand("vlan " + str(vlan_id))
+        self.sendCommand("name "+ vlan_name)
+        self.sendCommand("end")
+
     def poe_off(self, interface):
 
         if not self.check_enable_mode():
@@ -103,24 +114,27 @@ out = switch_obj.sendCommand(command)
 print(switch_obj.check_enable_mode())
 
 
+vlan_id = 30
+vlan_name = "testing"
+switch_obj.configure_vlan(vlan_id,vlan_name)
 
-# # poe
-interface = "GigabitEthernet 1/0/16"
-#interface = "GigabitEthernet 1/0/21"
+# # # poe
+# interface = "GigabitEthernet 1/0/16"
+# #interface = "GigabitEthernet 1/0/21"
 
-switch_obj.poe_on(interface)
-
-
-
-time.sleep(30)
-
-switch_obj.poe_off(interface)
-
-time.sleep(30)
-
-switch_obj.poe_on(interface)
+# switch_obj.poe_on(interface)
 
 
-time.sleep(30)
 
-switch_obj.poe_off(interface)
+# time.sleep(30)
+
+# switch_obj.poe_off(interface)
+
+# time.sleep(30)
+
+# switch_obj.poe_on(interface)
+
+
+# time.sleep(30)
+
+# switch_obj.poe_off(interface)
