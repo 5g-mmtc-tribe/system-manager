@@ -20,7 +20,7 @@ class SwitchManager():
         return self.netCon.check_enable_mode()
 
 
-    def sendCommandTiming(self, cmd):
+    def sencCommand(self, cmd):
         self.netCon.write_channel(cmd+'\n')
         time.sleep(0.1)
         out = self.netCon.read_channel()
@@ -28,7 +28,7 @@ class SwitchManager():
 
     def enable_device(self, enable_password):
         # Send the enable command
-        out = self.sendCommandTiming('enable')
+        out = self.sencCommand('enable')
 
         # Check if the password prompt is detected
         if 'Password:' in out:
@@ -42,22 +42,22 @@ class SwitchManager():
 
     def poe_off(self, netCon, interface):
         conf_t = "conf t"
-        sendCommandTiming(netCon, conf_t)
-        sendCommandTiming(netCon, "interface " +interface)
+        sencCommand(netCon, conf_t)
+        sencCommand(netCon, "interface " +interface)
         power_off = "power inline never"
-        sendCommandTiming(netCon, power_off)
-        sendCommandTiming(netCon, "end")
+        sencCommand(netCon, power_off)
+        sencCommand(netCon, "end")
 
 
     def poe_on(self, netCon, interface):
         conf_t = "conf t"
-        sendCommandTiming(netCon, conf_t)
-        #sendCommandTiming(netCon, interface)
-        sendCommandTiming(netCon, "interface " +interface)
+        sencCommand(netCon, conf_t)
+        #sencCommand(netCon, interface)
+        sencCommand(netCon, "interface " +interface)
 
         power_on = "power inline auto"
-        sendCommandTiming(netCon, power_on)
-        sendCommandTiming(netCon, "end")
+        sencCommand(netCon, power_on)
+        sencCommand(netCon, "end")
 
 
 
@@ -84,13 +84,13 @@ switch_obj = SwitchManager(device_type = device['device_type'],
 # Check if already in enable mode
 
 
-out = switch_obj.sendCommandTiming('show ip int bri')
+out = switch_obj.sencCommand('show ip int bri')
 print(out)
 
 
 print(switch_obj.checker())
 print("Actual fun here")
-# #out = sendCommandTiming(netCon, 'enable')
+# #out = sencCommand(netCon, 'enable')
 # # #print(out)
 # # print(enable_device("tribe"))
 print(switch_obj.enable_device('tribe'))
@@ -98,7 +98,7 @@ print(switch_obj.checker())
 
 
 command = "disable"
-out = switch_obj.sendCommandTiming(command)
+out = switch_obj.sencCommand(command)
 print(switch_obj.checker())
 
 # print(netCon.check_enable_mode())
