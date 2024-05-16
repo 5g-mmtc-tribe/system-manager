@@ -42,23 +42,24 @@ class SwitchManager():
 
     def poe_off(self, interface):
         conf_t = "conf t"
-        sendCommand(netCon, conf_t)
-        sendCommand(netCon, "interface " +interface)
+        self.sendCommand(conf_t)
+        self.sendCommand("interface " +interface)
         power_off = "power inline never"
-        sendCommand(netCon, power_off)
-        sendCommand(netCon, "end")
+        self.sendCommand(power_off)
+        # power_disable = "no power inline"
+        # self.sendCommand(power_disable)
+        self.sendCommand("end")
 
 
-    def poe_on(self, netCon, interface):
+    def poe_on(self, interface):
         conf_t = "conf t"
-        sendCommand(netCon, conf_t)
-        #sendCommand(netCon, interface)
-        sendCommand(netCon, "interface " +interface)
-
+        self.sendCommand(conf_t)
+        self.sendCommand("interface " +interface)
         power_on = "power inline auto"
-        sendCommand(netCon, power_on)
-        sendCommand(netCon, "end")
+        self.sendCommand(power_on)
+        self.sendCommand("end")
 
+   
 
 
 
@@ -103,68 +104,35 @@ print(switch_obj.checker())
 
 
 # # poe
-
-
-# print(netCon.check_enable_mode())
-# enable_device(netCon, "tribe")
-# print(netCon.check_enable_mode())
-
-
 # #interface = "GigabitEthernet 1/0/16"
-# interface = "GigabitEthernet 1/0/21"
+interface = "GigabitEthernet 1/0/21"
+
+# Check if already in enable mode
+if not switch_obj.checker():
+    print("Device is not in enable mode. Enabling...")
+    switch_obj.enable_device('tribe')
+
+# Check if the device is enabled
+if switch_obj.checker():
+    print("Device is enabled. Proceeding with PoE commands...")
+    print("Powering off PoE on interface", interface)
+    switch_obj.poe_off(interface)
+else:
+    print("Device is not enabled. Unable to proceed with PoE commands.")
 
 
-# print("Turning on 1")
-# poe_on(netCon, interface)
-# time.sleep(20)
-# print("turning off 2")
-# poe_off(netCon, interface)
-# time.sleep(20)
-# print("turning on 3")
-# poe_on(netCon, interface)
-# time.sleep(20)
-# print("final turning off")
-# poe_off(netCon, interface)
-# # poe
+print("now we will wait a bit")
+time.sleep(30)
+print("turning on device now")
+# Check if already in enable mode
+if not switch_obj.checker():
+    print("Device is not in enable mode. Enabling...")
+    switch_obj.enable_device('tribe')
 
-
-# print(netCon.check_enable_mode())
-# enable_device(netCon, "tribe")
-# print(netCon.check_enable_mode())
-
-
-
-# print("Turning on 1")
-# poe_on(netCon, interface)
-# time.sleep(20)
-# print("turning off 2")
-# poe_off(netCon, interface)
-# time.sleep(20)
-# print("turning on 3")
-# poe_on(netCon, interface)
-# time.sleep(20)
-# print("final turning off")
-# poe_off(netCon, interface)
-# # poe
-
-
-# print(netCon.check_enable_mode())
-# enable_device(netCon, "tribe")
-# print(netCon.check_enable_mode())
-
-
-# #interface = "GigabitEthernet 1/0/16"
-# interface = "GigabitEthernet 1/0/21"
-
-
-# print("Turning on 1")
-# poe_on(netCon, interface)
-# time.sleep(20)
-# print("turning off 2")
-# poe_off(netCon, interface)
-# time.sleep(20)
-# print("turning on 3")
-# poe_on(netCon, interface)
-# time.sleep(20)
-# print("final turning off")
-# poe_off(netCon, interface)
+# Check if the device is enabled
+if switch_obj.checker():
+    print("Device is enabled. Proceeding with PoE commands...")
+    print("Powering on PoE on interface", interface)
+    switch_obj.poe_on(interface)
+else:
+    print("Device is not enabled. Unable to proceed with PoE commands.")
