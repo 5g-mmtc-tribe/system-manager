@@ -26,14 +26,14 @@ class SwitchManager():
         out = self.netCon.read_channel()
         return out
 
-    def enable_device(self, enable_password):
+    def enable_device(self):
         # Send the enable command
         out = self.sendCommand('enable')
 
         # Check if the password prompt is detected
         if 'Password:' in out:
             # Write the enable password to the channel
-            self.netCon.write_channel(enable_password + '\n')
+            self.netCon.write_channel(self.esw['password'] + '\n')
             time.sleep(0.1)
 
         # Read the output after providing the password
@@ -41,6 +41,11 @@ class SwitchManager():
         return out
 
     def poe_off(self, interface):
+
+        if not self.checker():
+            print("Device is not in enable mode. Enabling...")
+            self.enable_device()
+
         conf_t = "conf t"
         self.sendCommand(conf_t)
         self.sendCommand("interface " +interface)
@@ -52,6 +57,10 @@ class SwitchManager():
 
 
     def poe_on(self, interface):
+        if not self.checker():
+            print("Device is not in enable mode. Enabling...")
+            self.enable_device()
+
         conf_t = "conf t"
         self.sendCommand(conf_t)
         self.sendCommand("interface " +interface)
@@ -90,11 +99,9 @@ print(out)
 
 
 print(switch_obj.checker())
-print("Actual fun here")
-# #out = sendCommand(netCon, 'enable')
-# # #print(out)
-# # print(enable_device("tribe"))
-print(switch_obj.enable_device(device['password']))
+
+
+print(switch_obj.enable_device())
 print(switch_obj.checker())
 
 
@@ -103,36 +110,24 @@ out = switch_obj.sendCommand(command)
 print(switch_obj.checker())
 
 
+
 # # poe
-# #interface = "GigabitEthernet 1/0/16"
-interface = "GigabitEthernet 1/0/21"
+interface = "GigabitEthernet 1/0/16"
+#interface = "GigabitEthernet 1/0/21"
 
-# Check if already in enable mode
-if not switch_obj.checker():
-    print("Device is not in enable mode. Enabling...")
-    switch_obj.enable_device('tribe')
-
-# Check if the device is enabled
-if switch_obj.checker():
-    print("Device is enabled. Proceeding with PoE commands...")
-    print("Powering off PoE on interface", interface)
-    switch_obj.poe_off(interface)
-else:
-    print("Device is not enabled. Unable to proceed with PoE commands.")
+switch_obj.poe_on(interface)
 
 
-print("now we will wait a bit")
+
 time.sleep(30)
-print("turning on device now")
-# Check if already in enable mode
-if not switch_obj.checker():
-    print("Device is not in enable mode. Enabling...")
-    switch_obj.enable_device('tribe')
 
-# Check if the device is enabled
-if switch_obj.checker():
-    print("Device is enabled. Proceeding with PoE commands...")
-    print("Powering on PoE on interface", interface)
-    switch_obj.poe_on(interface)
-else:
-    print("Device is not enabled. Unable to proceed with PoE commands.")
+switch_obj.poe_off(interface)
+
+time.sleep(30)
+
+switch_obj.poe_on(interface)
+
+
+time.sleep(30)
+
+switch_obj.poe_off(interface)
