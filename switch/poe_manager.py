@@ -11,17 +11,18 @@ device = {
 }
 
 
-switch_obj = SwitchManager(device_type = device['device_type'],
+switch = SwitchManager(device_type = device['device_type'],
                             ip = device['ip'],
                             port = device['port'],
                             password = device['password'])
 
 
 
-
+#out = switch_obj.sendCommand('show ip int bri')
+#print(out)
 # # # poe
-# interface = "GigabitEthernet 1/0/16"
+interface = "GigabitEthernet 1/0/11"
 # #interface = "GigabitEthernet 1/0/21"
 
-# switch_obj.poe_on(interface)
+switch.poe_off(interface)
 
