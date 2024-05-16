@@ -2,44 +2,60 @@ from netmiko import Netmiko
 import time
 
 
-def sendCommandTiming(netCon, cmd):
-    netCon.write_channel(cmd+'\n')
-    time.sleep(0.1)
-    out = netCon.read_channel()
-    return out
+class SwitchManager():
 
-def enable_device(net_con, enable_password):
-    # Send the enable command
-    out = sendCommandTiming(net_con, 'enable')
+    def __init__(self, device_type, ip, port, password):
+        
+        self.esw = {
+            'device_type': device_type,
+            'ip': ip,
+            'port': port,
+            'password': password
+        }
+        self.netCon = Netmiko(**self.esw)
 
-    # Check if the password prompt is detected
-    if 'Password:' in out:
-        # Write the enable password to the channel
-        net_con.write_channel(enable_password + '\n')
+
+
+    def sendCommandTiming(self, cmd):
+        self.netCon.write_channel(cmd+'\n')
         time.sleep(0.1)
+        out = self.netCon.read_channel()
+        return out
 
-    # Read the output after providing the password
-    out += net_con.read_channel()
-    return out
+    def enable_device(self, enable_password):
+        # Send the enable command
+        out = self.sendCommandTiming('enable')
 
-def poe_off(netCon, interface):
-    conf_t = "conf t"
-    sendCommandTiming(netCon, conf_t)
-    sendCommandTiming(netCon, "interface " +interface)
-    power_off = "power inline never"
-    sendCommandTiming(netCon, power_off)
-    sendCommandTiming(netCon, "end")
+        # Check if the password prompt is detected
+        if 'Password:' in out:
+            # Write the enable password to the channel
+            self.netCon.write_channel(enable_password + '\n')
+            time.sleep(0.1)
+
+        # Read the output after providing the password
+        out += self.netCon.read_channel()
+        return out
+
+    def poe_off(self, netCon, interface):
+        conf_t = "conf t"
+        sendCommandTiming(netCon, conf_t)
+        sendCommandTiming(netCon, "interface " +interface)
+        power_off = "power inline never"
+        sendCommandTiming(netCon, power_off)
+        sendCommandTiming(netCon, "end")
 
 
-def poe_on(netCon, interface):
-    conf_t = "conf t"
-    sendCommandTiming(netCon, conf_t)
-    #sendCommandTiming(netCon, interface)
-    sendCommandTiming(netCon, "interface " +interface)
+    def poe_on(self, netCon, interface):
+        conf_t = "conf t"
+        sendCommandTiming(netCon, conf_t)
+        #sendCommandTiming(netCon, interface)
+        sendCommandTiming(netCon, "interface " +interface)
 
-    power_on = "power inline auto"
-    sendCommandTiming(netCon, power_on)
-    sendCommandTiming(netCon, "end")
+        power_on = "power inline auto"
+        sendCommandTiming(netCon, power_on)
+        sendCommandTiming(netCon, "end")
+
+
 
 
 
@@ -53,48 +69,94 @@ device = {
  'password': 'tribe',
 }
 
+
+switch_obj = SwitchManager(device_type = device['device_type'],
+                            ip = device['ip'],
+                            port = device['port'],
+                            password = device['password'])
+
 # Initialize Netmiko connection
-netCon = Netmiko(**device)
 
 # Check if already in enable mode
-print(netCon.check_enable_mode())
 
 
-out = sendCommandTiming(netCon, 'show ip int bri')
-#print(out)
+out = switch_obj.sendCommandTiming('show ip int bri')
+print(out)
 
 print("Actual fun here")
 #out = sendCommandTiming(netCon, 'enable')
-#print(out)
-print(enable_device(netCon, "tribe"))
+# #print(out)
+# print(enable_device("tribe"))
+print(switch_obj.enable_device('tribe'))
 
 
-print(netCon.check_enable_mode())
+# command = "disable"
+# sendCommandTiming(netCon, command)
+# print(netCon.check_enable_mode())
 
-command = "disable"
-sendCommandTiming(netCon, command)
-print(netCon.check_enable_mode())
-
-# poe
+# # poe
 
 
-print(netCon.check_enable_mode())
-enable_device(netCon, "tribe")
-print(netCon.check_enable_mode())
+# print(netCon.check_enable_mode())
+# enable_device(netCon, "tribe")
+# print(netCon.check_enable_mode())
 
 
-#interface = "GigabitEthernet 1/0/16"
-interface = "GigabitEthernet 1/0/21"
+# #interface = "GigabitEthernet 1/0/16"
+# interface = "GigabitEthernet 1/0/21"
 
 
-print("Turning on 1")
-poe_on(netCon, interface)
-time.sleep(20)
-print("turning off 2")
-poe_off(netCon, interface)
-time.sleep(20)
-print("turning on 3")
-poe_on(netCon, interface)
-time.sleep(20)
-print("final turning off")
-poe_off(netCon, interface)
+# print("Turning on 1")
+# poe_on(netCon, interface)
+# time.sleep(20)
+# print("turning off 2")
+# poe_off(netCon, interface)
+# time.sleep(20)
+# print("turning on 3")
+# poe_on(netCon, interface)
+# time.sleep(20)
+# print("final turning off")
+# poe_off(netCon, interface)
+# # poe
+
+
+# print(netCon.check_enable_mode())
+# enable_device(netCon, "tribe")
+# print(netCon.check_enable_mode())
+
+
+
+# print("Turning on 1")
+# poe_on(netCon, interface)
+# time.sleep(20)
+# print("turning off 2")
+# poe_off(netCon, interface)
+# time.sleep(20)
+# print("turning on 3")
+# poe_on(netCon, interface)
+# time.sleep(20)
+# print("final turning off")
+# poe_off(netCon, interface)
+# # poe
+
+
+# print(netCon.check_enable_mode())
+# enable_device(netCon, "tribe")
+# print(netCon.check_enable_mode())
+
+
+# #interface = "GigabitEthernet 1/0/16"
+# interface = "GigabitEthernet 1/0/21"
+
+
+# print("Turning on 1")
+# poe_on(netCon, interface)
+# time.sleep(20)
+# print("turning off 2")
+# poe_off(netCon, interface)
+# time.sleep(20)
+# print("turning on 3")
+# poe_on(netCon, interface)
+# time.sleep(20)
+# print("final turning off")
+# poe_off(netCon, interface)
