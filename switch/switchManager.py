@@ -16,7 +16,7 @@ class SwitchManager():
 
 
 
-    def checker(self):
+    def check_enable_mode(self):
         return self.netCon.check_enable_mode()
 
 
@@ -42,7 +42,7 @@ class SwitchManager():
 
     def poe_off(self, interface):
 
-        if not self.checker():
+        if not self.check_enable_mode():
             print("Device is not in enable mode. Enabling...")
             self.enable_device()
 
@@ -57,7 +57,7 @@ class SwitchManager():
 
 
     def poe_on(self, interface):
-        if not self.checker():
+        if not self.check_enable_mode():
             print("Device is not in enable mode. Enabling...")
             self.enable_device()
 
@@ -98,16 +98,16 @@ out = switch_obj.sendCommand('show ip int bri')
 print(out)
 
 
-print(switch_obj.checker())
+print(switch_obj.check_enable_mode())
 
 
 print(switch_obj.enable_device())
-print(switch_obj.checker())
+print(switch_obj.check_enable_mode())
 
 
 command = "disable"
 out = switch_obj.sendCommand(command)
-print(switch_obj.checker())
+print(switch_obj.check_enable_mode())
 
 
 
