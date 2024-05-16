@@ -82,59 +82,59 @@ class SwitchManager():
 
 
 
-# Define the device
-device = {
- 'device_type': 'cisco_ios_telnet',
- 'ip': '192.168.0.30',
- 'port':23,
- 'password': 'tribe',
-}
+# # Define the device
+# device = {
+#  'device_type': 'cisco_ios_telnet',
+#  'ip': '192.168.0.30',
+#  'port':23,
+#  'password': 'tribe',
+# }
 
 
-switch_obj = SwitchManager(device_type = device['device_type'],
-                            ip = device['ip'],
-                            port = device['port'],
-                            password = device['password'])
-
-
-
-
-out = switch_obj.sendCommand('show ip int bri')
-print(out)
-
-print(switch_obj.check_enable_mode())
-
-
-print(switch_obj.enable_device())
-print(switch_obj.check_enable_mode())
-
-
-command = "disable"
-out = switch_obj.sendCommand(command)
-print(switch_obj.check_enable_mode())
-
-
-vlan_id = 30
-vlan_name = "testing"
-switch_obj.configure_vlan(vlan_id,vlan_name)
-
-# # # poe
-# interface = "GigabitEthernet 1/0/16"
-# #interface = "GigabitEthernet 1/0/21"
-
-# switch_obj.poe_on(interface)
+# switch_obj = SwitchManager(device_type = device['device_type'],
+#                             ip = device['ip'],
+#                             port = device['port'],
+#                             password = device['password'])
 
 
 
-# time.sleep(30)
 
-# switch_obj.poe_off(interface)
+# out = switch_obj.sendCommand('show ip int bri')
+# print(out)
 
-# time.sleep(30)
-
-# switch_obj.poe_on(interface)
+# print(switch_obj.check_enable_mode())
 
 
-# time.sleep(30)
+# print(switch_obj.enable_device())
+# print(switch_obj.check_enable_mode())
 
-# switch_obj.poe_off(interface)
+
+# command = "disable"
+# out = switch_obj.sendCommand(command)
+# print(switch_obj.check_enable_mode())
+
+
+# vlan_id = 30
+# vlan_name = "testing"
+# switch_obj.configure_vlan(vlan_id,vlan_name)
+
+# # # # poe
+# # interface = "GigabitEthernet 1/0/16"
+# # #interface = "GigabitEthernet 1/0/21"
+
+# # switch_obj.poe_on(interface)
+
+
+
+# # time.sleep(30)
+
+# # switch_obj.poe_off(interface)
+
+# # time.sleep(30)
+
+# # switch_obj.poe_on(interface)
+
+
+# # time.sleep(30)
+
+# # switch_obj.poe_off(interface)
