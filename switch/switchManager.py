@@ -43,25 +43,21 @@ class SwitchManager():
     def poe_off(self, interface):
 
         if not self.check_enable_mode():
-            print("Device is not in enable mode. Enabling...")
             self.enable_device()
 
-        conf_t = "conf t"
+        conf_t = "configure terminal"
         self.sendCommand(conf_t)
         self.sendCommand("interface " +interface)
         power_off = "power inline never"
         self.sendCommand(power_off)
-        # power_disable = "no power inline"
-        # self.sendCommand(power_disable)
         self.sendCommand("end")
 
 
     def poe_on(self, interface):
         if not self.check_enable_mode():
-            print("Device is not in enable mode. Enabling...")
             self.enable_device()
 
-        conf_t = "conf t"
+        conf_t = "configure terminal"
         self.sendCommand(conf_t)
         self.sendCommand("interface " +interface)
         power_on = "power inline auto"
@@ -89,14 +85,11 @@ switch_obj = SwitchManager(device_type = device['device_type'],
                             port = device['port'],
                             password = device['password'])
 
-# Initialize Netmiko connection
 
-# Check if already in enable mode
 
 
 out = switch_obj.sendCommand('show ip int bri')
 print(out)
-
 
 print(switch_obj.check_enable_mode())
 
