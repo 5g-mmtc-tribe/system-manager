@@ -2,106 +2,99 @@ import subprocess
 from network_interface import NetworkInterface
 from macvlan import MacVlan
 from container_create import Container
+from dataclasses import dataclass
 import argparse
-
 def attatch_macvlan_container(macvlan_name, container_name, container_veth):
-
     command = ["sudo", "lxc", "network", "attach", macvlan_name, container_name, container_veth]
-    subprocess.run(command, check = True)
-
+    subprocess.run(command, check=True)
 
 def attach_container_bridge(container_name, interface_name, bridge):
-    command = ["sudo", "lxc", "config", "device", "add" ,container_name, interface_name, "nic", "nictype=bridged", "parent="+ bridge]
-    subprocess.run(command, check= True)
+    command = ["sudo", "lxc", "config", "device", "add", container_name, interface_name, "nic", "nictype=bridged", "parent=" + bridge]
+    subprocess.run(command, check=True)
 
 def dhcp(container_name, interface_dhcp):
-    command = ["sudo", "lxc", "exec", container_name,  "--" ,"dhclient", interface_dhcp]
-    subprocess.run(command, check= True)
+    command = ["sudo", "lxc", "exec", container_name, "--", "dhclient", interface_dhcp]
+    subprocess.run(command, check=True)
 
-def main():
+@dataclass
+class NetworkConfig:
+    interface_name: str = 'enp2s0'
+    macvlan_name: str = 'demomacvlan1'
+    ip_addr: str = '192.168.100.9/24'
+    distribution: str = 'ubuntu:22.04'
+    container_name: str = 'demo'
+    ip_addr_veth: str = '192.168.100.30/24'
+    bridge: str = 'lxdbr0'
+    interface_dhcp: str = 'eth1'
 
-    # Create the parser
-    parser = argparse.ArgumentParser(description='Process network configuration arguments.')
-
-    # Add the arguments with default values
-    parser.add_argument('--interface_name', type=str, default='enp2s0', help='The name of the network interface.')
-    parser.add_argument('--macvlan_name', type=str, default='demomacvlan1', help='The name of the macvlan interface.')
-    parser.add_argument('--ip_addr', type=str, default='192.168.100.9/24', help='The IP address for the interface.')
-    parser.add_argument('--distribution', type=str, default='ubuntu:22.04', help='The container distribution.')
-    parser.add_argument('--container_name', type=str, default='demo', help='The name of the container.')
-    parser.add_argument('--ip_addr_veth', type=str, default='192.168.100.30/24', help='The IP address for the veth interface.')
-    parser.add_argument('--bridge', type=str, default='lxdbr0', help='Add default bridge to which the container connnects')
-    parser.add_argument('--interface_dhcp', type=str, default='eth1', help='Name of dhcp interface')
-
-    
-    # Parse the arguments
-    args = parser.parse_args()
-
-    # Access the arguments
-    interface_name = args.interface_name
-    macvlan_name = args.macvlan_name
-    ip_addr = args.ip_addr
-    distribution = args.distribution
-    container_name = args.container_name
-    ip_addr_veth = args.ip_addr_veth
-    bridge = args.bridge
-    interface_dhcp = args.interface_dhcp
-
-
-    interface = NetworkInterface(interface_name) 
+def main(config: NetworkConfig):
+    interface = NetworkInterface(config.interface_name)
     if interface.check_interface_exists():
         if interface.check_interface_up():
-            print(f"Interface {interface.interface_name} exists and is up.")
-            # Check if the macvlan exists
-            macvlan = MacVlan(interface_name, macvlan_name)
+            print(f"Interface {config.interface_name} exists and is up.")
+            macvlan = MacVlan(config.interface_name, config.macvlan_name)
             if not macvlan.macvlan_exists():
-                print(f"Creating macvlan {macvlan_name} for interface {interface_name}.")
+                print(f"Creating macvlan {config.macvlan_name} for interface {config.interface_name}.")
                 macvlan.create_macvlan()
-                print(f"Macvlan {macvlan_name} created.")
+                print(f"Macvlan {config.macvlan_name} created.")
             else:
-                print(f"Macvlan {macvlan_name} already exists.")
+                print(f"Macvlan {config.macvlan_name} already exists.")
         else:
-            print(f"Interface {interface.interface_name} exists but is not up.")
+            print(f"Interface {config.interface_name} exists but is not up.")
     else:
-        print(f"Interface {interface.interface_name} does not exist.")
+        print(f"Interface {config.interface_name} does not exist.")
 
+    macvlan.set_ip_addr(config.ip_addr, config.macvlan_name)
+    print("IP address attributed")
 
-    # IP address allocation
-    macvlan.set_ip_addr(ip_addr, macvlan_name)
-    print("ip address attributed")
+    print("Macvlan created successfully, now creating container")
+    container = Container(config.distribution, config.container_name)
 
-    print("macvlan created successfully, now creating container")
+    try:
+        container.start_container(config.distribution, config.container_name)
+        print("Container started successfully")
+    except subprocess.CalledProcessError as e:
+        print(f"Error starting container: {e}")
+        return
 
-    
+    try:
+        container_veth = container.get_network_interfaces(config.container_name)[0]
+        print(f"Attempt to attach macvlan to container {config.container_name} with veth {container_veth}")
+        attatch_macvlan_container(config.macvlan_name, config.container_name, container_veth)
+        print("Attachment successful")
+    except subprocess.CalledProcessError as e:
+        print(f"Error attaching macvlan to container: {e}")
+        return
 
-    container = Container(distribution, container_name)
+    try:
+        container.assign_ip_address(config.container_name, container_veth, config.ip_addr_veth)
+        print("IP address assignment to veth successful")
+    except subprocess.CalledProcessError as e:
+        print(f"Error assigning IP address to veth: {e}")
+        return
 
-    container.start_container(distribution,container_name)
-    print("container started successfully")
-    #container.delete_container(container_name)
-    #print("container deleted")
+    try:
+        attach_container_bridge(config.container_name, config.interface_dhcp, config.bridge)
+        print("Container connected to the bridge")
+    except subprocess.CalledProcessError as e:
+        print(f"Error connecting container to bridge: {e}")
+        return
 
-    print("Attempt to attach macvlan to container")
-    container_veth = container.get_network_interfaces(container_name)[0]
-    print(f"the container_veth is {container_veth}")
-    print("Attaching macvlan to container")
-    attatch_macvlan_container(macvlan_name, container_name, container_veth)
-    print("Attachment successful")
+    try:
+        dhcp(config.container_name, config.interface_dhcp)
+        print("DHCP request successful, container ready for use!")
+    except subprocess.CalledProcessError as e:
+        print(f"Error during DHCP request: {e}")
 
-
-    print("assignment of ip address to veth of container")
-    container.assign_ip_address(container_name, container_veth, ip_addr_veth)
-    print("Assignment successful")
-
-    print("Connecting the container to the bridge")
-    # bridge = "lxdbr0"
-    # interface_dhcp = "eth1"
-    attach_container_bridge(container_name, interface_dhcp, bridge)
-
-    print("dhcp request...")    
-    dhcp(container_name, interface_dhcp)
-    print("container ready for use!")
-
-
-if __name__== "__main__":
-    main()
+if __name__ == "__main__":
+    config = NetworkConfig(
+        interface_name='enp2s0',
+        macvlan_name='demomacvlan1',
+        ip_addr='192.168.100.9/24',
+        distribution='ubuntu:22.04',
+        container_name='demo',
+        ip_addr_veth='192.168.100.30/24',
+        bridge='lxdbr0',
+        interface_dhcp='eth1'
+    )
+    main(config)
