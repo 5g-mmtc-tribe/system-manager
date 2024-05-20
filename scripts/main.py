@@ -2,8 +2,10 @@ import subprocess
 from network_interface import NetworkInterface
 from macvlan import MacVlan
 from container_create import Container
-from dataclasses import dataclass
+from user_env import UserEnv
 import argparse
+
+
 def attatch_macvlan_container(macvlan_name, container_name, container_veth):
     command = ["sudo", "lxc", "network", "attach", macvlan_name, container_name, container_veth]
     subprocess.run(command, check=True)
@@ -16,18 +18,9 @@ def dhcp(container_name, interface_dhcp):
     command = ["sudo", "lxc", "exec", container_name, "--", "dhclient", interface_dhcp]
     subprocess.run(command, check=True)
 
-@dataclass
-class NetworkConfig:
-    interface_name: str = 'enp2s0'
-    macvlan_name: str = 'demomacvlan1'
-    ip_addr: str = '192.168.100.9/24'
-    distribution: str = 'ubuntu:22.04'
-    container_name: str = 'demo'
-    ip_addr_veth: str = '192.168.100.30/24'
-    bridge: str = 'lxdbr0'
-    interface_dhcp: str = 'eth1'
 
-def main(config: NetworkConfig):
+
+def main(config: UserEnv):
     interface = NetworkInterface(config.interface_name)
     if interface.check_interface_exists():
         if interface.check_interface_up():
@@ -87,7 +80,7 @@ def main(config: NetworkConfig):
         print(f"Error during DHCP request: {e}")
 
 if __name__ == "__main__":
-    config = NetworkConfig(
+    config = UserEnv(
         interface_name='enp2s0',
         macvlan_name='demomacvlan1',
         ip_addr='192.168.100.9/24',
