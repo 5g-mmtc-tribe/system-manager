@@ -12,19 +12,21 @@ def main():
 
     # container
     distribution = 'ubuntu:22.04'
-    container_name = 'demo'
+    container_name = 'finalTest'
     ip_addr_veth = "192.168.100.30/24"
 
+    print("Attempting to delete container...")
+    container = Container(distribution, container_name)
+    container.delete_container(container_name)
+    print("Container deleted successfully!")
+    
     print("Attempt to destroy macvlan")
     
     macvlan = MacVlan(interface_name, macvlan_name)
 
     macvlan.delete_macvlan(macvlan_name)
 
-    print("Attempting to delete container...")
-    container = Container(distribution, container_name)
-    container.delete_container(container_name)
-    print("Container deleted successfully!")
+    
 
 
 
