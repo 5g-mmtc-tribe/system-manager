@@ -3,7 +3,6 @@ from network_interface import NetworkInterface
 from macvlan import MacVlan
 from container_create import Container
 from user_env import UserEnv
-import argparse
 
 
 def attatch_macvlan_container(macvlan_name, container_name, container_veth):
