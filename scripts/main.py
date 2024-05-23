@@ -85,7 +85,7 @@ if __name__ == "__main__":
         macvlan_name='demomacvlan1',
         ip_addr='192.168.100.9/24',
         distribution='ubuntu:22.04',
-        container_name='demo',
+        container_name='finalTest',
         ip_addr_veth='192.168.100.30/24',
         bridge='lxdbr0',
         interface_dhcp='eth1'
