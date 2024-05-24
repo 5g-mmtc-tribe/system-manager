@@ -4,17 +4,14 @@ Interfaces to manage all the hardware components of the testbed
 
 ## Getting started
 
-To lauch the system manager application type
+To lauch the system manager:
+
+    cd system-manager/api
+
+    python launch.py
 
 
-uvicorn launch:app --reload
 
-To lauch a script you can execute the following command
-
-
-Creating user environment
-curl -X POST http://127.0.0.1:8000/launch_user_env
-
-Destroying user environment
-curl -X POST http://127.0.0.1:8000/destroy_user_env
+Then follow the instructions as in test_launch.py
+ 
 
