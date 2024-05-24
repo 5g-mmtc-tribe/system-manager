@@ -1,4 +1,4 @@
-from launch import create_env
+from launch import create_env, destroy_env
 from user_env import UserEnv
 
 def main():
@@ -15,6 +15,8 @@ def main():
     )
 
     create_env(config)
+    #destroy_env(config)
+    
 
 
 if __name__=="__main__":
