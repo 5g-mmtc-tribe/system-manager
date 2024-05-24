@@ -19,7 +19,7 @@ def dhcp(container_name, interface_dhcp):
 
 
 
-def main(config: UserEnv):
+def launch_env(config: UserEnv):
     interface = NetworkInterface(config.interface_name)
     if interface.check_interface_exists():
         if interface.check_interface_up():
@@ -78,15 +78,15 @@ def main(config: UserEnv):
     except subprocess.CalledProcessError as e:
         print(f"Error during DHCP request: {e}")
 
-if __name__ == "__main__":
-    config = UserEnv(
-        interface_name='enp2s0',
-        macvlan_name='demomacvlan1',
-        ip_addr='192.168.100.9/24',
-        distribution='ubuntu:22.04',
-        container_name='finalTest',
-        ip_addr_veth='192.168.100.30/24',
-        bridge='lxdbr0',
-        interface_dhcp='eth1'
-    )
-    main(config)
+# if __name__ == "__main__":
+#     config = UserEnv(
+#         interface_name='enp2s0',
+#         macvlan_name='demomacvlan1',
+#         ip_addr='192.168.100.9/24',
+#         distribution='ubuntu:22.04',
+#         container_name='finalTest',
+#         ip_addr_veth='192.168.100.30/24',
+#         bridge='lxdbr0',
+#         interface_dhcp='eth1'
+#     )
+#     launch_env(config)
