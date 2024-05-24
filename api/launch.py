@@ -8,7 +8,7 @@ script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../script
 sys.path.append(script_path)
 # Now import the function from the script
 from create_env import launch_env
-from destroy_env import main
+from destroy_env import destroy_user_env
 from user_env import UserEnv
 
 app = FastAPI()
@@ -18,7 +18,7 @@ def create_env(config: UserEnv):
         
 
 def destroy_env(config: UserEnv):
-    main(config)
+    destroy_user_env(config)
 
 
 if __name__ == "__main__":
