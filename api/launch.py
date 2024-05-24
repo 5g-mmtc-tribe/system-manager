@@ -1,7 +1,6 @@
 from fastapi import FastAPI
 from subprocess import run, CalledProcessError
 import os
-from user_env import UserEnv
 import sys
 
 # Get the absolute path of the parent directory
@@ -10,6 +9,7 @@ sys.path.append(script_path)
 # Now import the function from the script
 from create_env import launch_env
 from destroy_env import main
+from user_env import UserEnv
 
 app = FastAPI()
 
