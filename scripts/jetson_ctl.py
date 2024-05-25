@@ -40,15 +40,14 @@ class Jetson:
         if number_devices == 0:
             print("No Jetson Xavier connected")
 
-            return number_devices
+            return number_devices, xavier_instances
 
         else:  
 
             return number_devices, xavier_instances
 
-# jetson = Jetson()
+jetson = Jetson()
 
-# number = jetson.list_devices()
-# print(number)
+number = jetson.list_devices()
+print(number)
 
-#jetson.get_xavier_instances()
