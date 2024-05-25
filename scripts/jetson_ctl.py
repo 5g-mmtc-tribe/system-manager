@@ -4,7 +4,23 @@ class Jetson:
 
     def __init__(self):
         self.xavier_id = "ID 0955:7e19 NVIDIA Corp. APX"
+        self.xavier_id_product = "7e19"
         self.number_xavier = 0
+
+
+
+    def get_xavier_instances(self):
+        
+        command = f"grep {self.xavier_id_product} /sys/bus/usb/devices/*/idProduct"
+        
+        instances = subprocess.run(command, capture_output= True, 
+                                            shell = True,
+                                            text=True,
+                                            check = True)
+
+
+        print(instances.stdout)
+
 
 
     def list_devices(self):
@@ -24,3 +40,5 @@ jetson = Jetson()
 
 number = jetson.list_devices()
 print(number)
+
+jetson.get_xavier_instances()
