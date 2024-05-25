@@ -10,6 +10,9 @@ sys.path.append(script_path)
 from create_env import launch_env
 from destroy_env import destroy_user_env
 from user_env import UserEnv
+from jetson_ctl import Jetson
+
+
 
 app = FastAPI()
 
@@ -19,6 +22,12 @@ def create_env(config: UserEnv):
 
 def destroy_env(config: UserEnv):
     destroy_user_env(config)
+
+
+def get_jetsons_list():
+    jetson = Jetson()
+    print(jetson.list_devices())
+
 
 
 if __name__ == "__main__":
