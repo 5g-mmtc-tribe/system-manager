@@ -12,6 +12,7 @@ from create_env import launch_env
 from destroy_env import destroy_user_env
 from user_env import UserEnv
 from jetson_ctl import Jetson
+from ip_addr_manager import IpAddr
 
 
 # Switch imports
@@ -132,37 +133,51 @@ def create_user(user_name, user_number):
     print("User added successfully.")
 
 
-
 def allocate_ip_users(user_name, user_number):
-    # Get the absolute path to the users.json file
+    # Get the absolute path to the active users JSON file
     current_dir = os.path.dirname(__file__)
     data_dir = os.path.join(current_dir, '../data')
-    json_path = os.path.join(data_dir, 'users.json')
+    active_users_path = os.path.join(data_dir, 'active_users.json')
 
-    # Read the JSON file
+    # Read existing user data from the active users JSON file
+    existing_users = []
     try:
-        if os.path.getsize(json_path) == 0:  # Check if the file is empty
-            print("Users don't exist. Create first.")
-            return
-        else:
-            with open(json_path, 'r') as file:
-                data = json.load(file)
+        with open(active_users_path, 'r') as file:
+            existing_users = json.load(file)
     except FileNotFoundError:
-        # If the file does not exist
-        print("Users don't exist. Create first.")
-        return
+        pass  # File doesn't exist yet, which is fine, we'll create it later
 
-    # Check if the user is present
-    user_exists = any(user["user_name"] == user_name and user["user_number"] == user_number for user in data)
-    
+    # Check if the user already exists
+    user_exists = any(user["user_name"] == user_name and user["user_number"] == user_number for user in existing_users)
+
     if user_exists:
-        print("Success")
+        print("User already present and active.")
     else:
-        print("User doesn't exist. Create user first.")
+        # If user doesn't exist, allocate IP addresses and add the user
+        ip_addr = IpAddr()
+        nfs_ip_addr = ip_addr.nfs_interface_ip(user_number)
+        macvlan_ip_addr = ip_addr.macvlan_interface_ip(user_number)
+
+        # Create user data
+        new_user = {
+            "user_name": user_name,
+            "user_number": user_number,
+            "nfs_ip_addr": nfs_ip_addr,
+            "macvlan_ip_addr": macvlan_ip_addr
+        }
+
+        # Append user data to the existing users list
+        existing_users.append(new_user)
+
+        # Write the updated user data back to the active users JSON file
+        with open(active_users_path, 'w') as file:
+            json.dump(existing_users, file, indent=4)
+
+        print("User allocation updated successfully.")
 
 
 create_user("mehdi", 1)
-allocate_ip_users("mehdi3", 5)
+allocate_ip_users("mehdi", 731)
 #get_resource_list()
 #power_all_off()
 
