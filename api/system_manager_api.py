@@ -133,7 +133,36 @@ def create_user(user_name, user_number):
 
 
 
+def allocate_ip_users(user_name, user_number):
+    # Get the absolute path to the users.json file
+    current_dir = os.path.dirname(__file__)
+    data_dir = os.path.join(current_dir, '../data')
+    json_path = os.path.join(data_dir, 'users.json')
+
+    # Read the JSON file
+    try:
+        if os.path.getsize(json_path) == 0:  # Check if the file is empty
+            print("Users don't exist. Create first.")
+            return
+        else:
+            with open(json_path, 'r') as file:
+                data = json.load(file)
+    except FileNotFoundError:
+        # If the file does not exist
+        print("Users don't exist. Create first.")
+        return
+
+    # Check if the user is present
+    user_exists = any(user["user_name"] == user_name and user["user_number"] == user_number for user in data)
+    
+    if user_exists:
+        print("Success")
+    else:
+        print("User doesn't exist. Create user first.")
+
+
 create_user("mehdi", 1)
+allocate_ip_users("mehdi3", 5)
 #get_resource_list()
 #power_all_off()
 
