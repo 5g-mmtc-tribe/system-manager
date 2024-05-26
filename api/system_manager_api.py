@@ -98,6 +98,11 @@ def power_all_on():
 
 
 def allocate_active_users(user_name, user_number):
+
+    if user_number < 254 or user_number > 3:
+        print("Error: choose number between 3 and 253")
+
+        return 
     # Get the absolute path to the active users JSON file
     current_dir = os.path.dirname(__file__)
     data_dir = os.path.join(current_dir, '../data')
@@ -140,8 +145,7 @@ def allocate_active_users(user_name, user_number):
         print("User allocation updated successfully.")
 
 
-create_user("mehdi", 1)
-allocate_active_users("mehdi", 731)
+allocate_active_users("mehdi", 73664)
 #get_resource_list()
 #power_all_off()
 
