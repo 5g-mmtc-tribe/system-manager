@@ -93,8 +93,49 @@ def power_all_on():
 
         switch.poe_on(interface)
 
+    
+def create_user(user_name, user_number):
+    user_data = {
+        "user_name": user_name,
+        "user_number": user_number
+    }
+
+    user_json = json.dumps(user_data)
+    print(user_json)
+    # Get the absolute path to the resource.json file
+    current_dir = os.path.dirname(__file__)
+    data_dir = os.path.join(current_dir, '../data')
+    json_path = os.path.join(data_dir, 'users.json')
+
+    # Read the JSON file
+    try:
+        with open(json_path, 'r') as file:
+            data = json.load(file)
+            print(data)
+    except FileNotFoundError:
+        # If the file does not exist, create an empty list
+        data = []
+
+    # Check if the user is already present
+    for user in data:
+        if user["user_name"] == user_name and user["user_number"] == user_number:
+            print("User already exists.")
+            return
+
+    # If the user is not present, add the user to the list
+    data.append(user_data)
+
+    # Write the updated list back to the JSON file
+    with open(json_path, 'w') as file:
+        json.dump(data, file, indent=4)
+
+    print("User added successfully.")
+
+
+
+create_user("mehdi", 1)
 #get_resource_list()
-power_all_off()
+#power_all_off()
 
 # if __name__ == "__main__":
 #     import uvicorn
