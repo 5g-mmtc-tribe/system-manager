@@ -7,7 +7,7 @@ class IpAddr:
         subnet = f"192.168.{user_number}.0/24"
         return subnet
 
-    def nfs_interface(self, user_number):
+    def nfs_interface_ip(self, user_number):
         user_subnet = self.user_subnet(user_number)
         print(user_subnet)
         
@@ -22,9 +22,26 @@ class IpAddr:
         nfs_interface = f"{'.'.join(prefix_parts)}/{prefix[1]}"
         return nfs_interface
 
+    def macvlan_interface_ip(self, user_number):
+        user_subnet = self.user_subnet(user_number)
+        print(user_subnet)
+        
+        # Split the subnet into its components
+        prefix = user_subnet.split('/')
+        prefix_parts = prefix[0].split('.')
+        
+        # Change the last part of the IP address to '1'
+        prefix_parts[-1] = '2'
+        
+        # Reassemble the IP address and subnet mask
+        macvlan_interface_ip = f"{'.'.join(prefix_parts)}/{prefix[1]}"
+        return macvlan_interface_ip
+
+
 
 
 ip = IpAddr()
 subnet = ip.user_subnet(4)
 print(subnet)
-print(ip.nfs_interface(6))
+print(ip.nfs_interface_ip(6))
+print(ip.macvlan_interface_ip(5))
