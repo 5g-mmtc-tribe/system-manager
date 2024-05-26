@@ -14,6 +14,12 @@ from user_env import UserEnv
 from jetson_ctl import Jetson
 
 
+# Switch imports
+# Get the absolute path of the parent directory
+switch_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../switch'))
+sys.path.append(switch_path)
+from switch_manager import SwitchManager
+
 app = FastAPI()
 
 def create_env(config: UserEnv):
@@ -44,8 +50,51 @@ def get_resource_list():
         
     return data
 
-#get_resource_list()
 
+def power_all_off():
+    device = {
+            'device_type': 'cisco_ios_telnet',
+            'ip': '192.168.0.30',
+            'port':23,
+            'password': 'tribe',
+            }
+    switch = SwitchManager(device_type = device['device_type'],
+                            ip = device['ip'],
+                            port = device['port'],
+                            password = device['password'])
+
+
+
+    jetson_complete_list = get_resource_list()
+    for devices in jetson_complete_list:
+        interface = devices['switch_interface']
+        print(interface)
+
+        switch.poe_off(interface)
+
+def power_all_on():
+    device = {
+            'device_type': 'cisco_ios_telnet',
+            'ip': '192.168.0.30',
+            'port':23,
+            'password': 'tribe',
+            }
+    switch = SwitchManager(device_type = device['device_type'],
+                            ip = device['ip'],
+                            port = device['port'],
+                            password = device['password'])
+
+
+
+    jetson_complete_list = get_resource_list()
+    for devices in jetson_complete_list:
+        interface = devices['switch_interface']
+        print(interface)
+
+        switch.poe_on(interface)
+
+#get_resource_list()
+power_all_off()
 
 # if __name__ == "__main__":
 #     import uvicorn
