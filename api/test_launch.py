@@ -29,6 +29,8 @@ def main():
     sm.get_active_jetsons_list()
     
 
+    jetsons = sm.get_resource_list()
+    print(jetsons)
 
 if __name__=="__main__":
     main()

@@ -46,8 +46,8 @@ class Jetson:
 
             return number_devices, xavier_instances
 
-jetson = Jetson()
+# jetson = Jetson()
 
-number = jetson.list_devices()
-print(number)
+# number = jetson.list_devices()
+# print(number)
 

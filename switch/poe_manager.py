@@ -1,4 +1,4 @@
-from switchManager import SwitchManager
+from switch_manager import SwitchManager
 
 
 
@@ -25,4 +25,5 @@ interface = "GigabitEthernet 1/0/11"
 # #interface = "GigabitEthernet 1/0/21"
 
 switch.poe_off(interface)
+#switch.poe_on(interface)
 
