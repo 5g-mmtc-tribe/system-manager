@@ -125,17 +125,20 @@ def allocate_active_users(user_name, user_network_id):
     else:
         # If user doesn't exist, allocate IP addresses and add the user
         ip_addr = IpAddr()
+
+        user_subnet = ip_addr.user_subnet(user_network_id)
         nfs_ip_addr = ip_addr.nfs_interface_ip(user_network_id)
         macvlan_ip_addr = ip_addr.macvlan_interface_ip(user_network_id)
 
         # macvlan name
-
-
         user_macvlan = f"macvlan_{user_name}"
+
+        
         # Create user data
         new_user = {
             "user_name": user_name,
             "user_network_id": user_network_id,
+            "user_subnet": user_subnet,
             "nfs_ip_addr": nfs_ip_addr,
             "macvlan_interface": user_macvlan,
             "macvlan_ip_addr": macvlan_ip_addr
