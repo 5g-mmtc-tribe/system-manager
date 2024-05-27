@@ -12,27 +12,33 @@ class Jetson:
     def get_xavier_instances(self):
 
         xavier_usb_instance = []
+        number_jetsons = self.number_of_jetsons_xavier_connected()
         
-        command = f"grep {self.xavier_id_product} /sys/bus/usb/devices/*/idProduct"
-        
-        instances = subprocess.run(command, capture_output= True, 
-                                            shell = True,
-                                            text=True,
-                                            check = True)
+        if number_jetsons == 0:
+            print("No jetsons connected")
+            return
+
+        else:
+            command = f"grep {self.xavier_id_product} /sys/bus/usb/devices/*/idProduct"
+            
+            instances = subprocess.run(command, capture_output= True, 
+                                                shell = True,
+                                                text=True,
+                                                check = True)
 
 
-        #xavier_usb_instance = instances.stdout.split("/")[5]
+            #xavier_usb_instance = instances.stdout.split("/")[5]
 
-        usb_instances = instances.stdout.split("\n")
-        usb_instances = [instance for instance in usb_instances if instance]
+            usb_instances = instances.stdout.split("\n")
+            usb_instances = [instance for instance in usb_instances if instance]
 
-        for instance in usb_instances:
-            instance = instance.split("/")[5]
-            xavier_usb_instance.append(instance)
+            for instance in usb_instances:
+                instance = instance.split("/")[5]
+                xavier_usb_instance.append(instance)
 
 
 
-        return xavier_usb_instance
+            return xavier_usb_instance
 
 
     def number_of_jetsons_xavier_connected(self):
@@ -59,6 +65,5 @@ class Jetson:
 jetson = Jetson()
 
 number = jetson.number_of_jetsons_xavier_connected()
-print(number)
 
 print(jetson.get_xavier_instances())
