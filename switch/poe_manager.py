@@ -8,7 +8,13 @@ class PoeManager:
 
     def __init__(self, switch):
         self.switch = switch
-   
+    
+
+    def turn_on(self,interface):
+        switch.poe_on(interface)
+
+    def turn_off(self,interface):
+        switch.poe_off(interface)
 
     def get_switch_interfaces(self):
 
@@ -74,7 +80,7 @@ power = PoeManager(switch)
 switch_interfaces = power.get_switch_interfaces()
 print(switch_interfaces)
 
-
+power.turn_all_off()
 
 # #out = switch_obj.sendCommand('show ip int bri')
 # #print(out)
