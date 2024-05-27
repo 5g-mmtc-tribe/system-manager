@@ -3,5 +3,10 @@
         "name": "Jetson Xavier 1",
         "switch_interface": "Gigabit 1/0/11",
         "usb_instance": "1-8.2"
+    },
+    {
+        "name": "Jetson Xavier 2",
+        "switch_interface": "Gigabit 1/0/13",
+        "usb_instance": "1-8.1"
     }
 ]
