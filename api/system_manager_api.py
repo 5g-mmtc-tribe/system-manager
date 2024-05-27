@@ -82,7 +82,7 @@ def testbed_reset():
     power.turn_all_off()
 
     
-def turn_all_on():
+def turn_on_all_nodes():
     # Define the device
     device = {
     'device_type': 'cisco_ios_telnet',
@@ -194,8 +194,8 @@ def flash_jetson(usb_instance):
 
 allocate_active_users("cedric", 75)
 allocate_active_users("user_test", 76)
-testbed_reset()
-#turn_all_on()
+#testbed_reset()
+turn_on_all_nodes()
 #clear_active_users()
 
 #get_resource_list()
