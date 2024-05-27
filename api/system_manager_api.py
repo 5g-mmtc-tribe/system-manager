@@ -100,7 +100,7 @@ def power_all_on():
 def allocate_active_users(user_name, user_number):
 
     if user_number > 254 or user_number < 3:
-        print("Error: choose number between 3 and 253")
+        print("Error: choose user_number between 3 and 253")
 
         return 
     # Get the absolute path to the active users JSON file
@@ -145,7 +145,7 @@ def allocate_active_users(user_name, user_number):
         print("User allocation updated successfully.")
 
 #import ipdb; ipdb.set_trace()
-allocate_active_users("mehdi", 73)
+allocate_active_users("mehdi", 7346)
 #get_resource_list()
 #power_all_off()
 
