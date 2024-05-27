@@ -10,6 +10,8 @@ class Jetson:
 
 
     def get_xavier_instances(self):
+
+        xavier_usb_instance = []
         
         command = f"grep {self.xavier_id_product} /sys/bus/usb/devices/*/idProduct"
         
@@ -19,7 +21,16 @@ class Jetson:
                                             check = True)
 
 
-        xavier_usb_instance = instances.stdout.split("/")[5]
+        #xavier_usb_instance = instances.stdout.split("/")[5]
+
+        usb_instances = instances.stdout.split("\n")
+        usb_instances = [instance for instance in usb_instances if instance]
+
+        for instance in usb_instances:
+            instance = instance.split("/")[5]
+            xavier_usb_instance.append(instance)
+
+
 
         return xavier_usb_instance
 
@@ -46,8 +57,9 @@ class Jetson:
 
             return number_devices, xavier_instances
 
-# jetson = Jetson()
+jetson = Jetson()
 
-# number = jetson.list_devices()
-# print(number)
+number = jetson.list_devices()
+print(number)
 
+print(jetson.get_xavier_instances())
