@@ -20,6 +20,9 @@ from ip_addr_manager import IpAddr
 switch_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../switch'))
 sys.path.append(switch_path)
 from switch_manager import SwitchManager
+from poe_manager import PoeManager
+
+
 
 app = FastAPI()
 
@@ -52,49 +55,59 @@ def get_resource_list():
     return data
 
 
-def power_all_off():
+
+def testbed_reset():
+    # Define the device
     device = {
-            'device_type': 'cisco_ios_telnet',
-            'ip': '192.168.0.30',
-            'port':23,
-            'password': 'tribe',
-            }
+    'device_type': 'cisco_ios_telnet',
+    'ip': '192.168.0.30',
+    'port':23,
+    'password': 'tribe',
+    }
+
+
     switch = SwitchManager(device_type = device['device_type'],
-                            ip = device['ip'],
-                            port = device['port'],
-                            password = device['password'])
+                                ip = device['ip'],
+                                port = device['port'],
+                                password = device['password'])
 
 
 
-    jetson_complete_list = get_resource_list()
-    for devices in jetson_complete_list:
-        interface = devices['switch_interface']
-        print(interface)
 
-        switch.poe_off(interface)
+    power = PoeManager(switch)
 
-def power_all_on():
-    device = {
-            'device_type': 'cisco_ios_telnet',
-            'ip': '192.168.0.30',
-            'port':23,
-            'password': 'tribe',
-            }
-    switch = SwitchManager(device_type = device['device_type'],
-                            ip = device['ip'],
-                            port = device['port'],
-                            password = device['password'])
+    switch_interfaces = power.get_switch_interfaces()
+    print(switch_interfaces)
 
-
-
-    jetson_complete_list = get_resource_list()
-    for devices in jetson_complete_list:
-        interface = devices['switch_interface']
-        print(interface)
-
-        switch.poe_on(interface)
+    power.turn_all_off()
 
     
+def turn_all_on():
+    # Define the device
+    device = {
+    'device_type': 'cisco_ios_telnet',
+    'ip': '192.168.0.30',
+    'port':23,
+    'password': 'tribe',
+    }
+
+
+    switch = SwitchManager(device_type = device['device_type'],
+                                ip = device['ip'],
+                                port = device['port'],
+                                password = device['password'])
+
+
+
+
+    power = PoeManager(switch)
+
+    switch_interfaces = power.get_switch_interfaces()
+    print(switch_interfaces)
+
+    power.turn_all_on()
+
+
 
 
 def allocate_active_users(user_name, user_network_id):
@@ -181,8 +194,8 @@ def flash_jetson(usb_instance):
 
 allocate_active_users("cedric", 75)
 allocate_active_users("user_test", 76)
-
-
+testbed_reset()
+#turn_all_on()
 #clear_active_users()
 
 #get_resource_list()
