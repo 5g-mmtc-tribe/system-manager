@@ -188,14 +188,36 @@ def clear_active_users():
 
 
 
+
+
+# TO IMPLEMENT
 def flash_jetson(usb_instance):
+    pass
+
+
+
+def allocate_resouces_to_users():
+    # get resource list
+    # get active users list
+    # write some logic based on resouce list and user allocation
+    # set up a new file with resources free
+    # set up a new file with resources in use
+    pass
+
+
+def start_experiment():
+    pass
+
+
+
+def end_experiment():
     pass
 
 
 allocate_active_users("cedric", 75)
 allocate_active_users("user_test", 76)
-#testbed_reset()
-turn_on_all_nodes()
+testbed_reset()
+#turn_on_all_nodes()
 #clear_active_users()
 
 #get_resource_list()
