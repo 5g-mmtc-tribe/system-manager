@@ -41,8 +41,8 @@ class PoeManager:
 
         for interface in interfaces:
             print(interface)
-            switch.poe_off(interface)
-            time.sleep(5)
+            self.switch.poe_off(interface)
+            time.sleep(7)
 
 
 
@@ -52,62 +52,62 @@ class PoeManager:
 
         for interface in interfaces:
             print(interface)
-            switch.poe_on(interface)
-            time.sleep(5)
+            self.switch.poe_on(interface)
+            time.sleep(7)
 
 
 
 
-# Define the device
-device = {
- 'device_type': 'cisco_ios_telnet',
- 'ip': '192.168.0.30',
- 'port':23,
- 'password': 'tribe',
-}
+# # Define the device
+# device = {
+#  'device_type': 'cisco_ios_telnet',
+#  'ip': '192.168.0.30',
+#  'port':23,
+#  'password': 'tribe',
+# }
 
 
-switch = SwitchManager(device_type = device['device_type'],
-                            ip = device['ip'],
-                            port = device['port'],
-                            password = device['password'])
-
-
-
-
-power = PoeManager(switch)
-
-switch_interfaces = power.get_switch_interfaces()
-print(switch_interfaces)
-
-power.turn_all_off()
-
-# #out = switch_obj.sendCommand('show ip int bri')
-# #print(out)
-# # # # poe
-# interface_1 = "GigabitEthernet 1/0/11"
-# interface_2 = "GigabitEthernet 1/0/13"
-# interfaces = [interface_1, interface_2]
-
-
-# def turn_all_off():
-#     for interface in interfaces:
-#         print(interface)
-#         switch.poe_off(interface)
-#         time.sleep(5)
+# switch = SwitchManager(device_type = device['device_type'],
+#                             ip = device['ip'],
+#                             port = device['port'],
+#                             password = device['password'])
 
 
 
-# def turn_all_on():
-#     for interface in interfaces:
-#         print(interface)
-#         switch.poe_on(interface)
-#         time.sleep(5)
 
-# switch.poe_off(interface_2)
-# #switch.poe_on(interface)
+# power = PoeManager(switch)
 
-# #turn_all_off()
+# switch_interfaces = power.get_switch_interfaces()
+# print(switch_interfaces)
 
-# #turn_all_on()
+# power.turn_all_off()
+
+# # #out = switch_obj.sendCommand('show ip int bri')
+# # #print(out)
+# # # # # poe
+# # interface_1 = "GigabitEthernet 1/0/11"
+# # interface_2 = "GigabitEthernet 1/0/13"
+# # interfaces = [interface_1, interface_2]
+
+
+# # def turn_all_off():
+# #     for interface in interfaces:
+# #         print(interface)
+# #         switch.poe_off(interface)
+# #         time.sleep(5)
+
+
+
+# # def turn_all_on():
+# #     for interface in interfaces:
+# #         print(interface)
+# #         switch.poe_on(interface)
+# #         time.sleep(5)
+
+# # switch.poe_off(interface_2)
+# # #switch.poe_on(interface)
+
+# # #turn_all_off()
+
+# # #turn_all_on()
 
