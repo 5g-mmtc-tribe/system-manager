@@ -117,10 +117,11 @@ def allocate_active_users(user_name, user_number):
         pass  # File doesn't exist yet, which is fine, we'll create it later
 
     # Check if the user already exists
-    user_exists = any(user["user_name"] == user_name and user["user_number"] == user_number for user in existing_users)
+    user_number_exists = any(user["user_number"] == user_number for user in existing_users)
 
-    if user_exists:
-        print("User already present and active.")
+    if user_number_exists:
+        print(f"Error: User number {user_number} is already allocated to another user.")
+        return
     else:
         # If user doesn't exist, allocate IP addresses and add the user
         ip_addr = IpAddr()
@@ -142,10 +143,36 @@ def allocate_active_users(user_name, user_number):
         with open(active_users_path, 'w') as file:
             json.dump(existing_users, file, indent=4)
 
-        print("User allocation updated successfully.")
+        print(f"User allocation {user_name} with the user number {user_number} updated successfully.")
 
-#import ipdb; ipdb.set_trace()
-allocate_active_users("mehdi", 7346)
+
+
+def clear_active_users():
+
+    current_dir = os.path.dirname(__file__)
+    data_dir = os.path.join(current_dir, '../data')
+    active_users_path = os.path.join(data_dir, 'active_users.json')
+    
+    with open(active_users_path, 'r') as file:
+        existing_users = json.load(file)
+        print(existing_users)
+        existing_users.clear()
+
+    # Open the file in write mode and write the cleared list to it
+    with open(active_users_path, 'w') as file:
+        json.dump(existing_users, file, indent=4)
+
+    if existing_users == []:
+        print("Active Users Cleared")
+
+
+
+#allocate_active_users("cedric", 75)
+#allocate_active_users("user_test", 76)
+
+
+clear_active_users()
+
 #get_resource_list()
 #power_all_off()
 
