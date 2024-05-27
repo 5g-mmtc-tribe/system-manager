@@ -99,7 +99,7 @@ def power_all_on():
 
 def allocate_active_users(user_name, user_number):
 
-    if user_number < 254 or user_number > 3:
+    if user_number > 254 or user_number < 3:
         print("Error: choose number between 3 and 253")
 
         return 
@@ -144,8 +144,8 @@ def allocate_active_users(user_name, user_number):
 
         print("User allocation updated successfully.")
 
-
-allocate_active_users("mehdi", 73664)
+#import ipdb; ipdb.set_trace()
+allocate_active_users("mehdi", 73)
 #get_resource_list()
 #power_all_off()
 
