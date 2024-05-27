@@ -3,12 +3,12 @@ class IpAddr:
     def __init__(self):
         pass
 
-    def user_subnet(self, user_number):
-        subnet = f"192.168.{user_number}.0/24"
+    def user_subnet(self, user_id):
+        subnet = f"192.168.{user_id}.0/24"
         return subnet
 
-    def nfs_interface_ip(self, user_number):
-        user_subnet = self.user_subnet(user_number)
+    def nfs_interface_ip(self, user_id):
+        user_subnet = self.user_subnet(user_id)
         print(user_subnet)
         
         # Split the subnet into its components
@@ -22,8 +22,8 @@ class IpAddr:
         nfs_interface = f"{'.'.join(prefix_parts)}/{prefix[1]}"
         return nfs_interface
 
-    def macvlan_interface_ip(self, user_number):
-        user_subnet = self.user_subnet(user_number)
+    def macvlan_interface_ip(self, user_id):
+        user_subnet = self.user_subnet(user_id)
         print(user_subnet)
         
         # Split the subnet into its components
