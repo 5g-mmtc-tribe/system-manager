@@ -35,7 +35,7 @@ class Jetson:
         return xavier_usb_instance
 
 
-    def list_devices(self):
+    def number_of_jetsons_xavier_connected(self):
         number_devices = 0
         xavier_instances = []
         command = "lsusb"
@@ -46,20 +46,19 @@ class Jetson:
             device = device.split(":",1)[1].strip()
             if device == self.xavier_id:
                 number_devices = number_devices + 1
-                xavier_instances.append(self.get_xavier_instances())
 
         if number_devices == 0:
             print("No Jetson Xavier connected")
 
-            return number_devices, xavier_instances
+            return number_devices
 
         else:  
 
-            return number_devices, xavier_instances
+            return number_devices
 
 jetson = Jetson()
 
-number = jetson.list_devices()
+number = jetson.number_of_jetsons_xavier_connected()
 print(number)
 
 print(jetson.get_xavier_instances())
