@@ -40,8 +40,8 @@ class IpAddr:
 
 
 
-ip = IpAddr()
-subnet = ip.user_subnet(4)
-print(subnet)
-print(ip.nfs_interface_ip(6))
-print(ip.macvlan_interface_ip(5))
+# ip = IpAddr()
+# subnet = ip.user_subnet(4)
+# print(subnet)
+# print(ip.nfs_interface_ip(6))
+# print(ip.macvlan_interface_ip(5))
