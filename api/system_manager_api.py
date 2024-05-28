@@ -222,9 +222,3 @@ def end_experiment():
 
 # #get_resource_list()
 #power_all_off()
-
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="127.0.0.1", port=8000)
-
-

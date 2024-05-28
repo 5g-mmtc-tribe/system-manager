@@ -34,8 +34,7 @@ def main():
     sm.allocate_active_users("cedric", 75)
     sm.allocate_active_users("user_test", 76)
     sm.testbed_reset()
-        #turn_on_all_nodes()
-        #clear_active_users()
+       
 
 if __name__=="__main__":
     main()
