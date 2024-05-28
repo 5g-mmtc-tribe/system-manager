@@ -23,8 +23,14 @@ from switch_manager import SwitchManager
 from poe_manager import PoeManager
 
 
+# Specify the path to your JSON file
+switch_config = "switch/switch_config.json"
 
-app = FastAPI()
+# Open and load the JSON file
+with open(switch_config, 'r') as file:
+    switch_config = json.load(file)
+
+
 
 def create_env(config: UserEnv):
     launch_env(config)
@@ -38,16 +44,11 @@ def get_active_jetsons_list():
     jetson = Jetson()
     print(jetson.list_devices())
 
-
-
 def get_resource_list():
     # Get the absolute path to the resource.json file
     current_dir = os.path.dirname(__file__)
     data_dir = os.path.join(current_dir, '../data')
     json_path = os.path.join(data_dir, 'resource.json')
-
-
-
     # Read the JSON file
     with open(json_path, 'r') as file:
         data = json.load(file)
@@ -56,55 +57,28 @@ def get_resource_list():
 
 
 
-def testbed_reset():
-    # Define the device
-    device = {
-    'device_type': 'cisco_ios_telnet',
-    'ip': '192.168.0.30',
-    'port':23,
-    'password': 'tribe',
-    }
-
-
+def testbed_reset():   
+    device = switch_config
     switch = SwitchManager(device_type = device['device_type'],
                                 ip = device['ip'],
                                 port = device['port'],
                                 password = device['password'])
-
-
-
-
     power = PoeManager(switch)
-
     switch_interfaces = power.get_switch_interfaces()
     print(switch_interfaces)
-
     power.turn_all_off()
 
     
 def turn_on_all_nodes():
-    # Define the device
-    device = {
-    'device_type': 'cisco_ios_telnet',
-    'ip': '192.168.0.30',
-    'port':23,
-    'password': 'tribe',
-    }
-
-
+    device = switch_config
     switch = SwitchManager(device_type = device['device_type'],
                                 ip = device['ip'],
                                 port = device['port'],
                                 password = device['password'])
 
-
-
-
     power = PoeManager(switch)
-
     switch_interfaces = power.get_switch_interfaces()
     print(switch_interfaces)
-
     power.turn_all_on()
 
 
@@ -173,7 +147,6 @@ def allocate_active_users(user_name, user_network_id):
 
 
 def clear_active_users():
-
     current_dir = os.path.dirname(__file__)
     data_dir = os.path.join(current_dir, '../data')
     active_users_path = os.path.join(data_dir, 'active_users.json')
@@ -218,10 +191,11 @@ def end_experiment():
     pass
 
 
-allocate_active_users("cedric", 75)
-allocate_active_users("cedric", 76)
-# testbed_reset()
-# #turn_on_all_nodes()
+#allocate_active_users("cedric", 75)
+#allocate_active_users("cedric", 76)
+
+testbed_reset()
+#turn_on_all_nodes()
 #clear_active_users()
 
 # #get_resource_list()
