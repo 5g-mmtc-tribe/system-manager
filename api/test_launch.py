@@ -26,11 +26,16 @@ def main():
     #create_env(config)
     #destroy_env(config)
 
-    sm.get_active_jetsons_list()
     
 
-    jetsons = sm.get_resource_list()
-    print(jetsons)
+    # jetsons = sm.get_resource_list()
+    # print(jetsons)
+
+    sm.allocate_active_users("cedric", 75)
+    sm.allocate_active_users("user_test", 76)
+    sm.testbed_reset()
+        #turn_on_all_nodes()
+        #clear_active_users()
 
 if __name__=="__main__":
     main()
