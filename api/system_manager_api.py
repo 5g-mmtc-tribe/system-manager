@@ -214,17 +214,17 @@ def end_experiment():
     pass
 
 
-allocate_active_users("cedric", 75)
-allocate_active_users("user_test", 76)
-testbed_reset()
-#turn_on_all_nodes()
-#clear_active_users()
+# allocate_active_users("cedric", 75)
+# allocate_active_users("user_test", 76)
+# testbed_reset()
+# #turn_on_all_nodes()
+# #clear_active_users()
 
-#get_resource_list()
+# #get_resource_list()
 #power_all_off()
 
-# if __name__ == "__main__":
-#     import uvicorn
-#     uvicorn.run(app, host="127.0.0.1", port=8000)
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)
 
 
