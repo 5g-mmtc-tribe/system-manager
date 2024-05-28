@@ -130,10 +130,14 @@ def allocate_active_users(user_name, user_network_id):
         pass  # File doesn't exist yet, which is fine, we'll create it later
 
     # Check if the user already exists
+    user_name_exists = any(user["user_name"] == user_name for user in existing_users)
     user_network_id_exists = any(user["user_network_id"] == user_network_id for user in existing_users)
 
     if user_network_id_exists:
         print(f"Error: User number {user_network_id} is already allocated to another user.")
+        return
+    elif user_name_exists:
+        print(f"Error: User name {user_name} is already allocated to another user.")
         return
     else:
         # If user doesn't exist, allocate IP addresses and add the user
@@ -214,11 +218,11 @@ def end_experiment():
     pass
 
 
-# allocate_active_users("cedric", 75)
-# allocate_active_users("user_test", 76)
+allocate_active_users("cedric", 75)
+allocate_active_users("cedric", 76)
 # testbed_reset()
 # #turn_on_all_nodes()
-# #clear_active_users()
+#clear_active_users()
 
 # #get_resource_list()
 #power_all_off()
