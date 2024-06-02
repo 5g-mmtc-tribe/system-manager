@@ -1,9 +1,9 @@
 import subprocess
 
 class MacVlan:
-    def __init__(self, interface_name, macvlan_name):
+    def __init__(self, interface_name):
         self.interface_name = interface_name
-        self.macvlan_name = macvlan_name
+
 
     def create_macvlan(self):
         self.add_macvlan()
@@ -16,8 +16,8 @@ class MacVlan:
         except subprocess.CalledProcessError:
             print(f"Macvlan {macvlan_name} exists. Creation cannot be done.")
 
-    def set_macvlan_up(self):
-        command = ["sudo", "ip", "link", "set", "dev", self.macvlan_name, "up"]
+    def set_macvlan_up(self, macvlan_name):
+        command = ["sudo", "ip", "link", "set", "dev", macvlan_name, "up"]
         subprocess.run(command, check=True)
 
     def macvlan_exists(self, macvlan_name):
@@ -43,7 +43,7 @@ class MacVlan:
 interface_name = "enp2s0"
 macvlan = "macvlan1"
 ip_addr = "192.168.100.8/24"
-creator = MacVlan(interface_name, macvlan)
+creator = MacVlan(interface_name)
 #creator.create_macvlan()
 
 #creator.set_ip_addr(ip_addr, macvlan)
