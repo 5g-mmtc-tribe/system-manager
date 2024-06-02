@@ -45,8 +45,34 @@ def delete_macvlan_for_vm(macvlan_manager, macvlan_name):
         print(f"{macvlan_name} does not exist")
 
 
-def attach_macvlan_to_vm(vm_name, macvlan_name):
+def interface_check(vm_name, interface_name):
+    check_interface_command = ["lxc", "exec", vm_name, "--", "ip", "-c", "a"]
+
+    try:
+        # Run the command to list network interfaces
+        result = subprocess.run(check_interface_command,
+                                capture_output=True, 
+                                text=True, 
+                                check=True)
+        print("Command output:\n", result.stdout)
+
+        # Check if the interface name is in the output
+        if interface_name in result.stdout:
+            print(f"Interface {interface_name} is present.")
+            return True
+        else:
+            print(f"Interface {interface_name} is not present.")
+            return False
     
+    
+    except subprocess.CalledProcessError as e:
+        print("Failed to execute command:", e)
+        print("STDOUT:\n", e.stdout)
+        print("STDERR:\n", e.stderr)
+        return False
+
+
+def attach_macvlan_to_vm(vm_name, macvlan_name):    
     command = f"lxc config device add {vm_name} eth1 nic nictype=macvlan parent={macvlan_name}"
     
     try:
@@ -62,7 +88,6 @@ def attach_macvlan_to_vm(vm_name, macvlan_name):
         print("STDERR:", e.stderr)
 
     
-
 
 
 
@@ -106,5 +131,7 @@ print(macvlan_ip_addr)
 
 #create_macvlan_for_vm(macvlan_manager, macvlan_name)
 
-# delete_macvlan_for_vm(macvlan_manager, macvlan_name)
-attach_macvlan_to_vm(vm_name, macvlan_name)
+vm_name = "cedric"
+res = interface_check(vm_name, "enp6s0")
+print(res)
+#delete_macvlan_for_vm(macvlan_manager, macvlan_name)
