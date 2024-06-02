@@ -45,6 +45,25 @@ def delete_macvlan_for_vm(macvlan_manager, macvlan_name):
         print(f"{macvlan_name} does not exist")
 
 
+def attach_macvlan_to_vm(vm_name, macvlan_name):
+    
+    command = f"lxc config device add {vm_name} eth1 nic nictype=macvlan parent={macvlan_name}"
+    
+    try:
+        # Execute the command
+        result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
+        # Print the output if successful
+        print("STDOUT:", result.stdout)
+    except subprocess.CalledProcessError as e:
+        # Print the error details
+        print("Command failed with return code:", e.returncode)
+        print("Command output:", e.output)
+        print("STDOUT:", e.stdout)
+        print("STDERR:", e.stderr)
+
+    
+
+
 
 
 
@@ -56,18 +75,21 @@ root_size = "4GiB"
 
 
 user_info = {
-        "user_name": "cedric",
+        "user_name": "testvm",
         "user_network_id": 75,
         "user_subnet": "192.168.75.0/24",
         "nfs_ip_addr": "192.168.75.1/24",
-        "macvlan_interface": "macvlan_cedric",
+        "macvlan_interface": "macvlan_testvm",
         "macvlan_ip_addr": "192.168.75.2/24"
     }
 
 
-#create_user_vm(ubuntu_version, vm_name, root_size)
 print(user_info)
 
+
+# create vm for user
+
+#create_user_vm(ubuntu_version, vm_name, root_size)
 
 
 # Extracting the information
@@ -84,4 +106,5 @@ print(macvlan_ip_addr)
 
 #create_macvlan_for_vm(macvlan_manager, macvlan_name)
 
-delete_macvlan_for_vm(macvlan_manager, macvlan_name)
+# delete_macvlan_for_vm(macvlan_manager, macvlan_name)
+attach_macvlan_to_vm(vm_name, macvlan_name)
