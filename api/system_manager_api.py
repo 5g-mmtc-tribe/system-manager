@@ -44,6 +44,8 @@ def get_active_jetsons_list():
     jetson = Jetson()
     print(jetson.list_devices())
 
+
+
 def get_resource_list():
     # Get the absolute path to the resource.json file
     current_dir = os.path.dirname(__file__)
@@ -200,3 +202,9 @@ testbed_reset()
 
 # #get_resource_list()
 #power_all_off()
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="127.0.0.1", port=8000)
+
+
