@@ -27,6 +27,18 @@ def create_user_vm(ubuntu_version, vm_name, root_size):
 
 
 
+def macvlan_for_vm(inferface_name, macvlan_name):
+    macvlan_manager = MacVlan(interface_name)
+
+    if macvlan_manager.macvlan_exists(macvlan_name) == False:
+        macvlan_manager.create_macvlan(macvlan_name)
+        macvlan_manager.set_ip_addr(macvlan_ip_addr, macvlan_name)
+
+    else:
+        print("Macvlan for user exists")
+
+
+
 
 
 
@@ -63,11 +75,5 @@ interface_name = "enp2s0"
 
 
 print(macvlan_ip_addr)
-macvlan_manager = MacVlan(interface_name)
 
-if macvlan_manager.macvlan_exists(macvlan_name) == False:
-    macvlan_manager.create_macvlan(macvlan_name)
-    macvlan_manager.set_ip_addr(macvlan_ip_addr, macvlan_name)
-
-
-
+macvlan_for_vm(interface_name, macvlan_name)
