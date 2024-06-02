@@ -39,15 +39,14 @@ class MacVlan:
         subprocess.run(command, check=True)
         print("Macvlan destroyed")
 
-# Example usage
-interface_name = "enp2s0"
-macvlan = "macvlan1"
-ip_addr = "192.168.100.8/24"
-creator = MacVlan(interface_name)
-#creator.create_macvlan()
+# # Example usage
+# interface_name = "enp2s0"
+# macvlan = "macvlan1"
+# ip_addr = "192.168.100.8/24"
+# creator = MacVlan(interface_name)
 
-#creator.set_ip_addr(ip_addr, macvlan)
+# #creator.set_ip_addr(ip_addr, macvlan)
 
-result = creator.macvlan_exists("macrootfs")
-print(result)
-print(creator.add_macvlan("macrootfs"))
+# result = creator.macvlan_exists("macrootfs")
+# print(result)
+# print(creator.add_macvlan("macrootfs"))
