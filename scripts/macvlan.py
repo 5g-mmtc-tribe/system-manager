@@ -5,9 +5,9 @@ class MacVlan:
         self.interface_name = interface_name
 
 
-    def create_macvlan(self):
-        self.add_macvlan()
-        self.set_macvlan_up()
+    def create_macvlan(self, macvlan_name):
+        self.add_macvlan(macvlan_name)
+        self.set_macvlan_up(macvlan_name)
 
     def add_macvlan(self, macvlan_name):
         try:
