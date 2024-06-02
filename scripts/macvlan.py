@@ -20,9 +20,9 @@ class MacVlan:
         command = ["sudo", "ip", "link", "set", "dev", self.macvlan_name, "up"]
         subprocess.run(command, check=True)
 
-    def macvlan_exists(self):
+    def macvlan_exists(self, macvlan_name):
         try:
-            subprocess.check_output(["ip", "link", "show", self.macvlan_name], stderr=subprocess.STDOUT)
+            subprocess.check_output(["ip", "link", "show", macvlan_name], stderr=subprocess.STDOUT)
             return True
         except subprocess.CalledProcessError:
             return False
@@ -39,11 +39,14 @@ class MacVlan:
         subprocess.run(command, check=True)
         print("Macvlan destroyed")
 
-# # Example usage
-# interface_name = "enp2s0"
-# macvlan = "macvlan1"
-# ip_addr = "192.168.100.8/24"
-# creator = MacVlan(interface_name, macvlan)
-# creator.create_macvlan()
+# Example usage
+interface_name = "enp2s0"
+macvlan = "macvlan1"
+ip_addr = "192.168.100.8/24"
+creator = MacVlan(interface_name, macvlan)
+#creator.create_macvlan()
 
-# creator.set_ip_addr(ip_addr, macvlan)
+#creator.set_ip_addr(ip_addr, macvlan)
+
+result = creator.macvlan_exists("macrootfs")
+print(result)
