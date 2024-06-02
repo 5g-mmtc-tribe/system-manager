@@ -47,15 +47,27 @@ user_info = {
         "macvlan_ip_addr": "192.168.75.2/24"
     }
 
+
 #create_user_vm(ubuntu_version, vm_name, root_size)
 print(user_info)
 
+
+
+# Extracting the information
+macvlan_name = user_info["macvlan_interface"]
+user_name = user_info["user_name"]
+macvlan_ip_addr = user_info["macvlan_ip_addr"]
+
+# interface name on which macvlan is to be created
 interface_name = "enp2s0"
-macvlan_ip = user_info["macvlan_ip_addr"]
 
 
-print(macvlan_ip)
+print(macvlan_ip_addr)
 macvlan_manager = MacVlan(interface_name)
-print(macvlan_manager.macvlan_exists("macrootfs"))
 
-#creator.set_ip_addr(ip_addr, macvlan)
+if macvlan_manager.macvlan_exists(macvlan_name) == False:
+    macvlan_manager.create_macvlan(macvlan_name)
+    macvlan_manager.set_ip_addr(macvlan_ip_addr, macvlan_name)
+
+
+
