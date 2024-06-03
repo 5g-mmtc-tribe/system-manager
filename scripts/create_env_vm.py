@@ -50,7 +50,7 @@ def interface_check(vm_name, interface_name):
                                 capture_output=True, 
                                 text=True, 
                                 check=True)
-        print("Command output:\n", result.stdout)
+        #print("Command output:\n", result.stdout)
 
         # Check if the interface name is in the output
         if interface_name in result.stdout:
@@ -86,19 +86,45 @@ def attach_macvlan_to_vm(vm_name, macvlan_name):
 
 def set_nfs_ip_addr(vm_name, nfs_ip_addr):
     interface_name = "enp6s0"
+    
     if interface_check(vm_name, interface_name):
-        command_add_ip = ["lxc", "exec", vm_name, "--", "ip" ,"addr", "add", nfs_ip_addr, "dev", interface_name]
+        # Command to check current IP addresses
+        command_check_ip = ["lxc", "exec", vm_name, "--", "ip", "addr", "show", interface_name]
+        
+        try:
+            result = subprocess.run(command_check_ip, capture_output=True, text=True, check=True)
+            # Check if the desired IP address is already allocated
+            if nfs_ip_addr in result.stdout:
+                print(f"IP address {nfs_ip_addr} is already allocated to {interface_name}. Skipping IP addition.")
+                return
+        except subprocess.CalledProcessError as e:
+            print("Failed to execute command:", e)
+            print("STDOUT:\n", e.stdout)
+            print("STDERR:\n", e.stderr)
+            return
+        
+        # Add the IP address if not already allocated
+        command_add_ip = ["lxc", "exec", vm_name, "--", "ip", "addr", "add", nfs_ip_addr, "dev", interface_name]
+        try:
+            result = subprocess.run(command_add_ip, capture_output=True, text=True, check=True)
+            print(f"IP address {nfs_ip_addr} added to {interface_name}.")
+        except subprocess.CalledProcessError as e:
+            print("Failed to execute command:", e)
+            print("STDOUT:\n", e.stdout)
+            print("STDERR:\n", e.stderr)
+            return
+        
+        # Set the interface up
+        command_set_interface_up = ["lxc", "exec", vm_name, "--", "ip", "link", "set", "dev", interface_name, "up"]
+        try:
+            result = subprocess.run(command_set_interface_up, capture_output=True, text=True, check=True)
+            print(f"Interface {interface_name} set up.")
+        except subprocess.CalledProcessError as e:
+            print("Failed to execute command:", e)
+            print("STDOUT:\n", e.stdout)
+            print("STDERR:\n", e.stderr)
 
-        result = subprocess.run(command_add_ip,
-                                capture_output=True, 
-                                text=True, 
-                                check=True)
 
-        command_set_inteface_up = ["lxc", "exec", vm_name, "--", "ip" ,"link", "set", "dev", interface_name, "up"]
-        result = subprocess.run(command_set_inteface_up,
-                                capture_output=True, 
-                                text=True, 
-                                check=True)
 
 # Define the parameters
 ubuntu_version = "24.04"
