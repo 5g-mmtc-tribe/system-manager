@@ -3,6 +3,7 @@ from subprocess import run, CalledProcessError
 import os
 import sys
 import json
+import time
 
 # Get the absolute path of the parent directory
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts'))
@@ -176,10 +177,26 @@ def destroy_user_env_vm(vm_name, macvlan_name):
     vm_manager.delete_macvlan_for_vm(macvlan_manager, macvlan_name)
 
 
+def check_args_type_create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
+    # Check types of the arguments
+    if not isinstance(ubuntu_version, str):
+        raise TypeError(f"Expected 'ubuntu_version' to be a string, but got {type(ubuntu_version).__name__}")
+    
+    if not isinstance(vm_name, str):
+        raise TypeError(f"Expected 'vm_name' to be a string, but got {type(vm_name).__name__}")
+    
+    if not isinstance(root_size, str):
+        raise TypeError(f"Expected 'root_size' to be a string, but got {type(root_size).__name__}")
+    
+    if not isinstance(user_info, dict):
+        raise TypeError(f"Expected 'user_info' to be a JSON string, but got {type(user_info).__name__}")
+    
+    
+
 
 def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
     
-    # print(user_info)
+    check_args_type_create_user_env_vm(ubuntu_version, vm_name, root_size, user_info)
 
     # Extracting the information
     macvlan_name = user_info["macvlan_interface"]
@@ -193,6 +210,7 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
     vm_manager = VmManager()
     
     vm_manager.create_user_vm(ubuntu_version, vm_name, root_size)
+    time.sleep(20)
     print(macvlan_ip_addr)
 
     vm_manager.create_macvlan_for_vm(macvlan_manager, macvlan_name)
@@ -232,9 +250,9 @@ user_info = {
 # --------------
 # Destroying user env
 
-# vm_name = "testvm"
-# macvlan_interface = "macvlan_testvm"
-# destroy_user_env_vm(vm_name, macvlan_interface)
+vm_name = "testvm"
+macvlan_interface = "macvlan_testvm"
+destroy_user_env_vm(vm_name, macvlan_interface)
 # ---------------
 
 
