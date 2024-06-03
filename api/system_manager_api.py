@@ -186,15 +186,25 @@ def flash_jetson(usb_instance):
 
 
 
+# --------------
+# Destroying user env
 
 vm_name = "testvm"
 macvlan_interface = "macvlan_testvm"
-
 destroy_user_env_vm(vm_name, macvlan_interface)
+# ---------------
+
+
+# ------------------
+# allocating users in the testbed
 
 #allocate_active_users("cedric", 75)
 #allocate_active_users("cedric", 76)
+# ----------------------------
 
+
+
+# -----------------------
 #testbed_reset()
 #turn_on_all_nodes()
 #clear_active_users()
