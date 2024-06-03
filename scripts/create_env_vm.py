@@ -84,6 +84,21 @@ def attach_macvlan_to_vm(vm_name, macvlan_name):
         print("STDERR:", e.stderr)
 
 
+def set_nfs_ip_addr(vm_name, nfs_ip_addr):
+    interface_name = "enp6s0"
+    if interface_check(vm_name, interface_name):
+        command_add_ip = ["lxc", "exec", vm_name, "--", "ip" ,"addr", "add", nfs_ip_addr, "dev", interface_name]
+
+        result = subprocess.run(command_add_ip,
+                                capture_output=True, 
+                                text=True, 
+                                check=True)
+
+        command_set_inteface_up = ["lxc", "exec", vm_name, "--", "ip" ,"link", "set", "dev", interface_name, "up"]
+        result = subprocess.run(command_set_inteface_up,
+                                capture_output=True, 
+                                text=True, 
+                                check=True)
 
 # Define the parameters
 ubuntu_version = "24.04"
@@ -109,6 +124,7 @@ print(user_info)
 macvlan_name = user_info["macvlan_interface"]
 user_name = user_info["user_name"]
 macvlan_ip_addr = user_info["macvlan_ip_addr"]
+nfs_ip_addr = user_info["nfs_ip_addr"]
 
 # interface name on which macvlan is to be created
 interface_name = "enp2s0"
@@ -127,4 +143,6 @@ attach_macvlan_to_vm(vm_name, macvlan_name)
 
 res = interface_check(vm_name, "enp6s0")
 print(res)
+
+set_nfs_ip_addr(vm_name, nfs_ip_addr)
 #delete_macvlan_for_vm(macvlan_manager, macvlan_name)
