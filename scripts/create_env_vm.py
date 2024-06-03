@@ -22,6 +22,38 @@ def create_user_vm(ubuntu_version, vm_name, root_size):
 
 
 
+def is_vm_running(vm_name):
+    # Command to check if the instance is running
+    list_command = ["lxc", "list", vm_name, "--format", "json"]
+    
+    try:
+        result = subprocess.run(list_command, capture_output=True, text=True, check=True)
+        instances = json.loads(result.stdout)
+        
+        if instances and instances[0]["name"] == vm_name and instances[0]["status"] == "Running":
+            return True
+        else:
+            return False
+    except subprocess.CalledProcessError as e:
+        print("Failed to execute command:", e)
+        print("STDOUT:\n", e.stdout)
+        print("STDERR:\n", e.stderr)
+        return False
+
+def delete_vm(vm_name):
+    if is_vm_running(vm_name):
+        delete_command = ["lxc", "delete", vm_name, "--force"]
+        try:
+            result = subprocess.run(delete_command, capture_output=True, text=True, check=True)
+            print(f"VM {vm_name} has been deleted.")
+        except subprocess.CalledProcessError as e:
+            print("Failed to delete VM:", e)
+            print("STDOUT:\n", e.stdout)
+            print("STDERR:\n", e.stderr)
+    else:
+        print(f"VM {vm_name} is not running or does not exist.")
+
+
 
 def create_macvlan_for_vm(macvlan_manager, macvlan_name):
 
@@ -155,20 +187,28 @@ nfs_ip_addr = user_info["nfs_ip_addr"]
 # interface name on which macvlan is to be created
 interface_name = "enp2s0"
 
-# create vm for user
-create_user_vm(ubuntu_version, vm_name, root_size)
+
+# #---------------
+# # create vm for user
+# create_user_vm(ubuntu_version, vm_name, root_size)
 
 # macvlan
 macvlan_manager = MacVlan(interface_name)
 
-print(macvlan_ip_addr)
+# print(macvlan_ip_addr)
 
-create_macvlan_for_vm(macvlan_manager, macvlan_name)
+# create_macvlan_for_vm(macvlan_manager, macvlan_name)
 
-attach_macvlan_to_vm(vm_name, macvlan_name)
+# attach_macvlan_to_vm(vm_name, macvlan_name)
 
-res = interface_check(vm_name, "enp6s0")
-print(res)
+# res = interface_check(vm_name, "enp6s0")
+# print(res)
 
-set_nfs_ip_addr(vm_name, nfs_ip_addr)
-#delete_macvlan_for_vm(macvlan_manager, macvlan_name)
+# set_nfs_ip_addr(vm_name, nfs_ip_addr)
+# #----------------
+
+delete_vm(vm_name)
+delete_macvlan_for_vm(macvlan_manager, macvlan_name)
+
+
+
