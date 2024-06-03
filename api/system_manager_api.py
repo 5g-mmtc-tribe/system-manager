@@ -13,6 +13,8 @@ from destroy_env import destroy_user_env
 from user_env import UserEnv
 from jetson_ctl import Jetson
 from ip_addr_manager import IpAddr
+from create_env_vm import VmManager
+from macvlan import MacVlan
 
 
 # Switch imports
@@ -166,6 +168,14 @@ def clear_active_users():
         print("Active Users Cleared")
 
 
+def destroy_user_env_vm(vm_name, macvlan_name):
+    interface_name = "enp2s0"
+    macvlan_manager = MacVlan(interface_name)
+    vm_manager = VmManager()
+    vm_manager.delete_vm(vm_name)
+    vm_manager.delete_macvlan_for_vm(macvlan_manager, macvlan_name)
+
+
 
 
 
@@ -193,10 +203,15 @@ def end_experiment():
     pass
 
 
+vm_name = "testvm"
+macvlan_interface = "macvlan_testvm"
+
+destroy_user_env_vm(vm_name, macvlan_interface)
+
 #allocate_active_users("cedric", 75)
 #allocate_active_users("cedric", 76)
 
-testbed_reset()
+#testbed_reset()
 #turn_on_all_nodes()
 #clear_active_users()
 
