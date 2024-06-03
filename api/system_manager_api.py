@@ -185,22 +185,6 @@ def flash_jetson(usb_instance):
 
 
 
-def allocate_resouces_to_users():
-    # get resource list
-    # get active users list
-    # write some logic based on resouce list and user allocation
-    # set up a new file with resources free
-    # set up a new file with resources in use
-    pass
-
-
-def start_experiment():
-    pass
-
-
-
-def end_experiment():
-    pass
 
 
 vm_name = "testvm"
