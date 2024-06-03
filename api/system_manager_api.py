@@ -177,6 +177,42 @@ def destroy_user_env_vm(vm_name, macvlan_name):
 
 
 
+def create_user_env_vm():
+    # Define the parameters
+    ubuntu_version = "24.04"
+    vm_name = "testvm"
+    root_size = "4GiB"
+    user_info = {
+            "user_name": "testvm",
+            "user_network_id": 75,
+            "user_subnet": "192.168.75.0/24",
+            "nfs_ip_addr": "192.168.75.1/24",
+            "macvlan_interface": "macvlan_testvm",
+            "macvlan_ip_addr": "192.168.75.2/24"
+        }
+    # print(user_info)
+
+    # Extracting the information
+    macvlan_name = user_info["macvlan_interface"]
+    user_name = user_info["user_name"]
+    macvlan_ip_addr = user_info["macvlan_ip_addr"]
+    nfs_ip_addr = user_info["nfs_ip_addr"]
+
+    # interface name on which macvlan is to be created
+    interface_name = "enp2s0"
+    macvlan_manager = MacVlan(interface_name)
+    vm_manager = VmManager()
+    
+    vm_manager.create_user_vm(ubuntu_version, vm_name, root_size)
+    print(macvlan_ip_addr)
+
+    vm_manager.create_macvlan_for_vm(macvlan_manager, macvlan_name)
+
+    vm_manager.attach_macvlan_to_vm(vm_name, macvlan_name)
+
+    res = vm_manager.interface_check(vm_name, "enp6s0")
+    print(res)
+    vm_manager.set_nfs_ip_addr(vm_name, nfs_ip_addr)
 
 
 # TO IMPLEMENT
@@ -185,13 +221,32 @@ def flash_jetson(usb_instance):
 
 
 
+# ----------------------
+# Creating user env
+
+
+create_user_env_vm()
+
+
+
+
+
+
+
+
+
+
+
+# --------------------------
+
+
 
 # --------------
 # Destroying user env
 
-vm_name = "testvm"
-macvlan_interface = "macvlan_testvm"
-destroy_user_env_vm(vm_name, macvlan_interface)
+# vm_name = "testvm"
+# macvlan_interface = "macvlan_testvm"
+# destroy_user_env_vm(vm_name, macvlan_interface)
 # ---------------
 
 
