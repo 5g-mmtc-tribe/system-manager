@@ -161,6 +161,8 @@ class VmManager():
 
 
 
+
+
 # Define the parameters
 ubuntu_version = "24.04"
 vm_name = "testvm"
@@ -178,7 +180,7 @@ user_info = {
     }
 
 
-print(user_info)
+# print(user_info)
 
 
 # Extracting the information
@@ -189,12 +191,10 @@ nfs_ip_addr = user_info["nfs_ip_addr"]
 
 # interface name on which macvlan is to be created
 interface_name = "enp2s0"
-
-
 macvlan_manager = MacVlan(interface_name)
 vm_manager = VmManager()
 
-# #---------------
+#---------------
 # # create vm for user
 # vm_manager.create_user_vm(ubuntu_version, vm_name, root_size)
 
@@ -210,10 +210,10 @@ vm_manager = VmManager()
 # print(res)
 
 # vm_manager.set_nfs_ip_addr(vm_name, nfs_ip_addr)
-# #----------------
+#----------------
 
-vm_manager.delete_vm(vm_name)
-vm_manager.delete_macvlan_for_vm(macvlan_manager, macvlan_name)
+# vm_manager.delete_vm(vm_name)
+# vm_manager.delete_macvlan_for_vm(macvlan_manager, macvlan_name)
 
 
 
