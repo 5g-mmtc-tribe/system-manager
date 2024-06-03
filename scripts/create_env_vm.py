@@ -3,10 +3,6 @@ from network_interface import NetworkInterface
 import json
 from macvlan import MacVlan
 
-
-
-
-
 def create_user_vm(ubuntu_version, vm_name, root_size):
     # Construct the command using an f-string
     command = f"lxc launch ubuntu:{ubuntu_version} {vm_name} --vm --device root,size={root_size}"
@@ -87,9 +83,6 @@ def attach_macvlan_to_vm(vm_name, macvlan_name):
         print("STDOUT:", e.stdout)
         print("STDERR:", e.stderr)
 
-    
-
-
 
 
 # Define the parameters
@@ -112,11 +105,6 @@ user_info = {
 print(user_info)
 
 
-# create vm for user
-
-#create_user_vm(ubuntu_version, vm_name, root_size)
-
-
 # Extracting the information
 macvlan_name = user_info["macvlan_interface"]
 user_name = user_info["user_name"]
@@ -125,13 +113,18 @@ macvlan_ip_addr = user_info["macvlan_ip_addr"]
 # interface name on which macvlan is to be created
 interface_name = "enp2s0"
 
+# create vm for user
+create_user_vm(ubuntu_version, vm_name, root_size)
+
+# macvlan
 macvlan_manager = MacVlan(interface_name)
 
 print(macvlan_ip_addr)
 
-#create_macvlan_for_vm(macvlan_manager, macvlan_name)
+create_macvlan_for_vm(macvlan_manager, macvlan_name)
 
-vm_name = "cedric"
+attach_macvlan_to_vm(vm_name, macvlan_name)
+
 res = interface_check(vm_name, "enp6s0")
 print(res)
 #delete_macvlan_for_vm(macvlan_manager, macvlan_name)
