@@ -12,5 +12,14 @@ Interfaces to manage all the hardware components of the testbed
 
     lxd init --minimal
 
-# Step 3: 
+# Step 3: Navigate in the api folder
+
+    cd system-manager/api
+
+# Step 4: Run the system manager API
+
+    python system_manager_service.py
+
+
+
 
