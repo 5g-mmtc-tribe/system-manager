@@ -12,16 +12,5 @@ Interfaces to manage all the hardware components of the testbed
 
     lxd init --minimal
 
-
-
-To lauch the system manager:
-
-    cd system-manager/api
-
-    python launch.py
-
-
-
-Then follow the instructions as in test_launch.py
- 
+# Step 3: 
 
