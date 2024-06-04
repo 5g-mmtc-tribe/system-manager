@@ -63,14 +63,34 @@ def call_clear_active_users():
         logging.error(e)
         raise HTTPException(status_code=500, detail='Failed to clear active users list')
 
+#---------------------------------------------------------------
 
+# Fuction to reset the testbed(Turn off all nodes)
 
-
-
+@app.post('/testbed_reset')
+def call_testbed_reset():
+    try:
+        system_manager_api.testbed_reset()
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(status_code=500, detail='Failed to reset testbed')
 
 #---------------------------------------------------------------
 
+# Fuction to turn on all nodes
 
+@app.post('/turn_on_all')
+def call_turn_on_all_nodes():
+    try:
+        system_manager_api.turn_on_all_nodes()
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(status_code=500, detail='Failed to turn on all nodes')
+
+#--------------------------------------------------------------
+
+
+#---------------------------------------------------------------
 
 @app.post('/create_env')
 async def call_create_env(request: Request):
