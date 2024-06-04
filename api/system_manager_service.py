@@ -3,13 +3,15 @@
 #-------------------------------------------------------------------------------------------------------------------
 
 from fastapi import FastAPI, Request, HTTPException
-import system_manager_api
+import system_manager_api 
 import logging
 import uvicorn
+from pydantic import BaseModel
+from models import DestroyEnvVMRequest  
+
 
 logging.basicConfig(level=logging.ERROR)
 app = FastAPI()
-app.post('/get_active_jetsons_list')(system_manager_api.get_active_jetsons_list)
 
 #--------------------------------------------------
 
@@ -23,6 +25,20 @@ def call_get_resource_list():
         raise HTTPException(status_code=500, detail='Failed to get resource list')
 
 #--------------------------------------------------
+
+@app.post('/destroy_env_vm')
+async def call_destroy_env_vm(request: DestroyEnvVMRequest):
+    try:
+        logging.info(f"Received request data: {request}")
+        # Call the function with the extracted data
+        system_manager_api.destroy_user_env_vm(request.vm_name, request.macvlan_interface)
+        return {"status": "success"}
+
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail='Failed to destroy VM environment')
+
+
 
 @app.post('/create_env')
 async def call_create_env(request: Request):
