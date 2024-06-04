@@ -40,18 +40,17 @@ async def call_destroy_env_vm(request: DestroyEnvVMRequest):
 
 
 #---------------------------------------------------------------
-### WIP
 @app.post('/create_user')
 async def create_user(request: CreateUser):
     try:
         logging.info(f"Received request data: {request}")
         # Call the function with the extracted data
-        system_manager_api.destroy_user_env_vm(request.vm_name, request.macvlan_interface)
-        return {"status": "success"}
+        system_manager_api.allocate_active_users(request.user_name, request.user_network_id)
+        return {"status": "User Created"}
 
     except Exception as e:
         logging.error(f"An error occurred: {e}")
-        raise HTTPException(status_code=500, detail='Failed to destroy VM environment')
+        raise HTTPException(status_code=500, detail='Failed to create User')
 
 
 #---------------------------------------------------------------
