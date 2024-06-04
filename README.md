@@ -1,5 +1,6 @@
 ## system-manager
-Interfaces to manage all the hardware components of the testbed
+
+The system-manager provides an API for the user to manage all the hardware and software components of the testbed.
 
 
 ## Getting started
