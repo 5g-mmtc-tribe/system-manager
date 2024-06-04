@@ -226,27 +226,27 @@ def flash_jetson(usb_instance):
 # Creating user env
 
 # Define the parameters
-ubuntu_version = "24.04"
-vm_name = "testvm"
-root_size = "4GiB"
-user_info = {
-        "user_name": "testvm",
-        "user_network_id": 75,
-        "user_subnet": "192.168.75.0/24",
-        "nfs_ip_addr": "192.168.75.1/24",
-        "macvlan_interface": "macvlan_testvm",
-        "macvlan_ip_addr": "192.168.75.2/24"
-    }
-#create_user_env_vm(ubuntu_version, vm_name, root_size, user_info)
+# ubuntu_version = "24.04"
+# vm_name = "testvm"
+# root_size = "4GiB"
+# user_info = {
+#         "user_name": "testvm",
+#         "user_network_id": 75,
+#         "user_subnet": "192.168.75.0/24",
+#         "nfs_ip_addr": "192.168.75.1/24",
+#         "macvlan_interface": "macvlan_testvm",
+#         "macvlan_ip_addr": "192.168.75.2/24"
+#     }
+# create_user_env_vm(ubuntu_version, vm_name, root_size, user_info)
 
 # --------------------------
 #
 # --------------
 # Destroying user env
 
-vm_name = "testvm"
-macvlan_interface = "macvlan_testvm"
-destroy_user_env_vm(vm_name, macvlan_interface)
+# vm_name = "testvm"
+# macvlan_interface = "macvlan_testvm"
+# destroy_user_env_vm(vm_name, macvlan_interface)
 # ---------------
 
 
@@ -256,16 +256,3 @@ destroy_user_env_vm(vm_name, macvlan_interface)
 #allocate_active_users("cedric", 75)
 #allocate_active_users("cedric", 76)
 # ----------------------------
-
-
-
-# -----------------------
-#testbed_reset()
-#turn_on_all_nodes()
-#clear_active_users()
-
-# #get_resource_list()
-#power_all_off()
-
-
-
