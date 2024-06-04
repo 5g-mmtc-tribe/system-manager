@@ -43,11 +43,6 @@ def destroy_env(config: UserEnv):
     destroy_user_env(config)
 
 
-def get_active_jetsons_list():
-    jetson = Jetson()
-    print(jetson.list_devices())
-
-
 
 def get_resource_list():
     # Get the absolute path to the resource.json file
