@@ -55,6 +55,22 @@ async def create_user(request: CreateUser):
 
 #---------------------------------------------------------------
 
+@app.post('/clear_active_users')
+def call_clear_active_users():
+    try:
+        system_manager_api.clear_active_users()
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(status_code=500, detail='Failed to clear active users list')
+
+
+
+
+
+
+#---------------------------------------------------------------
+
+
 
 @app.post('/create_env')
 async def call_create_env(request: Request):
