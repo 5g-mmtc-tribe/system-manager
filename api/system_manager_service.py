@@ -91,19 +91,6 @@ def call_turn_on_all_nodes():
 
 
 #---------------------------------------------------------------
-
-@app.post('/create_env')
-async def call_create_env(request: Request):
-    try:
-        config_json = await request.json()
-        print("XXX TODO XXX")
-        result = system_manager_api.create_env(config_json)
-        return {"result": result}
-    
-    except Exception as e:
-        logging.error(e)
-        raise HTTPException(status_code=500, detail='Failed to create environment')
-
 #--------------------------------------------------
     
 def run():
