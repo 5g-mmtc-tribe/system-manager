@@ -7,7 +7,7 @@ import system_manager_api
 import logging
 import uvicorn
 from pydantic import BaseModel
-from models import DestroyEnvVMRequest  
+from models import DestroyEnvVMRequest, CreateUser  
 
 
 logging.basicConfig(level=logging.ERROR)
@@ -38,6 +38,23 @@ async def call_destroy_env_vm(request: DestroyEnvVMRequest):
         logging.error(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail='Failed to destroy VM environment')
 
+
+#---------------------------------------------------------------
+### WIP
+@app.post('/create_user')
+async def create_user(request: CreateUser):
+    try:
+        logging.info(f"Received request data: {request}")
+        # Call the function with the extracted data
+        system_manager_api.destroy_user_env_vm(request.vm_name, request.macvlan_interface)
+        return {"status": "success"}
+
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail='Failed to destroy VM environment')
+
+
+#---------------------------------------------------------------
 
 
 @app.post('/create_env')
