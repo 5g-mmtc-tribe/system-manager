@@ -34,14 +34,13 @@ with open(switch_config, 'r') as file:
     switch_config = json.load(file)
 
 
-
+## for containers
 def create_env(config: UserEnv):
     launch_env(config)
         
-
+## For containers
 def destroy_env(config: UserEnv):
     destroy_user_env(config)
-
 
 
 def get_resource_list():
@@ -163,7 +162,7 @@ def clear_active_users():
     if existing_users == []:
         print("Active Users Cleared")
 
-
+## For VM
 def destroy_user_env_vm(vm_name, macvlan_name):
     interface_name = "enp2s0"
     macvlan_manager = MacVlan(interface_name)
@@ -188,7 +187,7 @@ def check_args_type_create_user_env_vm(ubuntu_version, vm_name, root_size, user_
     
     
 
-
+## For VM
 def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
     
     check_args_type_create_user_env_vm(ubuntu_version, vm_name, root_size, user_info)
