@@ -162,6 +162,25 @@ def clear_active_users():
     if existing_users == []:
         print("Active Users Cleared")
 
+
+def get_user_info(user_name, user_network_id):
+    current_dir = os.path.dirname(__file__)
+    data_dir = os.path.join(current_dir, '../data')
+    active_users_path = os.path.join(data_dir, 'active_users.json')
+    
+    with open(active_users_path, 'r') as file:
+        active_users = json.load(file)
+
+    # Filter the list based on user_name and user_network_id
+    filtered_users = [user for user in active_users if user['user_name'] == user_name and user['user_network_id'] == user_network_id][0]
+    # Convert the filtered list to a JSON object
+    filtered_json = json.dumps(filtered_users)
+    
+    return filtered_json
+
+
+
+
 ## For VM
 def destroy_user_env_vm(vm_name, macvlan_name):
     interface_name = "enp2s0"
@@ -222,6 +241,9 @@ def flash_jetson(usb_instance):
 
 
 
+
+
+print(get_user_info('cedric', 97))
 # ----------------------
 # Creating user env
 
