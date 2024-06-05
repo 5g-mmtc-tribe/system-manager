@@ -5,20 +5,20 @@ The system-manager provides an API for the user to manage all the hardware and s
 
 ## Getting started
 
-# Step 1: Installation 
+## Step 1: Installation 
 (To be done once only)
 
      sudo snap install lxd --channel=latest/stable
 
-# Step 2: LXD initialization
+## Step 2: LXD initialization
 
     lxd init --minimal
 
-# Step 3: Navigate in the /system-manager/api folder
+## Step 3: Navigate in the /system-manager/api folder
 
     cd system-manager/api
 
-# Step 4: Run the system manager API
+## Step 4: Run the system manager API
 
     python system_manager_service.py
 
