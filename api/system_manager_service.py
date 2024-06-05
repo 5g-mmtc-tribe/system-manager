@@ -14,7 +14,8 @@ logging.basicConfig(level=logging.ERROR)
 app = FastAPI()
 
 #--------------------------------------------------
-
+# Get resource list
+#--------------------------------------------------
 @app.post('/get_resource_list')
 def call_get_resource_list():
     try:
