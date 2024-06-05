@@ -1,4 +1,4 @@
-## system-manager
+# system-manager
 
 The system-manager provides an API for the user to manage all the hardware and software components of the testbed.
 
