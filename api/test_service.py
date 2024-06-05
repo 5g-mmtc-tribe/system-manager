@@ -31,10 +31,10 @@ print(response.status_code)
 print(response.json())
 
 #-------------------------------------------------------------------------------------------------------------------
-## Clearing active users
+# Clearing active users
 
 
-# response = requests.post('http://127.0.0.1:8000/clear_active_users', json=data)
+# response = requests.post('http://127.0.0.1:8000/clear_active_users')
 # print(response.status_code)
 # print(response.json())
 
@@ -81,14 +81,14 @@ user_info_data = json.loads(response_user_info.json())
 #-------------------------------------------------------------------------------------------------------------------
 # Destroying user environment VM
 #-------------------------------------------------------------------------------------------------------------------
-data = {
-    'vm_name': user_info_data['user_name'],
-    'macvlan_interface': user_info_data['macvlan_interface']
-}
+# data = {
+#     'vm_name': user_info_data['user_name'],
+#     'macvlan_interface': user_info_data['macvlan_interface']
+# }
 
-response = requests.post('http://127.0.0.1:8000/destroy_env_vm', json=data)
-print(response.status_code)
-print(response.json())
+# response = requests.post('http://127.0.0.1:8000/destroy_env_vm', json=data)
+# print(response.status_code)
+# print(response.json())
 
 
 
@@ -97,19 +97,19 @@ print(response.json())
 #----------------------------------------------------
 
 
-# data = {
-#     'ubuntu_version': '24.04',
-#     'vm_name': user_info_data['user_name'],
-#     'root_size': '4GiB',
-#     'user_info': user_info_data
-# }
+data = {
+    'ubuntu_version': '24.04',
+    'vm_name': user_info_data['user_name'],
+    'root_size': '4GiB',
+    'user_info': user_info_data
+}
 
-# # Create Pydantic model instance
-# request_data = CreateUserEnvVMRequest(**data)
+# Create Pydantic model instance
+request_data = CreateUserEnvVMRequest(**data)
 
-# # Send request
-# response = requests.post('http://127.0.0.1:8000/create_user_env_vm', json=request_data.dict())
-# print(response.status_code)
-# print(response.json())
+# Send request
+response = requests.post('http://127.0.0.1:8000/create_user_env_vm', json=request_data.dict())
+print(response.status_code)
+print(response.json())
 
 #----------------------------------------------------
