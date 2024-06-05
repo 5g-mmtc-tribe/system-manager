@@ -11,6 +11,7 @@ The system-manager provides an API for the user to manage all the hardware and s
      sudo snap install lxd --channel=latest/stable
 
 ## Step 2: LXD initialization
+(To be done once only)
 
     lxd init --minimal
 
