@@ -114,6 +114,25 @@ def call_turn_on_all_nodes():
 #--------------------------------------------------------------
 
 
+#--------------------------------------------------------------
+# Function to get user info
+#--------------------------------------------------------------
+
+@app.post('/get_user_info')
+async def call_get_user_info(request: CreateUser):
+    try:
+        logging.info(f"Received request data: {request}")
+        # Call the function with the extracted data
+        user_info = system_manager_api.get_user_info(request.user_name, request.user_network_id)
+        return user_info
+
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail='Failed to create User')
+
+#--------------------------------------------------------------
+
+
 #---------------------------------------------------------------
 #--------------------------------------------------
     
