@@ -9,6 +9,7 @@ The system-manager provides an API for the user to manage all the hardware and s
 (To be done once only)
 
      sudo snap install lxd --channel=latest/stable
+     pip install fastapi
 
 ## Step 2: LXD initialization
 (To be done once only)
