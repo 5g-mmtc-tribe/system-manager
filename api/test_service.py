@@ -95,7 +95,7 @@ print(response_user_info.json())
 
 # data = {
 #     'ubuntu_version': '24.04',
-#     'vm_name': 'testvm',
+#     'vm_name': user_info_data[''],
 #     'root_size': '4GiB',
 #     'user_info': user_info_data
 # }
