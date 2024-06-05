@@ -22,6 +22,7 @@ The system-manager provides an API for the user to manage all the hardware and s
 
     python system_manager_service.py
 
-### You can now use the API as shown in the examples in the file test_service.py
+
+You can now use the API as shown in the examples in the file test_service.py
 
 
