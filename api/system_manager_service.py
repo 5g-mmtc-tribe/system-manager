@@ -25,7 +25,8 @@ def call_get_resource_list():
         raise HTTPException(status_code=500, detail='Failed to get resource list')
 
 #--------------------------------------------------
-
+# Destroy user env (VM)
+#--------------------------------------------------
 @app.post('/destroy_env_vm')
 async def call_destroy_env_vm(request: DestroyEnvVMRequest):
     try:
