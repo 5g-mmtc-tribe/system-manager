@@ -14,7 +14,7 @@ The system-manager provides an API for the user to manage all the hardware and s
 
     lxd init --minimal
 
-# Step 3: Navigate in the api folder
+# Step 3: Navigate in the /system-manager/api folder
 
     cd system-manager/api
 
