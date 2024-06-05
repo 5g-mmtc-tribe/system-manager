@@ -73,36 +73,31 @@ print(response.json())
 
 
 
-#-----------------------------------------------------------------------
-# Getting user info
-#-----------------------------------------------------------------------
+# #-----------------------------------------------------------------------
+# # Getting user info
+# #-----------------------------------------------------------------------
 data = {
     'user_name': "mehdi",
     'user_network_id': '90'
 }
 
-response = requests.post('http://127.0.0.1:8000/get_user_info', json=data)
-print(response.status_code)
-print(response.json())
-
+response_user_info = requests.post('http://127.0.0.1:8000/get_user_info', json=data)
+print(response_user_info.status_code)
+print(response_user_info.json())
 
 
 #----------------------------------------------------
 # Creating user env
 #----------------------------------------------------
 
+# # Convert JSON string to dictionary
+# user_info_data = json.loads(response_user_info.json())
+
 # data = {
 #     'ubuntu_version': '24.04',
 #     'vm_name': 'testvm',
 #     'root_size': '4GiB',
-#     'user_info': {
-#         'user_name': 'testvm',
-#         'user_network_id': 75,
-#         'user_subnet': '192.168.75.0/24',
-#         'nfs_ip_addr': '192.168.75.1/24',
-#         'macvlan_interface': 'macvlan_testvm',
-#         'macvlan_ip_addr': '192.168.75.2/24'
-#     }
+#     'user_info': user_info_data
 # }
 
 # # Create Pydantic model instance
