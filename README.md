@@ -5,7 +5,8 @@ The system-manager provides an API for the user to manage all the hardware and s
 
 ## Getting started
 
-# Step 1: Installation (To be done once only)
+# Step 1: Installation 
+(To be done once only)
 
      sudo snap install lxd --channel=latest/stable
 
