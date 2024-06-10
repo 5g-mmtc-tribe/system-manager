@@ -24,3 +24,5 @@ class CreateUserEnvVMRequest(BaseModel):
     root_size: str
     user_info: UserNetworkInfo
 
+class TurnNode(BaseModel):
+    node_name :str

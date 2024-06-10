@@ -4,7 +4,7 @@ import os
 import sys
 import json
 import time
-
+import pandas as pd
 # Get the absolute path of the parent directory
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts'))
 sys.path.append(script_path)
@@ -79,6 +79,49 @@ def turn_on_all_nodes():
     switch_interfaces = power.get_switch_interfaces()
     print(switch_interfaces)
     power.turn_all_on()
+
+def turn_on_node(interface):
+    device = switch_config
+    switch = SwitchManager(device_type = device['device_type'],
+                                ip = device['ip'],
+                                port = device['port'],
+                                password = device['password'])
+
+    power = PoeManager(switch)
+    power.turn_on(interface)
+    print(interface,"is up ")
+
+def turn_off_node(interface):
+    device = switch_config
+    switch = SwitchManager(device_type = device['device_type'],
+                                ip = device['ip'],
+                                port = device['port'],
+                                password = device['password'])
+
+    power = PoeManager(switch)
+    power.turn_off(interface)
+    print(interface,"is down ")
+
+# Function to get the switch interface
+def get_switch_interface(device_name: str) -> str:
+    """
+    Get the switch_interface for a given device name.
+
+    Args:
+        device_name (str): The name of the device.
+
+    Returns:
+        str: The switch_interface associated with the given device name.
+
+    Raises:
+        ValueError: If the device name is not found in the DataFrame.
+    """
+    df =pd.DataFrame(get_resource_list())
+    result = df[df['name'] == device_name]
+    if not result.empty:
+        return result.iloc[0]['switch_interface']
+    else:
+        raise ValueError(f"Device name '{device_name}' not found")
 
 
 

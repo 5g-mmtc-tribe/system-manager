@@ -7,7 +7,7 @@ import system_manager_api
 import logging
 import uvicorn
 from pydantic import BaseModel
-from models import DestroyEnvVMRequest, CreateUser,  CreateUserEnvVMRequest
+from models import DestroyEnvVMRequest, CreateUser,  CreateUserEnvVMRequest ,TurnNode
 
 
 logging.basicConfig(level=logging.ERROR)
@@ -112,14 +112,35 @@ def call_turn_on_all_nodes():
         raise HTTPException(status_code=500, detail='Failed to turn on all nodes')
 
 #--------------------------------------------------------------
+# Fuction to turn  on specific node 
 
+@app.post('/turn_on_node')
+def call_turn_on_node(request:TurnNode):
+    try:
+        logging.info(f"Received request data: {request}")
+        interface=system_manager_api.get_switch_interface(request.node_name)
+        system_manager_api.turn_on_node(interface)
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(status_code=500, detail='Failed to turn on node')
+    
+# Fuction to turn off  specific node 
 
+@app.post('/turn_off_node')
+def call_turn_off_node(request:TurnNode):
+    try:
+        logging.info(f"Received request data: {request}")
+        interface=system_manager_api.get_switch_interface(request.node_name)
+        system_manager_api.turn_off_node(interface)
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(status_code=500, detail='Failed to turn off  node')
 #--------------------------------------------------------------
 # Function to get user info
 #--------------------------------------------------------------
 
 @app.post('/get_user_info')
-async def call_get_user_info(request: CreateUser):
+async def call_get_user_info(request:CreateUser):
     try:
         logging.info(f"Received request data: {request}")
         # Call the function with the extracted data

@@ -11,10 +11,10 @@ class PoeManager:
     
 
     def turn_on(self,interface):
-        switch.poe_on(interface)
+        self.switch.poe_on(interface)
 
     def turn_off(self,interface):
-        switch.poe_off(interface)
+        self.switch.poe_off(interface)
 
     def get_switch_interfaces(self):
 
@@ -54,7 +54,6 @@ class PoeManager:
             print(interface)
             self.switch.poe_on(interface)
             time.sleep(7)
-
 
 
 
