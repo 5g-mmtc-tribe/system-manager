@@ -27,7 +27,7 @@ from poe_manager import PoeManager
 
 
 # Specify the path to your JSON file
-switch_config = "switch/switch_config.json"
+switch_config = "../switch/switch_config.json"
 
 # Open and load the JSON file
 with open(switch_config, 'r') as file:
@@ -183,7 +183,8 @@ def get_user_info(user_name, user_network_id):
 
 ## For VM
 def destroy_user_env_vm(vm_name, macvlan_name):
-    interface_name = "enp2s0"
+    #interface_name = "enp2s0"
+    interface_name = "eno3"
     macvlan_manager = MacVlan(interface_name)
     vm_manager = VmManager()
     vm_manager.delete_vm(vm_name)
@@ -218,7 +219,8 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
     nfs_ip_addr = user_info["nfs_ip_addr"]
 
     # interface name on which macvlan is to be created
-    interface_name = "enp2s0"
+    #interface_name = "enp2s0"
+    interface_name = "eno3"
     macvlan_manager = MacVlan(interface_name)
     vm_manager = VmManager()
     
@@ -243,7 +245,7 @@ def flash_jetson(usb_instance):
 
 
 
-print(get_user_info('cedric', 97))
+#print(get_user_info('cedric', 97))
 # ----------------------
 # Creating user env
 

@@ -196,7 +196,7 @@ vm_manager = VmManager()
 
 #---------------
 # # create vm for user
-# vm_manager.create_user_vm(ubuntu_version, vm_name, root_size)
+#vm_manager.create_user_vm(ubuntu_version, vm_name, root_size)
 
 # # macvlan
 
@@ -212,7 +212,7 @@ vm_manager = VmManager()
 # vm_manager.set_nfs_ip_addr(vm_name, nfs_ip_addr)
 #----------------
 
-# vm_manager.delete_vm(vm_name)
+#vm_manager.delete_vm(vm_name)
 # vm_manager.delete_macvlan_for_vm(macvlan_manager, macvlan_name)
 
 

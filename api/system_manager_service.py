@@ -137,8 +137,12 @@ async def call_get_user_info(request: CreateUser):
 #--------------------------------------------------
     
 def run():
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run(app, host="193.55.250.148", port=8083)
 
 run()
     
 #-------------------------------------------------------------------------------------------------------------------
+"""
+
+"sudo adduser $USER lxd"  for permision
+"""
