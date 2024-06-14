@@ -10,7 +10,8 @@ class VmManager():
     def start_vm(self, vm_name):
         command = ['lxc', 'start', vm_name]
         try:
-            subprocess.run(command, check=True)
+            result =subprocess.run(command, check=True)
+            print("STDOUT:", result.stdout)
         except subprocess.CalledProcessError as e:
             # Print the error details
             print("Command failed with return code:", e.returncode)
@@ -22,7 +23,8 @@ class VmManager():
     def stop_vm(self, vm_name):
         command = ['lxc', 'stop', vm_name, '--force']
         try:
-            subprocess.run(command, check=True)
+            result =subprocess.run(command, check=True)
+            print("STDOUT:", result.stdout)
         except subprocess.CalledProcessError as e:
             # Print the error details
             print("Command failed with return code:", e.returncode)
