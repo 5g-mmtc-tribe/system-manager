@@ -62,6 +62,24 @@ async def call_create_user_env_vm(request: CreateUserEnvVMRequest):
         logging.error(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail='Failed to create VM environment')
 
+#---------------------------------------------------------------
+# stop user vm  
+#---------------------------------------------------------------
+@app.post('/stop_vm')
+async def call_create_stop_user_vm(request: DestroyEnvVMRequest):
+    try:
+        logging.info(f"Received request data: {request}")
+
+        # Call the function with the extracted data
+        system_manager_api.stop_user_vm(
+            request.vm_name  # Convert Pydantic model to dictionary
+        )
+        return {"status": "User vm stopped"}
+
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail='Failed to stop  VM ')
+
 
 #---------------------------------------------------------------
 @app.post('/create_user')

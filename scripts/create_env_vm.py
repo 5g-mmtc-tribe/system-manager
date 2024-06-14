@@ -6,7 +6,30 @@ from macvlan import MacVlan
 
 
 class VmManager():
-    
+
+    def start_vm(self, vm_name):
+        command = ['lxc', 'start', vm_name]
+        try:
+            subprocess.run(command, check=True)
+        except subprocess.CalledProcessError as e:
+            # Print the error details
+            print("Command failed with return code:", e.returncode)
+            print("Command output:", e.output)
+            print("STDOUT:", e.stdout)
+            print("STDERR:", e.stderr)
+        
+
+    def stop_vm(self, vm_name):
+        command = ['lxc', 'stop', vm_name, '--force']
+        try:
+            subprocess.run(command, check=True)
+        except subprocess.CalledProcessError as e:
+            # Print the error details
+            print("Command failed with return code:", e.returncode)
+            print("Command output:", e.output)
+            print("STDOUT:", e.stdout)
+            print("STDERR:", e.stderr)
+
     
     def create_user_vm(self, ubuntu_version, vm_name, root_size):
         # Construct the command using an f-string
@@ -16,12 +39,14 @@ class VmManager():
             result = subprocess.run(command, shell=True, capture_output=True, text=True, check=True)
             # Print the output if successful
             print("STDOUT:", result.stdout)
+            return({"created":True})
         except subprocess.CalledProcessError as e:
             # Print the error details
             print("Command failed with return code:", e.returncode)
             print("Command output:", e.output)
             print("STDOUT:", e.stdout)
             print("STDERR:", e.stderr)
+            return({"created":False})
 
 
 
