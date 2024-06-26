@@ -13,6 +13,28 @@ class VmManager():
     bsp_path = os.path.join(data_dir, 'jetson_linux_r35.4.1_aarch64.tbz2')
     rootfs_path = os.path.join(data_dir, 'tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2')
     def start_vm(self, vm_name):
+        # To flash the jetson, the usb must be inside the vm. here's a way to do it.
+        command_librray_install=   ["lxc", "config","device","remove" ,vm_name,  "Nvidia"]
+        print("command",command_librray_install)
+        try:
+            result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+            print("STDOUT:", result.stdout)
+        except subprocess.CalledProcessError as e:
+            print("Failed to execute command:", e)
+            print("STDOUT:\n", e.stdout)
+            print("STDERR:\n", e.stderr)
+            return
+        # To flash the jetson, the usb must be inside the vm. here's a way to do it.
+        command_librray_install=   ["lxc", "config","device","add" ,vm_name,  "Nvidia" ,"usb", "vendorid=0955", "productid=7e19"]
+        print("command",command_librray_install)
+        try:
+            result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+            print("STDOUT:", result.stdout)
+        except subprocess.CalledProcessError as e:
+            print("Failed to execute command:", e)
+            print("STDOUT:\n", e.stdout)
+            print("STDERR:\n", e.stderr)
+            return
         command = ['lxc', 'start', vm_name]
         try:
             result =subprocess.run(command, check=True)
@@ -26,6 +48,7 @@ class VmManager():
         
 
     def stop_vm(self, vm_name):
+
         command = ['lxc', 'stop', vm_name, '--force']
         try:
             result =subprocess.run(command, check=True)
