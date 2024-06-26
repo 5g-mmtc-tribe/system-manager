@@ -43,7 +43,7 @@ user_info_data = json.loads(response_user_info.json())
 #-------------------------------------------------------------------------------------------------------------------
 # Destroying user environment VM
 #------------------------------------------------------------------------------------------------------------------
-"""
+
 data = {
     'vm_name': user_info_data['user_name'],
     'macvlan_interface': user_info_data['macvlan_interface']
@@ -52,12 +52,11 @@ data = {
 response = requests.post('http://193.55.250.148:8083/destroy_env_vm', json=data)
 print(response.status_code)
 print(response.json())
-"""
 #----------------------------------------------------
 # Creating user env
 #----------------------------------------------------
 
-user_env_info = {
+"""user_env_info = {
     'ubuntu_version': '24.04',
    'vm_name': user_info_data['user_name'],
      'root_size': '40GiB',
@@ -70,5 +69,4 @@ request_data = CreateUserEnvVMRequest(**user_env_info)
 # # Send request
 response = requests.post('http://193.55.250.148:8083/create_user_env_vm', json=request_data.dict())
 print(response.status_code)
-print(response.json())
-
+print(response.json())"""

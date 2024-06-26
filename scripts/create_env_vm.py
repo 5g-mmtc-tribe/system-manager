@@ -176,7 +176,7 @@ class VmManager():
 
 
     def set_nfs_ip_addr(self, vm_name, nfs_ip_addr):
-        interface_name = "enp5s0"
+        interface_name = "enp6s0"
         
         if self.interface_check(vm_name, interface_name):
             # Command to check current IP addresses
@@ -196,6 +196,7 @@ class VmManager():
             
             # Add the IP address if not already allocated
             command_add_ip = ["lxc", "exec", vm_name, "--", "ip", "addr", "add", nfs_ip_addr, "dev", interface_name]
+            print(command_add_ip)
             try:
                 result = subprocess.run(command_add_ip, capture_output=True, text=True, check=True)
                 print(f"IP address {nfs_ip_addr} added to {interface_name}.")
@@ -207,6 +208,7 @@ class VmManager():
             
             # Set the interface up
             command_set_interface_up = ["lxc", "exec", vm_name, "--", "ip", "link", "set", "dev", interface_name, "up"]
+            print(command_set_interface_up)
             try:
                 result = subprocess.run(command_set_interface_up, capture_output=True, text=True, check=True)
                 print(f"Interface {interface_name} set up.")
@@ -389,6 +391,7 @@ interface_name = "enp2s0"
 macvlan_manager = MacVlan(interface_name)
 vm_manager = VmManager()
 vm_name="ferna"
+#vm_manager.set_nfs_ip_addr(vm_name ,"192.168.90.1/24")
 #vm_manager.install_library_for_flashing_jetson(vm_name)
 
 #---------------
