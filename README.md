@@ -10,6 +10,18 @@ The system-manager provides an API for the user to manage all the hardware and s
 
      sudo snap install lxd --channel=latest/stable
 
+     Download 	the rootfs and the bsp for jeston flashing into 
+        cd system-manager/data
+        1. bsp
+
+        wget https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v4.1/release/jetson_linux_r35.4.1_aarch64.tbz2
+
+
+        2. rootfs
+
+
+            wget https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v4.1/release/tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2
+
 ## Step 2: LXD initialization
 (To be done once only)
 

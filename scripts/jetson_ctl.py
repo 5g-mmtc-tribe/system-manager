@@ -62,8 +62,8 @@ class Jetson:
 
             return number_devices
 
-# jetson = Jetson()
+#jetson = Jetson()
 
-# number = jetson.number_of_jetsons_xavier_connected()
+#number = jetson.number_of_jetsons_xavier_connected()
 
-# print(jetson.get_xavier_instances())
+#print(jetson.get_xavier_instances())

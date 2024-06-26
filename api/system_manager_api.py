@@ -279,9 +279,11 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
 
         vm_manager.attach_macvlan_to_vm(vm_name, macvlan_name)
 
-        res = vm_manager.interface_check(vm_name, "enp6s0")
+        res = vm_manager.interface_check(vm_name, "enp5s0")
         print(res)
         vm_manager.set_nfs_ip_addr(vm_name, nfs_ip_addr)
+        vm_manager.install_library_for_flashing_jetson(vm_name)
+
     else :# vm alrady exist 
            vm_manager.start_vm(vm_name)
 
