@@ -37,9 +37,21 @@ class IpAddr:
         macvlan_interface_ip = f"{'.'.join(prefix_parts)}/{prefix[1]}"
         return macvlan_interface_ip
 
+    def jetson_ip(self , nfs_ip_addr):
+        
+        # Split the subnet into its components
+        prefix = nfs_ip_addr.split('/')
+        prefix_parts = prefix[0].split('.')
+        
+        # Change the last part of the IP address to '20'
+        prefix_parts[-1] = '20'
+        
+        # Reassemble the IP address and subnet mask
+        jetson_ip = f"{'.'.join(prefix_parts)}"
+        print("jetson_ip",jetson_ip)
+        return jetson_ip 
 
-
-
+ 
 # ip = IpAddr()
 # subnet = ip.user_subnet(4)
 # print(subnet)

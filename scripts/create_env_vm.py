@@ -1,8 +1,12 @@
 import subprocess
 from network_interface import NetworkInterface
 import json
-import os 
+import os ,sys
 from macvlan import MacVlan
+# Get the absolute path of the parent directory
+script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts'))
+sys.path.append(script_path)
+from ip_addr_manager import IpAddr
 
 
 
@@ -218,148 +222,285 @@ class VmManager():
                 print("STDERR:\n", e.stderr)
 
 
-    def install_library_for_flashing_jetson(_self ,vm_name):
-            #installing the bzip2 package
-            command_librray_install = ["lxc", "exec", vm_name, "--", "sudo", "apt-get", "install", "bzip2"]
-            print("command",command_librray_install)
-            
-            try:
-                result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                print("STDOUT:", result.stdout)
-            except subprocess.CalledProcessError as e:
-                print("Failed to execute command:", e)
-                print("STDOUT:\n", e.stdout)
-                print("STDERR:\n", e.stderr)
-                return
-            #installing the qemu
-            command_librray_install = ["lxc", "exec", vm_name, "--", "sudo", "add-apt-repository", "universe"]
-            print("command",command_librray_install)
-            try:
-                result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                print("STDOUT:", result.stdout)
-            except subprocess.CalledProcessError as e:
-                print("Failed to execute command:", e)
-                print("STDOUT:\n", e.stdout)
-                print("STDERR:\n", e.stderr)
-                return
-            #installing the Update 
-            command_librray_install = ["lxc", "exec", vm_name, "--", "sudo","apt-get" ,"update"]
-            print("command",command_librray_install)
-            try:
-                result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                print("STDOUT:", result.stdout)
-            except subprocess.CalledProcessError as e:
-                print("Failed to execute command:", e)
-                print("STDOUT:\n", e.stdout)
-                print("STDERR:\n", e.stderr)
-                return
-            # copy the the jeston the rootfs and the bsp to the vm 
-            command_librray_install = ["sudo","lxc", "file","push" ,VmManager.bsp_path ,vm_name+"/root/" ]
-            print("command",command_librray_install)
-            try:
-                result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                print("STDOUT:", result.stdout) 
-            except subprocess.CalledProcessError as e:
-                print("Failed to execute command:", e)
-                print("STDOUT:\n", e.stdout)
-                print("STDERR:\n", e.stderr)
-                return
-            command_librray_install = ["sudo","lxc", "file","push" ,VmManager.rootfs_path ,vm_name+"/root/"]
-            print("command",command_librray_install)
-            try:
-                result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                print("STDOUT:", result.stdout) 
-            except subprocess.CalledProcessError as e:
-                print("Failed to execute command:", e)
-                print("STDOUT:\n", e.stdout)
-                print("STDERR:\n", e.stderr)
-                return
-             #extracting the jeston the rootfs and the bsp. 
-            command_librray_install = ["lxc", "exec", vm_name, "--", "sudo", "tar","-xf" ,"/root/jetson_linux_r35.4.1_aarch64.tbz2" ,"-C","/root"]
-            print("command",command_librray_install)
-            try:
-                result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                print("STDOUT:", result.stdout) 
-            except subprocess.CalledProcessError as e:
-                print("Failed to execute command:", e)
-                print("STDOUT:\n", e.stdout)
-                print("STDERR:\n", e.stderr)
-                return
-            command_librray_install = ["lxc", "exec", vm_name,  "--","tar", "xpf" ,"/root/tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2", "-C","/root/Linux_for_Tegra/rootfs"]
-            print("command",command_librray_install)
-            try:
-                result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                print("STDOUT:", result.stdout) 
-            except subprocess.CalledProcessError as e:
-                print("Failed to execute command:", e)
-                print("STDOUT:\n", e.stdout)
-                print("STDERR:\n", e.stderr)
-                return
-            # apply_binaries for jetson
-            command_librray_install = ["lxc", "exec", vm_name, "--", "sudo", "apt-get", "install", "qemu-user-static"]
-            print("command",command_librray_install)
-            try:
-                result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                print("STDOUT:", result.stdout)
-            except subprocess.CalledProcessError as e:
-                print("Failed to execute command:", e)
-                print("STDOUT:\n", e.stdout)
-                print("STDERR:\n", e.stderr)
-                return
-            command_librray_install =["lxc", "exec", vm_name, "--",  "/root/Linux_for_Tegra/apply_binaries.sh"]
-            print("command",command_librray_install)
-            try:
-                result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                print("STDOUT:", result.stdout)
-            except subprocess.CalledProcessError as e:
-                print("Failed to execute command:", e)
-                print("STDOUT:\n", e.stdout)
-                print("STDERR:\n", e.stderr)
-                return
-            #installing the libraries for  flashing the jetson
-            command_librray_install = ["lxc", "exec", vm_name, "--", "sudo",   "apt-get", "install", "-y" ,"lz4" ]
-            print("command",command_librray_install)
-            try:
-                result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                print("STDOUT:", result.stdout)
-            except subprocess.CalledProcessError as e:
-                print("Failed to execute command:", e)
-                print("STDOUT:\n", e.stdout)
-                print("STDERR:\n", e.stderr)
-                return
-            
-            command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "apt-get" ,"install" ,"libxml2-utils"]
-            print("command",command_librray_install)
-            try:
-                result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                print("STDOUT:", result.stdout)
-            except subprocess.CalledProcessError as e:
-                print("Failed to execute command:", e)
-                print("STDOUT:\n", e.stdout)
-                print("STDERR:\n", e.stderr)
-                return
-            # Setting up the NFS server inside the VM
-            command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "apt" ,"install" ,"-y","nfs-kernel-server"]
-            print("command",command_librray_install)
-            try:
-                result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                print("STDOUT:", result.stdout)
-            except subprocess.CalledProcessError as e:
-                print("Failed to execute command:", e)
-                print("STDOUT:\n", e.stdout)
-                print("STDERR:\n", e.stderr)
-                return
-            # To flash the jetson, the usb must be inside the vm. here's a way to do it.
-            command_librray_install=   ["lxc", "config","device","add" ,vm_name,  "Nvidia" ,"usb", "vendorid=0955", "productid=7e19"]
-            print("command",command_librray_install)
-            try:
-                result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                print("STDOUT:", result.stdout)
-            except subprocess.CalledProcessError as e:
-                print("Failed to execute command:", e)
-                print("STDOUT:\n", e.stdout)
-                print("STDERR:\n", e.stderr)
-                return
+    def install_library_for_flashing_jetson(_self ,vm_name ,nfs_ip_addres):
+                ip_addr = IpAddr()
+                jetson_ip=ip_addr.jetson_ip(nfs_ip_addres)
+                
+                #installing the bzip2 package
+                
+                command_librray_install = ["lxc", "exec", vm_name, "--", "sudo", "apt-get", "install", "bzip2"]
+                print("command",command_librray_install)
+                
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                #installing the qemu
+                command_librray_install = ["lxc", "exec", vm_name, "--", "sudo", "add-apt-repository", "universe"]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                #installing the Update 
+                command_librray_install = ["lxc", "exec", vm_name, "--", "sudo","apt-get" ,"update"]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                # copy the the jeston the rootfs and the bsp to the vm 
+                command_librray_install = ["sudo","lxc", "file","push" ,VmManager.bsp_path ,vm_name+"/root/" ]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout) 
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                command_librray_install = ["sudo","lxc", "file","push" ,VmManager.rootfs_path ,vm_name+"/root/"]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout) 
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                    #extracting the jeston the rootfs and the bsp. 
+                command_librray_install = ["lxc", "exec", vm_name, "--", "sudo", "tar","-xf" ,"/root/jetson_linux_r35.4.1_aarch64.tbz2" ,"-C","/root"]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout) 
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                command_librray_install = ["lxc", "exec", vm_name,  "--","tar", "xpf" ,"/root/tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2", "-C","/root/Linux_for_Tegra/rootfs"]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout) 
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                # apply_binaries for jetson
+                command_librray_install = ["lxc", "exec", vm_name, "--", "sudo", "apt-get", "install", "qemu-user-static"]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                command_librray_install =["lxc", "exec", vm_name, "--",  "/root/Linux_for_Tegra/apply_binaries.sh"]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                #installing the libraries for  flashing the jetson
+                command_librray_install = ["lxc", "exec", vm_name, "--", "sudo",   "apt-get", "install", "-y" ,"lz4" ]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                
+                command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "apt-get" ,"install" ,"libxml2-utils"]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+
+                # To flash the jetson, the usb must be inside the vm. here's a way to do it.
+                command_librray_install=   ["lxc", "config","device","add" ,vm_name,  "Nvidia" ,"usb", "vendorid=0955", "productid=7e19"]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return 
+                
+                ## Create default user (EULA Acceptance / User configuration)
+                command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "./Linux_for_Tegra/tools/l4t_create_default_user.sh" ,'-u' ,vm_name,'-p',vm_name ,'-n',vm_name,'--accept-license']
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                
+                # Create NFS folder to be used on the Jetson (on the VM)
+                
+                vmcommand =["lxc", "exec", vm_name, "--", "sudo"]
+                command_librray_install=   vmcommand +["mkdir" ,"/root/nfsroot" ]
+                
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                
+               
+                vmcommand =["lxc", "exec", vm_name, "--"]
+                command_librray_install = vmcommand +["chown","-R" ,"nobody:nogroup", "/root/nfsroot"]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                command_librray_install = vmcommand+["sudo" ,"chmod" ,"755", "/root/nfsroot"]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+
+                 
+                vmcommand =["lxc", "exec", vm_name, "--"]
+                # Rsync original "rootfs" to "nfsroot"
+                command_librray_install=   vmcommand +["sudo","rsync" ,"-aAXv" ,"Linux_for_Tegra/rootfs/" ,"/root/nfsroot"]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                
+                # Setting up the NFS server inside the VM
+                command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "apt" ,"install" ,"-y","nfs-kernel-server"]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                
+                # echo /etc/exports configuration
+                command = f"echo '/root/nfsroot {jetson_ip}(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000)' > /etc/exports"
+
+                # Construct the lxc exec command
+                lxc_command = f"lxc exec {vm_name} -- sh -c \"{command}\""
+                print(lxc_command)
+                # Execute the command using subprocess.run()
+
+                try:
+                    result = subprocess.run(lxc_command , shell=True, capture_output=True, text=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+
+                # Refresh exported NFS configuration to NFS service
+
+                command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "exportfs" ,"-a" ]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                #Restart and enable nfs service
+                command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "systemctl" ,"restart" ,"nfs-kernel-server" ]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "systemctl" ,"enable" ,"nfs-kernel-server" ]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+                # Install binutils to Image extraction (gzip format)
+                command_librray_install=   ["lxc", "exec", vm_name, "--",  "apt" ,"install" ,"-y" ,"binutils" ]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return
+    
+               
+
+
+
+
 # Define the parameters
 ubuntu_version = "24.04"
 vm_name = "testvm"
@@ -391,8 +532,12 @@ interface_name = "enp2s0"
 macvlan_manager = MacVlan(interface_name)
 vm_manager = VmManager()
 vm_name="ferna"
+ip_addr = IpAddr()
+
+
+
 #vm_manager.set_nfs_ip_addr(vm_name ,"192.168.90.1/24")
-#vm_manager.install_library_for_flashing_jetson(vm_name)
+#vm_manager.install_library_for_flashing_jetson(vm_name,"192.168.20.10/24")
 
 #---------------
 # # create vm for user
