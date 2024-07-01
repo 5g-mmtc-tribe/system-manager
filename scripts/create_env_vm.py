@@ -67,7 +67,7 @@ class VmManager():
     
     def create_user_vm(self, ubuntu_version, vm_name, root_size):
         # Construct the command using an f-string
-        command = f"lxc launch ubuntu:{ubuntu_version} {vm_name} --vm --device root,size={root_size}"
+        command = f"lxc launch ubuntu:{ubuntu_version} {vm_name} --vm --device root,size={root_size} -c limits.cpu=4 -c limits.memory=4GiB"
         print("the commande ",command)
         try:
             # Execute the command
@@ -118,7 +118,7 @@ class VmManager():
 
 
 
-    def create_macvlan_for_vm(self, macvlan_manager, macvlan_name):
+    def create_macvlan_for_vm(self, macvlan_manager, macvlan_name,macvlan_ip_addr) :
 
         if macvlan_manager.macvlan_exists(macvlan_name) == False:
             macvlan_manager.create_macvlan(macvlan_name)
@@ -228,7 +228,7 @@ class VmManager():
                 
                 #installing the bzip2 package
                 
-                command_librray_install = ["lxc", "exec", vm_name, "--", "sudo", "apt-get", "install", "bzip2"]
+                """command_librray_install = ["lxc", "exec", vm_name, "--", "sudo", "apt-get", "install", "bzip2"]
                 print("command",command_librray_install)
                 
                 try:
@@ -272,7 +272,7 @@ class VmManager():
                     print("STDOUT:\n", e.stdout)
                     print("STDERR:\n", e.stderr)
                     return
-                command_librray_install = ["sudo","lxc", "file","push" ,VmManager.rootfs_path ,vm_name+"/root/"]
+                command_librray_install = ["sudo","lxc", "file","push" ,VmManager.rootfs_path ,vm_name+"/root/"] 
                 print("command",command_librray_install)
                 try:
                     result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
@@ -313,7 +313,7 @@ class VmManager():
                     print("Failed to execute command:", e)
                     print("STDOUT:\n", e.stdout)
                     print("STDERR:\n", e.stderr)
-                    return
+                    return"""
                 command_librray_install =["lxc", "exec", vm_name, "--",  "/root/Linux_for_Tegra/apply_binaries.sh"]
                 print("command",command_librray_install)
                 try:
@@ -347,17 +347,7 @@ class VmManager():
                     print("STDERR:\n", e.stderr)
                     return
 
-                # To flash the jetson, the usb must be inside the vm. here's a way to do it.
-                command_librray_install=   ["lxc", "config","device","add" ,vm_name,  "Nvidia" ,"usb", "vendorid=0955", "productid=7e19"]
-                print("command",command_librray_install)
-                try:
-                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                    print("STDOUT:", result.stdout)
-                except subprocess.CalledProcessError as e:
-                    print("Failed to execute command:", e)
-                    print("STDOUT:\n", e.stdout)
-                    print("STDERR:\n", e.stderr)
-                    return 
+
                 
                 ## Create default user (EULA Acceptance / User configuration)
                 command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "./Linux_for_Tegra/tools/l4t_create_default_user.sh" ,'-u' ,vm_name,'-p',vm_name ,'-n',vm_name,'--accept-license']
@@ -370,7 +360,18 @@ class VmManager():
                     print("STDOUT:\n", e.stdout)
                     print("STDERR:\n", e.stderr)
                     return
-                
+                    
+                # To flash the jetson, the usb must be inside the vm. here's a way to do it.
+                command_librray_install=   ["lxc", "config","device","add" ,vm_name,  "Nvidia" ,"usb", "vendorid=0955", "productid=7e19"]
+                print("command",command_librray_install)
+                try:
+                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
+                    print("STDOUT:", result.stdout)
+                except subprocess.CalledProcessError as e:
+                    print("Failed to execute command:", e)
+                    print("STDOUT:\n", e.stdout)
+                    print("STDERR:\n", e.stderr)
+                    return 
                 # Create NFS folder to be used on the Jetson (on the VM)
                 
                 vmcommand =["lxc", "exec", vm_name, "--", "sudo"]
@@ -495,7 +496,7 @@ class VmManager():
                     print("STDOUT:\n", e.stdout)
                     print("STDERR:\n", e.stderr)
                     return
-    
+            
                
 
 
@@ -531,13 +532,13 @@ nfs_ip_addr = user_info["nfs_ip_addr"]
 interface_name = "enp2s0"
 macvlan_manager = MacVlan(interface_name)
 vm_manager = VmManager()
-vm_name="ferna"
+vm_name="mehdivm"
 ip_addr = IpAddr()
 
 
 
 #vm_manager.set_nfs_ip_addr(vm_name ,"192.168.90.1/24")
-#vm_manager.install_library_for_flashing_jetson(vm_name,"192.168.20.10/24")
+vm_manager.install_library_for_flashing_jetson(vm_name,"192.168.20.10/24")
 
 #---------------
 # # create vm for user

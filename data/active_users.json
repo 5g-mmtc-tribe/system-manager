@@ -1,10 +1,11 @@
 [
     {
-        "user_name": "ferna",
-        "user_network_id": 20,
-        "user_subnet": "192.168.20.0/24",
-        "nfs_ip_addr": "192.168.20.10/24",
-        "macvlan_interface": "macvlan_ferna",
-        "macvlan_ip_addr": "192.168.20.2/24"
+        "user_name": "mehdivm",
+        "user_network_id": 0,
+        "user_subnet": "192.168.0.0/24",
+        "nfs_ip_addr": "192.168.0.10/24",
+        "macvlan_interface": "macvlan_mehdivm",
+        "macvlan_ip_addr": "192.168.0.10/24"
     }
+
 ]

@@ -13,8 +13,8 @@ from models import CreateUserEnvVMRequest, UserNetworkInfo
 #------------------------------------------------------------------------------------------------------------------
 
 data = {
-    'user_name': "ferna",
-    'user_network_id': '20'
+    'user_name': "mehdivm",
+    'user_network_id': '0'
 }
 
 #-------------------------------------------------------------------------------------------------------------------
@@ -25,14 +25,15 @@ response = requests.post('http://193.55.250.148:8083/create_user', json=data)
 print(response.status_code)
 print(response.json())
 """
-
 # #-----------------------------------------------------------------------
 # # Getting user info
 # #-----------------------------------------------------------------------
+
 data = {
-    'user_name': "ferna",
-    'user_network_id': '20'
+    'user_name': "mehdivm",
+    'user_network_id': '0'
 }
+
 
 response_user_info = requests.post('http://193.55.250.148:8083/get_user_info', json=data)
 print(response_user_info.status_code)
@@ -43,14 +44,16 @@ user_info_data = json.loads(response_user_info.json())
 #-------------------------------------------------------------------------------------------------------------------
 # Destroying user environment VM
 #------------------------------------------------------------------------------------------------------------------
-"""data = {
+"""
+data = {
     'vm_name': user_info_data['user_name'],
     'macvlan_interface': user_info_data['macvlan_interface']
 }
 
 response = requests.post('http://193.55.250.148:8083/destroy_env_vm', json=data)
 print(response.status_code)
-print(response.json())"""
+print(response.json())
+"""
 #----------------------------------------------------
 # Creating user env
 #----------------------------------------------------

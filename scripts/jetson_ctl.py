@@ -66,7 +66,7 @@ class Jetson:
          # Flash the Jetson
         nfs_ip_addres= nfs_ip_addres.split('/')[0]
         print(nfs_ip_addres)        
-        command_librray_install=   ["lxc", "exec", vm_name, "--", "./Linux_for_Tegra/flash.sh" ,"-N",F"{nfs_ip_addres }:/root/nfsroot","--rcm-boot","jetson-xavier-nx-devkit-emmc" ,"eth0"]
+        command_librray_install=   ["lxc", "exec", vm_name, "--", "/root/Linux_for_Tegra/flash.sh" ,"-N",F"{nfs_ip_addres }:/root/nfsroot","--rcm-boot","jetson-xavier-nx-devkit-emmc" ,"eth0"]
         print("command",command_librray_install)
         try:
             result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
@@ -77,7 +77,7 @@ class Jetson:
             print("STDERR:\n", e.stderr)
             return
 jetson = Jetson()
-jetson.flash_jetson("ferna","192.168.20.10/24")
+#jetson.flash_jetson("debbah","192.168.226.1/24")
 #number = jetson.number_of_jetsons_xavier_connected()
 
 #print(jetson.get_xavier_instances())
