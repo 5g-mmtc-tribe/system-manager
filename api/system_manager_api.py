@@ -283,26 +283,26 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
         time.sleep(10)
         print(res)
         vm_manager.set_nfs_ip_addr(vm_name, nfs_ip_addr)
-        
+        vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)   
        
     else :# vm alrady exist 
-           #vm_manager.start_vm(vm_name)
-           vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)         
+          vm_manager.start_vm(vm_name)
+                 
 def stop_user_vm( vm_name):
     vm_manager = VmManager()
     vm_manager.stop_vm(vm_name)
 
 # TO IMPLEMENT
-def flash_jetson(vm_name , nfs_ip_addres):
+def flash_jetson( nfs_ip_addres ,nfspath ):
     Jetson_class= Jetson()
-    Jetson_class.flash_jetson (vm_name , nfs_ip_addres)
+    Jetson_class.flash_jetson (nfs_ip_addres,nfspath )
 
 
 #test 
-#testbed_reset()
-#turn_on_all_nodes()
+testbed_reset()
+turn_on_all_nodes()
 #time.sleep(20)
-#flash_jetson("ferna","192.168.20.10/24")
+
 
 
 #print(get_user_info('cedric', 97))
@@ -321,8 +321,8 @@ user_info =     {
         "macvlan_interface": "macvlan_mehdivm",
         "macvlan_ip_addr": "192.168.0.10/24"
     }
-create_user_env_vm(ubuntu_version, vm_name, root_size, user_info)
-
+#create_user_env_vm(ubuntu_version, vm_name, root_size, user_info)
+flash_jetson("192.168.0.10/24","rootfs")
 # --------------------------
 #
 # --------------

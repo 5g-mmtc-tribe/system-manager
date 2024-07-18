@@ -1,5 +1,5 @@
 import subprocess
-
+import os 
 class Jetson:
 
     def __init__(self):
@@ -77,11 +77,11 @@ class Jetson:
             print("STDERR:\n", e.stderr)
             return
         
-    def flash_jetson (self, vm_name , nfs_ip_addres ,nfspath,parentpath):
+    def flash_jetson_v1 (self, nfs_ip_addres ,nfspath,parentpath):
             # Flash the Jetson
         nfs_ip_addres= nfs_ip_addres.split('/')[0]
         print(nfs_ip_addres)        
-        command_librray_install=   [F" {parentpath}Linux_for_Tegra/flash.sh" ,"-N",F"{nfs_ip_addres }:{nfspath}","--rcm-boot","jetson-xavier-nx-devkit-emmc" ,"eth0"]
+        command_librray_install=   [F" {parentpath}Linux_for_Tegra/flash.sh" ,"-N",F"{nfs_ip_addres }:/{nfspath}","--rcm-boot","jetson-xavier-nx-devkit-emmc" ,"eth0"]
         print("command",command_librray_install)
         try:
             result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
@@ -91,6 +91,52 @@ class Jetson:
             print("STDOUT:\n", e.stdout)
             print("STDERR:\n", e.stderr)
             return
+    def flash_jetson(self, nfs_ip_address, nfspath):
+        # Get the directory of the current script
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+
+        # Define the parent directory
+           # Define the parent directory
+        parentpath = os.path.join(script_dir, '../api', 'jetson')
+        
+        # Define the working directory based on the parentpath
+        working_directory = os.path.join(parentpath, 'Linux_for_Tegra')
+        
+        
+        nfs_ip_address= nfs_ip_address.split('/')[0]
+        # Construct the NFS target
+        nfs_target = f"{nfs_ip_address}:/{nfspath}"
+        
+        # Define the command
+        command = [
+            'sudo', './flash.sh', '-N', nfs_target, '--rcm-boot', 'jetson-xavier-nx-devkit-emmc', 'eth0'
+        ]
+
+        # Run the command in the specified directory
+        try:
+            process = subprocess.Popen(command, cwd=working_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+            # Print the stdout and stderr in real-time
+            while True:
+                output = process.stdout.readline()
+                if output == '' and process.poll() is not None:
+                    break
+                if output:
+                    print(output.strip())
+            
+            # Capture any remaining output
+            stdout, stderr = process.communicate()
+            print(stdout)
+            print(stderr)
+            
+            # Check if the command was successful
+            if process.returncode == 0:
+                print("Command executed successfully")
+            else:
+                print(f"Command execution failed with return code {process.returncode}")
+                raise Exception("Failed to execute flash script")
+        except Exception as e:
+            print(f"An error occurred: {e}")
 #jetson = Jetson()
 #jetson.flash_jetson(" 192.168.0.10/24")
 #number = jetson.number_of_jetsons_xavier_connected()

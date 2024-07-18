@@ -569,7 +569,7 @@ class VmManager():
             #jetson_ip=ip_addr.jetson_ip(nfs_ip_addres)
 
             # Create NFS folder to be used on the Jetson (on the VM)
-            """vmcommand =["lxc", "exec", vm_name, "--", "sudo"]
+            vmcommand =["lxc", "exec", vm_name, "--", "sudo"]
             command_librray_install=   vmcommand +["mkdir" ,"/root/nfsroot" ]
             VmManager.run_command(command_librray_install,"Create NFS folder to be used on the Jetson (on the VM)")
             
@@ -587,7 +587,7 @@ class VmManager():
             command = [
                 'sudo', 'lxc', 'file', 'push', '-r', 'jetson/Linux_for_Tegra/rootfs/', 'mehdivm/root/nfsroot'
             ]
-            VmManager.run_command(command,"Rsync original rootfs to nfsroot")"""
+            VmManager.run_command(command,"Rsync original rootfs to nfsroot")
             # Setting up the NFS server inside the VM
             command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "apt" ,"install" ,"-y","nfs-kernel-server"]
             VmManager.run_command(command_librray_install,"Setting up the NFS server inside the VM")
