@@ -221,7 +221,9 @@ class VmManager():
                 print("Failed to execute command:", e)
                 print("STDOUT:\n", e.stdout)
                 print("STDERR:\n", e.stderr)
-
+            # set the ip of the nfs 
+            ip = IpAddr()
+            ip.update_network_config("ipconfig.txt", nfs_ip_addr)
             # set up  the nfs ip address
             command_librray_install=   ["sudo","lxc", "file","push" ,"ipconfig.txt" ,vm_name+"/root/"]
             VmManager.run_command(command_librray_install,"copy nfs ip address config")
@@ -538,11 +540,14 @@ class VmManager():
                   error_message = f"Command execution failed with return code {process.returncode}"
                   raise Exception(error_message)
      
-    def create_dhcp_server(self ,vm_name):
+    def create_dhcp_server(self ,vm_name,nfs_ip_addr):
             # install  the  DHCP server 
             command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "apt" ,"install" ,"-y","isc-dhcp-server"]
             VmManager.run_command(command_librray_install,"install  the  DHCP server")
             # set up  the dhcp server config file 
+                        # set the ip of the nfs 
+            ip = IpAddr()
+            ip.update_dhcp_configuration("dhcpConfig.txt", nfs_ip_addr)
             command_librray_install=   ["sudo","lxc", "file","push" ,"dhcpConfig.txt" ,vm_name+"/root/"]
             VmManager.run_command(command_librray_install,"copy dhcp config")
             
@@ -751,7 +756,7 @@ class VmManager():
             command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "apt" ,"update" ]
             VmManager.run_command(command_librray_install,"update apt")
             vm_manager.create_nfs_server(vm_name=vm_name,nfs_ip_addres= nfs_ip_addr)
-            vm_manager.create_dhcp_server(vm_name)
+            vm_manager.create_dhcp_server(vm_name,nfs_ip_addr)
             # Install binutils to Image extraction (gzip format)
             command_librray_install=   ["lxc", "exec", vm_name, "--",  "apt" ,"install" ,"-y" ,"binutils" ]
             print("command",command_librray_install)
