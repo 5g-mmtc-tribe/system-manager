@@ -1,5 +1,9 @@
 from pydantic import BaseModel
 
+class jetsonInfo(BaseModel):
+    nfs_ip_addr: str
+    nfs_path:str
+
 class DestroyEnvVMRequest(BaseModel):
     vm_name: str
     macvlan_interface: str

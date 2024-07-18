@@ -292,15 +292,18 @@ def stop_user_vm( vm_name):
     vm_manager = VmManager()
     vm_manager.stop_vm(vm_name)
 
-# TO IMPLEMENT
+# flash jetson xavier with rom from server
 def flash_jetson( nfs_ip_addres ,nfspath ):
+    #turn on ,off jetson just in case 
+    testbed_reset()
+    turn_on_all_nodes()
     Jetson_class= Jetson()
     Jetson_class.flash_jetson (nfs_ip_addres,nfspath )
 
 
 #test 
-testbed_reset()
-turn_on_all_nodes()
+#testbed_reset()
+#turn_on_all_nodes()
 #time.sleep(20)
 
 
@@ -322,7 +325,7 @@ user_info =     {
         "macvlan_ip_addr": "192.168.0.10/24"
     }
 #create_user_env_vm(ubuntu_version, vm_name, root_size, user_info)
-flash_jetson("192.168.0.10/24","rootfs")
+#flash_jetson("192.168.0.10/24","rootfs")
 # --------------------------
 #
 # --------------

@@ -7,7 +7,7 @@ import system_manager_api
 import logging
 import uvicorn
 from pydantic import BaseModel
-from models import DestroyEnvVMRequest, CreateUser,  CreateUserEnvVMRequest ,TurnNode
+from models import DestroyEnvVMRequest, CreateUser,  CreateUserEnvVMRequest ,TurnNode ,jetsonInfo
 
 
 logging.basicConfig(level=logging.ERROR)
@@ -171,7 +171,21 @@ async def call_get_user_info(request:CreateUser):
 
 #--------------------------------------------------------------
 
+#--------------------------------------------------------------
+# Function to flash jetson 
+#--------------------------------------------------------------
 
+@app.post('/flash_jetson')
+async def call_flash_jetson(request:jetsonInfo):
+    try:
+        logging.info(f"Received request data: {request}")
+        # Call the function with the extracted data
+        user_info = system_manager_api.flash_jetson(request.nfs_ip_addr ,request.nfs_path)
+        return user_info
+
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail='Failed to flash jetson')
 #---------------------------------------------------------------
 #--------------------------------------------------
     
