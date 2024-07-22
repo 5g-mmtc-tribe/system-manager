@@ -12,3 +12,5 @@ def download_rootfs_cmd():
 
 parser = argparse.ArgumentParser()
 #parser.add_parser ...
+
+# ./5gmmtctool download-rootfs --model xavier

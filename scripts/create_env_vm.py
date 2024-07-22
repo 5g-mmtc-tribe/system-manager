@@ -589,15 +589,34 @@ class VmManager():
             #command_librray_install=   vmcommand +["sudo","rsync" ,"-aAXv" ,"jetson/Linux_for_Tegra/rootfs/" ,"/root/nfsroot"]
             #command_librray_install=["sudo","lxc", "file","push" ,"-r","jetson/Linux_for_Tegra/rootfs/" ,vm_name+"/root/nfsroot"] 
             # Define the command to run
-            command = [
+            """ command = [
                 'sudo', 'lxc', 'file', 'push', '-r', 'jetson/Linux_for_Tegra/rootfs/', 'mehdivm/root/nfsroot'
-            ]
-            VmManager.run_command(command,"Rsync original rootfs to nfsroot")
+            ]"""
+            command = [ 'sudo' , 'lxc'  ,"exec" , vm_name , "--" , "wget", "http://193.55.250.148/rootfs-noeula-user.tar.gz"]
+            print(command)
+            # Execute the command using subprocess.run()
+            try:
+                result = subprocess.run(command,  capture_output=True, text=True, check=True)
+                print("STDOUT:", result.stdout)
+            except subprocess.CalledProcessError as e:
+                print("Failed to execute command:", e)
+                print("STDOUT:\n", e.stdout)
+                print("STDERR:\n", e.stderr)
+            command = [ 'sudo' , 'lxc'  ,"exec" , vm_name , "--" , "tar" ,"xpzf","/root/rootfs-noeula-user.tar.gz" ,"-C", "/root/nfsroot/"]
+            print(command)
+            # Execute the command using subprocess.run()
+            try:
+                result = subprocess.run(command,  capture_output=True, text=True, check=True)
+                print("STDOUT:", result.stdout)
+            except subprocess.CalledProcessError as e:
+                print("Failed to execute command:", e)
+                print("STDOUT:\n", e.stdout)
+                print("STDERR:\n", e.stderr)
             # Setting up the NFS server inside the VM
             command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "apt" ,"install" ,"-y","nfs-kernel-server"]
             VmManager.run_command(command_librray_install,"Setting up the NFS server inside the VM")
             # echo /etc/exports configuration
-            command = f"echo '/root/nfsroot/rootfs *(rw,sync,no_root_squash,insecure)' > /etc/exports"
+            command = f"echo '/root/nfsroot/rootfs *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000)' > /etc/exports"
             # Construct the lxc exec command
             lxc_command = f"lxc exec {vm_name} -- sh -c \"{command}\""
             print(lxc_command)

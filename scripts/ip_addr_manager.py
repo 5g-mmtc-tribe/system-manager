@@ -5,7 +5,7 @@ class IpAddr:
         pass
 
     def user_subnet(self, user_id):
-        subnet = f"192.168.{user_id}.0/24"
+        subnet = f"192.168.0.{user_id}/24"
         return subnet
 
     def nfs_interface_ip(self, user_id):
@@ -17,7 +17,7 @@ class IpAddr:
         prefix_parts = prefix[0].split('.')
         
         # Change the last part of the IP address to '1'
-        prefix_parts[-1] = '1'
+        prefix_parts[-1] = str(user_id+ 1)
         
         # Reassemble the IP address and subnet mask
         nfs_interface = f"{'.'.join(prefix_parts)}/{prefix[1]}"
@@ -31,8 +31,8 @@ class IpAddr:
         prefix = user_subnet.split('/')
         prefix_parts = prefix[0].split('.')
         
-        # Change the last part of the IP address to '1'
-        prefix_parts[-1] = '1'
+        # Change the last part of the IP address to '2'
+        prefix_parts[-1] = str(user_id+ 2)
         
         # Reassemble the IP address and subnet mask
         macvlan_interface_ip = f"{'.'.join(prefix_parts)}/{prefix[1]}"
@@ -76,28 +76,34 @@ class IpAddr:
         print(F"File '{file_path}' has been updated with the new IP address: {new_ip}")
     def update_dhcp_configuration(self ,file_path, nfs_ip):
             # Generate the new content for the DHCP configuration
-            new_content = f"""\
-        subnet 192.168.0.0 netmask 255.255.255.0 {{
-            range {nfs_ip.rsplit('.', 1)[0]}.12 {nfs_ip.rsplit('.', 1)[0]}.15;
-            option routers {nfs_ip};
+            net = nfs_ip.split('/')[0]
+            ips = net.split(".")
+            plage = net.rsplit('.', 1)[0]
+            subnet_low = str(int(ips[3]) + 2)
+            subnet_up = str(int(ips[3]) + 5)
+
+            new_content = f"""subnet 192.168.0.0 netmask 255.255.255.0 {{
+            range {plage}.{subnet_low} {plage}.{subnet_up};
+            option routers {net};
             option domain-name-servers 8.8.8.8, 8.8.4.4;
-        }}
-        """
+            }}"""
 
             # Remove existing file if it exists
             if os.path.exists(file_path):
                 os.remove(file_path)
                 print(f"Deleted existing file: {file_path}")
 
-            # Write the new content to the file
+            # Write the new content to the file without trailing spaces
             with open(file_path, 'w') as file:
-                file.write(new_content)
+                for line in new_content.splitlines():
+                    file.write(line.rstrip() + '\n')
+
 
             print(f"Created new DHCP configuration file: {file_path}")
         
-#ip = IpAddr()
+ip = IpAddr()
 # subnet = ip.user_subnet(4)
 # print(subnet)
 # print(ip.nfs_interface_ip(6))
 # print(ip.macvlan_interface_ip(5))
-#ip.update_dhcp_configuration("/home/mehdi/system-manager/api/dhcpConfig.txt","192.168.180.0/24")
+#ip.update_dhcp_configuration("/home/mehdi/system-manager/api/dhcpConfig.txt","192.168.0.11/24")
