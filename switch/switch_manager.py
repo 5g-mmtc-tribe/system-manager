@@ -1,7 +1,6 @@
 from netmiko import Netmiko
 import time
 
-
 class SwitchManager():
 
     def __init__(self, device_type, ip, port, password):
@@ -77,26 +76,42 @@ class SwitchManager():
 
    
 
+    def check_interface_on(self , interface):
+        if not self.check_enable_mode():
+            self.enable_device()
+        output=self.sendCommand(f'show interface {interface} ')
+        # Print the raw output (optional)
+        #print(output)
+        # Parse the output
+        # Print the raw output (optional)
+        print("Raw Output:\n", output)
+
+        # Parse the output for specific details
+        interface_status = {}
+
+        # Extract interface status
+        if "line protocol is up" in output :
+            interface_status['Status'] = 'up'
+        else:
+            interface_status['Status'] = 'down'
+
+        return interface_status
+
+# Define the device
+device = {
+ 'device_type': 'cisco_ios_telnet',
+  'ip': '192.168.0.30',
+  'port':23,
+  'password': 'tribe',
+ }
 
 
+switch_obj = SwitchManager(device_type = device['device_type'],
+                             ip = device['ip'],
+                             port = device['port'],
+                             password = device['password'])
 
-
-
-# # Define the device
-# device = {
-#  'device_type': 'cisco_ios_telnet',
-#  'ip': '192.168.0.30',
-#  'port':23,
-#  'password': 'tribe',
-# }
-
-
-# switch_obj = SwitchManager(device_type = device['device_type'],
-#                             ip = device['ip'],
-#                             port = device['port'],
-#                             password = device['password'])
-
-
+switch_obj.check_interface_on("GigabitEthernet1/0/1")
 
 
 # out = switch_obj.sendCommand('show ip int bri')

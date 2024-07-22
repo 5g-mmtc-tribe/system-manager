@@ -57,7 +57,7 @@ print(response.json())
 #----------------------------------------------------
 # Creating user env
 #----------------------------------------------------
-"""
+
 user_env_info = {
     'ubuntu_version': '24.04',
    'vm_name': user_info_data['user_name'],
@@ -72,7 +72,7 @@ request_data = CreateUserEnvVMRequest(**user_env_info)
 response = requests.post('http://193.55.250.148:8083/create_user_env_vm', json=request_data.dict())
 print(response.status_code)
 print(response.json())
-"""
+
 
 #----------------------------------------------------
 # test flashing 
