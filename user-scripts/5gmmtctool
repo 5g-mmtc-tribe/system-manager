@@ -1,0 +1,14 @@
+#! /usr/bin/python
+
+import argparse
+
+
+#def reconfigure_dhcp_cmd():
+#    pass
+
+
+def download_rootfs_cmd():
+    pass
+
+parser = argparse.ArgumentParser()
+#parser.add_parser ...
