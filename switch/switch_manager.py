@@ -77,6 +77,7 @@ class SwitchManager():
    
 
     def check_interface_on(self , interface):
+        # return if interface is up or down 
         if not self.check_enable_mode():
             self.enable_device()
         output=self.sendCommand(f'show interface {interface} ')
@@ -106,12 +107,12 @@ device = {
  }
 
 
-switch_obj = SwitchManager(device_type = device['device_type'],
+"""switch_obj = SwitchManager(device_type = device['device_type'],
                              ip = device['ip'],
                              port = device['port'],
                              password = device['password'])
 
-switch_obj.check_interface_on("GigabitEthernet1/0/1")
+switch_obj.check_interface_on("GigabitEthernet1/0/1")"""
 
 
 # out = switch_obj.sendCommand('show ip int bri')

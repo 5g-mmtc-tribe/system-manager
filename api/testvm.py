@@ -78,11 +78,11 @@ print(response.json())
 # test flashing 
 #----------------------------------------------------
 # # Create Pydantic model instance
-request_data={}
+"""request_data={}
 request_data['nfs_ip_addr']=user_info_data['nfs_ip_addr']
 request_data['nfs_path']= '/root/nfsroot/rootfs'
 
 # # Send request
 response = requests.post('http://193.55.250.148:8083/flash_jetson', json=request_data)
 print(response.status_code)
-print(response.json())
+print(response.json())"""

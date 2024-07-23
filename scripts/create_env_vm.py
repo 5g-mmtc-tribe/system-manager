@@ -2,6 +2,7 @@ import subprocess
 from network_interface import NetworkInterface
 import json
 import os ,sys
+import pylxd
 from macvlan import MacVlan
 # Get the absolute path of the parent directory
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts'))
@@ -18,28 +19,6 @@ class VmManager():
     bsp_path = os.path.join(data_dir, 'jetson_linux_r35.4.1_aarch64.tbz2')
     rootfs_path = os.path.join(data_dir, 'tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2')
     def start_vm(self, vm_name):
-        # To flash the jetson, the usb must be inside the vm. here's a way to do it.
-        command_librray_install=   ["lxc", "config","device","remove" ,vm_name,  "Nvidia"]
-        print("command",command_librray_install)
-        try:
-            result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-            print("STDOUT:", result.stdout)
-        except subprocess.CalledProcessError as e:
-            print("Failed to execute command:", e)
-            print("STDOUT:\n", e.stdout)
-            print("STDERR:\n", e.stderr)
-            return
-        # To flash the jetson, the usb must be inside the vm. here's a way to do it.
-        command_librray_install=   ["lxc", "config","device","add" ,vm_name,  "Nvidia" ,"usb", "vendorid=0955", "productid=7e19"]
-        print("command",command_librray_install)
-        try:
-            result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-            print("STDOUT:", result.stdout)
-        except subprocess.CalledProcessError as e:
-            print("Failed to execute command:", e)
-            print("STDOUT:\n", e.stdout)
-            print("STDERR:\n", e.stderr)
-            return
         command = ['lxc', 'start', vm_name]
         try:
             result =subprocess.run(command, check=True)
@@ -65,8 +44,24 @@ class VmManager():
             print("STDOUT:", e.stdout)
             print("STDERR:", e.stderr)
 
-    
+    def check_vm_exists(self,vm_name):
+        # Connect to the local LXD server
+        client = pylxd.Client()
+
+        # Get the list of all instances (containers and VMs)
+        instances = client.instances.all()
+
+        # Check if the specified VM exists
+        for instance in instances:
+            if instance.name == vm_name and instance.type == 'virtual-machine':
+                return True
+        return False
     def create_user_vm(self, ubuntu_version, vm_name, root_size):
+        # check if vm exist already 
+        vm_ma = VmManager()
+        if vm_ma.check_vm_exists(vm_name):
+            print("vm Exist ! ")
+            return({"created":False})
         # Construct the command using an f-string
         command = f"lxc launch ubuntu:{ubuntu_version} {vm_name} --vm --device root,size={root_size} -c limits.cpu=4 -c limits.memory=4GiB"
         print("the commande ",command)
@@ -82,10 +77,8 @@ class VmManager():
             print("Command output:", e.output)
             print("STDOUT:", e.stdout)
             print("STDERR:", e.stderr)
-            return({"created":False})
-
-
-
+            
+        
     def is_vm_running(self, vm_name):
         # Command to check if the instance is running
         list_command = ["lxc", "list", vm_name, "--format", "json"]
