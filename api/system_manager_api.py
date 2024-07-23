@@ -295,12 +295,12 @@ def stop_user_vm( vm_name):
     vm_manager.stop_vm(vm_name)
 
 # flash jetson xavier with rom from server
-def flash_jetson( nfs_ip_addres ,nfspath ):
+def flash_jetson( nfs_ip_addres ,nfspath,usb_instance ):
     #turn on ,off jetson just in case 
     testbed_reset()
     turn_on_all_nodes()
     Jetson_class= Jetson()
-    Jetson_class.flash_jetson (nfs_ip_addres,nfspath )
+    Jetson_class.flash_jetson (nfs_ip_addres,nfspath ,usb_instance)
 
 
 #test 

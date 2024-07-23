@@ -3,6 +3,7 @@ from pydantic import BaseModel
 class jetsonInfo(BaseModel):
     nfs_ip_addr: str
     nfs_path:str
+    usb_instance :str
 
 class DestroyEnvVMRequest(BaseModel):
     vm_name: str

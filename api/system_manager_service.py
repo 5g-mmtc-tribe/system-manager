@@ -180,7 +180,7 @@ async def call_flash_jetson(request:jetsonInfo):
     try:
         logging.info(f"Received request data: {request}")
         # Call the function with the extracted data
-        user_info = system_manager_api.flash_jetson(request.nfs_ip_addr ,request.nfs_path)
+        user_info = system_manager_api.flash_jetson(request.nfs_ip_addr ,request.nfs_path,request.usb_instance)
         return user_info
 
     except Exception as e:

@@ -91,7 +91,7 @@ class Jetson:
             print("STDOUT:\n", e.stdout)
             print("STDERR:\n", e.stderr)
             return
-    def flash_jetson(self, nfs_ip_address, nfspath):
+    def flash_jetson(self, nfs_ip_address, nfspath,usb_instance):
         # Get the directory of the current script
         script_dir = os.path.dirname(os.path.abspath(__file__))
 
@@ -109,7 +109,7 @@ class Jetson:
         
         # Define the command
         command = [
-            'sudo', './flash.sh', '-N', nfs_target, '--rcm-boot', 'jetson-xavier-nx-devkit-emmc', 'eth0'
+            'sudo', './flash.sh','--usb-instance',usb_instance, '-N', nfs_target, '--rcm-boot', 'jetson-xavier-nx-devkit-emmc', 'eth0'
         ]
 
         # Run the command in the specified directory
