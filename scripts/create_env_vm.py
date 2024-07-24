@@ -1,4 +1,5 @@
 import subprocess
+import time
 from network_interface import NetworkInterface
 import json
 import os ,sys
@@ -193,7 +194,7 @@ class VmManager():
                 return
             
             # Add the IP address if not already allocated
-            command_add_ip = ["lxc", "exec", vm_name, "--", "ip", "addr", "add", nfs_ip_addr, "dev", interface_name]
+            """command_add_ip = ["lxc", "exec", vm_name, "--", "ip", "addr", "add", nfs_ip_addr, "dev", interface_name]
             print(command_add_ip)
             try:
                 result = subprocess.run(command_add_ip, capture_output=True, text=True, check=True)
@@ -213,15 +214,16 @@ class VmManager():
             except subprocess.CalledProcessError as e:
                 print("Failed to execute command:", e)
                 print("STDOUT:\n", e.stdout)
-                print("STDERR:\n", e.stderr)
+                print("STDERR:\n", e.stderr)"""
             # set the ip of the nfs 
             ip = IpAddr()
             ip.update_network_config("ipconfig.txt", nfs_ip_addr)
             # set up  the nfs ip address
             command_librray_install=   ["sudo","lxc", "file","push" ,"ipconfig.txt" ,vm_name+"/root/"]
             VmManager.run_command(command_librray_install,"copy nfs ip address config")
+            time.sleep(7)
             command = "sudo cat /root/ipconfig.txt > /etc/netplan/50-cloud-init.yaml"
-            # Construct the lxc exec command
+
             lxc_command = f"lxc exec {vm_name} -- sh -c \"{command}\""
             print(lxc_command)
             # Execute the command using subprocess.run()
@@ -232,8 +234,44 @@ class VmManager():
                 print("Failed to execute command:", e)
                 print("STDOUT:\n", e.stdout)
                 print("STDERR:\n", e.stderr)
-            lxc_command = ["lxc", "exec", vm_name ,"--", "sudo", "netplan" ,"apply" ]
-            VmManager.run_command(lxc_command,"apply netplan new config")
+
+                print("STDERR:\n", e.stderr)
+             # Step 1: Disable cloud-init network configuration
+            disable_cloud_init_cmd = [
+                "lxc", "exec", vm_name, "--", "sudo", "sh", "-c", 
+                "echo 'network: {config: disabled}' > /etc/cloud/cloud.cfg.d/99-disable-network-config.cfg"
+            ]
+            try:
+                # Disable cloud-init network configuration
+                subprocess.run(disable_cloud_init_cmd, capture_output=True, text=True, check=True)
+                print("Disabled cloud-init network configuration.")
+            except subprocess.CalledProcessError as e:
+                # Handle errors during the command execution
+                print("Failed to execute command:", e)
+                print("Return code:", e.returncode)
+                print("STDOUT:\n", e.stdout)
+                print("STDERR:\n", e.stderr)
+
+            command_net_apply = ["lxc", "exec", vm_name, "--", "sudo", "netplan", "apply"]
+            print("Executing command:", " ".join(command_net_apply))
+            
+            try:
+                # Execute the command
+                result = subprocess.run(command_net_apply, capture_output=True, text=True, check=True)
+                
+                # Wait for a few seconds to let the changes take effect
+                time.sleep(7)
+                
+                # Print the standard output and standard error
+                print("Command executed successfully.")
+                print("STDOUT:\n", result.stdout)
+                print("STDERR:\n", result.stderr)
+            except subprocess.CalledProcessError as e:
+                # Handle errors during the command execution
+                print("Failed to execute command:", e)
+                print("Return code:", e.returncode)
+                print("STDOUT:\n", e.stdout)
+                print("STDERR:\n", e.stderr)
 
 
     def install_library_for_flashing_jetson_V1(_self ,vm_name ,nfs_ip_addres):

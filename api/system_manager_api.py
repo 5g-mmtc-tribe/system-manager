@@ -301,6 +301,7 @@ def flash_jetson( nfs_ip_addres ,nfspath,usb_instance ):
     turn_on_all_nodes()
     Jetson_class= Jetson()
     Jetson_class.flash_jetson (nfs_ip_addres,nfspath ,usb_instance)
+    time.sleep(7)
 
 
 #test 
@@ -316,15 +317,15 @@ def flash_jetson( nfs_ip_addres ,nfspath,usb_instance ):
 
 # Define the parameters
 ubuntu_version = "24.04"
-vm_name = "mehdivm"
+vm_name = "debbah"
 root_size = "40GiB"
-user_info =     {
-        "user_name": "mehdivm",
-        "user_network_id": 0,
-        "user_subnet": "192.168.0.0/24",
-        "nfs_ip_addr": "192.168.0.10/24",
-        "macvlan_interface": "macvlan_mehdivm",
-        "macvlan_ip_addr": "192.168.0.10/24"
+user_info =        {
+        "user_name": "debbah",
+        "user_network_id": 226,
+        "user_subnet": "192.168.0.226/24",
+        "nfs_ip_addr": "192.168.0.227/24",
+        "macvlan_interface": "macvlan_debbah",
+        "macvlan_ip_addr": "192.168.0.228/24"
     }
 #create_user_env_vm(ubuntu_version, vm_name, root_size, user_info)
 #flash_jetson("192.168.0.10/24","rootfs")
