@@ -132,9 +132,11 @@ class Jetson:
             # Check if the command was successful
             if process.returncode == 0:
                 print("Command executed successfully")
+                return {"flashSucess":True}
             else:
                 print(f"Command execution failed with return code {process.returncode}")
-                raise Exception("Failed to execute flash script")
+                return {"flashSucess":False}
+                #raise Exception("Failed to execute flash script")
         except Exception as e:
             print(f"An error occurred: {e}")
 #jetson = Jetson()
