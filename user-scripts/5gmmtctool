@@ -1,8 +1,8 @@
-#! /usr/bin/python
+#!/usr/bin/env python3
 
 import argparse
-import subprocess 
-import os 
+import subprocess
+import os
 
 class VmManager:
     @staticmethod
@@ -38,20 +38,21 @@ def download_rootfs_cmd(model):
     command = ["sudo", "wget", "-O", "/root/rootfs-noeula-user.tar.gz", url]
     VmManager.run_command(command, "Download root filesystem")
     
+    # Create NFS root directory if not exists
+    if not os.path.exists('/root/nfsroot'):
+        command_create_nfs_folder = ["sudo", "mkdir", "-p", "/root/nfsroot"]
+        VmManager.run_command(command_create_nfs_folder, "Create NFS folder to be used on the Jetson (on the host)")
+
     # Extract the root filesystem
     command = ["sudo", "tar", "xpzf", "/root/rootfs-noeula-user.tar.gz", "-C", "/root/nfsroot/"]
     VmManager.run_command(command, "Extract root filesystem")
 
-def create_nfs_server(nfs_ip_address):
+def create_nfs_server():
     # Check if the root filesystem file exists
     if not os.path.exists('/root/rootfs-noeula-user.tar.gz') or not os.path.exists('/root/nfsroot'):
         print("Error: The root filesystem does not appear to be downloaded or extracted.")
         print("Please run 'download-rootfs' command first.")
         return
-
-    # Create NFS folder to be used on the Jetson (on the host)
-    command_create_nfs_folder = ["sudo", "mkdir", "-p", "/root/nfsroot"]
-    VmManager.run_command(command_create_nfs_folder, "Create NFS folder to be used on the Jetson (on the host)")
 
     # Change NFS folder privileges
     command_chown_nfs_folder = ["sudo", "chown", "-R", "nobody:nogroup", "/root/nfsroot"]
@@ -87,33 +88,23 @@ def main():
     # Subparser for reconfigure_dhcp command
     subparser_dhcp = subparsers.add_parser("reconfigure-dhcp", help="Reconfigure DHCP server")
 
-  # Subparser for download_rootfs command
+    # Subparser for download_rootfs command
     subparser_download = subparsers.add_parser("download-rootfs", help="Download and extract root filesystem")
     subparser_download.add_argument("--model", required=True, help="Model name for the root filesystem")
 
-
     # Subparser for create_nfs_server command
     subparser_nfs = subparsers.add_parser("create-nfs-server", help="Create NFS server")
-    subparser_nfs.add_argument("--nfs-ip-address", required=True, help="NFS IP address")
 
     args = parser.parse_args()
 
     if args.command == "reconfigure-dhcp":
         reconfigure_dhcp_cmd()
     elif args.command == "download-rootfs":
-        download_rootfs_cmd()
+        download_rootfs_cmd(args.model)
     elif args.command == "create-nfs-server":
-        create_nfs_server(args.nfs_ip_address)
+        create_nfs_server()
     else:
         parser.print_help()
 
 if __name__ == "__main__":
     main()
-
-
-# Example usage:
-# reconfigure_dhcp_cmd()
-# download_rootfs_cmd()
-
-
-# ./5gmmtctool download-rootfs --model xavier
