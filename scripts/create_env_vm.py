@@ -44,11 +44,29 @@ class VmManager():
             print("Command output:", e.output)
             print("STDOUT:", e.stdout)
             print("STDERR:", e.stderr)
+    def get_vm_ip(self ,vm_name):
+        # Connect to LXD
+        client = pylxd.Client()
 
+        # Get the VM object
+        vm = client.virtual_machines.get(vm_name)
+
+        # Get the VM status and inspect its network information
+        vm_info = vm.state()
+        network_info = vm_info.network
+        print("try get ip of vm ")
+        # Extract IP address from network information
+        ip_addresses = ""
+        interface ="enp5s0"
+        for ip in network_info[interface].get('addresses', []):
+            if ip.get('family') == 'inet':
+                ip_addresses=(ip.get('address'))
+
+        return ip_addresses
     def check_vm_exists(self,vm_name):
         # Connect to the local LXD server
         client = pylxd.Client()
-
+    
         # Get the list of all instances (containers and VMs)
         instances = client.instances.all()
 
@@ -586,6 +604,7 @@ vm_manager = VmManager()
 vm_name="mehdivm"
 ip_addr = IpAddr()
 
+#print(vm_manager.get_vm_ip("debbah"))
 #vm_manager.install_5gmmtctool("debbah" ,"")
 
 #vm_manager.set_nfs_ip_addr(vm_name ,"192.168.90.1/24")#

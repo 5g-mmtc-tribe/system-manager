@@ -50,13 +50,13 @@ async def call_create_user_env_vm(request: CreateUserEnvVMRequest):
         logging.info(f"Received request data: {request}")
 
         # Call the function with the extracted data
-        system_manager_api.create_user_env_vm(
+        resp=system_manager_api.create_user_env_vm(
             request.ubuntu_version,
             request.vm_name,
             request.root_size,
             request.user_info.dict()  # Convert Pydantic model to dictionary
         )
-        return {"status": "User Env Created"}
+        return  resp
 
     except Exception as e:
         logging.error(f"An error occurred: {e}")

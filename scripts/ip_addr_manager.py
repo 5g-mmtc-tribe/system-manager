@@ -78,7 +78,7 @@ class IpAddr:
             # Generate the new content for the DHCP configuration
             net = nfs_ip.split('/')[0]
             ips = net.split(".")
-            plage = net.rsplit('.', 1)[0]
+            plage = net.rsplit('.', 1)[0]   
             subnet_low = str(int(ips[3]) + 2)
             subnet_up = str(int(ips[3]) + 5)
 
