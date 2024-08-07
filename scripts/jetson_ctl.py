@@ -143,7 +143,7 @@ class Jetson:
                     print("Command executed successfully")
                     flash_success = True
                     # Wait for a specific period after a successful flash
-                    time.sleep(10)  # Sleep for 10 seconds (adjust as needed)
+                    time.sleep(2)  # Sleep for 10 seconds (adjust as needed)
                 else:
                     print(f"Command execution failed with return code {process.returncode}")
                     flash_success = False

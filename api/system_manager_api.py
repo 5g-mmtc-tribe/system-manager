@@ -304,13 +304,14 @@ def flash_jetson( nfs_ip_addres ,nfspath,usb_instance ):
     turn_on_all_nodes()
     Jetson_class= Jetson()
     result = Jetson_class.flash_jetson (nfs_ip_addres,nfspath ,usb_instance)
-    time.sleep(7)
+    #time.sleep(7)
     return result
 
 
 #test 
 #testbed_reset()
 #turn_on_all_nodes()
+flash_jetson("192.168.0.227/24","/root/nfsroot/rootfs","1-1.2")
 #time.sleep(20)
 
 

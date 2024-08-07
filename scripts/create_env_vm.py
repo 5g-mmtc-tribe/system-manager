@@ -313,7 +313,32 @@ class VmManager():
             else:
                   error_message = f"Command execution failed with return code {process.returncode}"
                   raise Exception(error_message)
-     
+    def configure_vm_nat(self, vm_name, src_script_path):
+        """
+        Configures the LXC VM by enabling IP forwarding, setting up NAT, and copying a script to the VM.
+        
+        :param vm_name: Name of the LXC VM
+        :param src_script_path: Path to the script on the host to be copied to the VM
+        """
+        # Commands to be executed inside the LXC VM
+        commands = [
+            'sysctl -w net.ipv4.ip_forward=1',
+            'iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE'
+        ]
+        
+        try:
+            # Execute commands in the LXC VM
+            for cmd in commands:
+                subprocess.run(['lxc', 'exec', vm_name, '--', 'sh', '-c', cmd], check=True)
+                print(f"Command '{cmd}' executed successfully in {vm_name}")
+
+            # Copy the script to the LXC VM
+            subprocess.run(['lxc', 'file', 'push', src_script_path, f'{vm_name}/root/install_torch'], check=True)
+            print(f"File copied successfully to {vm_name}:/root/install_torch")
+        
+        except subprocess.CalledProcessError as e:
+            print(f"Error during configuration: {e}")
+
     def create_dhcp_server(self ,vm_name,nfs_ip_addr):
             # install  the  DHCP server 
             command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "apt" ,"install" ,"-y","isc-dhcp-server"]
@@ -562,6 +587,8 @@ class VmManager():
                 print("STDOUT:\n", e.stdout)
                 print("STDERR:\n", e.stderr)
                 return   
+            # configure Nat 
+            vm_manager.configure_vm_nat(vm_name,"install_torch.sh")
     def install_5gmmtctool(_self ,vm_name , nfs_ip_addr):
             # copy dhcp config 
             ip = IpAddr()
