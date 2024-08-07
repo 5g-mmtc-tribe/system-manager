@@ -1,5 +1,10 @@
 from pydantic import BaseModel
 
+class jetsonInfo(BaseModel):
+    nfs_ip_addr: str
+    nfs_path:str
+    usb_instance :str
+
 class DestroyEnvVMRequest(BaseModel):
     vm_name: str
     macvlan_interface: str
@@ -24,3 +29,5 @@ class CreateUserEnvVMRequest(BaseModel):
     root_size: str
     user_info: UserNetworkInfo
 
+class TurnNode(BaseModel):
+    node_name :str

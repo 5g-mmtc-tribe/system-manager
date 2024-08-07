@@ -1,1 +1,3 @@
 __pycache__/
+*.tbz2
+api/jetson/*

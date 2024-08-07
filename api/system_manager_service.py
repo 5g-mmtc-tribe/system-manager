@@ -7,7 +7,7 @@ import system_manager_api
 import logging
 import uvicorn
 from pydantic import BaseModel
-from models import DestroyEnvVMRequest, CreateUser,  CreateUserEnvVMRequest
+from models import DestroyEnvVMRequest, CreateUser,  CreateUserEnvVMRequest ,TurnNode ,jetsonInfo
 
 
 logging.basicConfig(level=logging.ERROR)
@@ -50,17 +50,35 @@ async def call_create_user_env_vm(request: CreateUserEnvVMRequest):
         logging.info(f"Received request data: {request}")
 
         # Call the function with the extracted data
-        system_manager_api.create_user_env_vm(
+        resp=system_manager_api.create_user_env_vm(
             request.ubuntu_version,
             request.vm_name,
             request.root_size,
             request.user_info.dict()  # Convert Pydantic model to dictionary
         )
-        return {"status": "User Env Created"}
+        return  resp
 
     except Exception as e:
         logging.error(f"An error occurred: {e}")
         raise HTTPException(status_code=500, detail='Failed to create VM environment')
+
+#---------------------------------------------------------------
+# stop user vm  
+#---------------------------------------------------------------
+@app.post('/stop_vm')
+async def call_create_stop_user_vm(request: DestroyEnvVMRequest):
+    try:
+        logging.info(f"Received request data: {request}")
+
+        # Call the function with the extracted data
+        system_manager_api.stop_user_vm(
+            request.vm_name  # Convert Pydantic model to dictionary
+        )
+        return {"status": "User vm stopped"}
+
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail='Failed to stop  VM ')
 
 
 #---------------------------------------------------------------
@@ -112,14 +130,35 @@ def call_turn_on_all_nodes():
         raise HTTPException(status_code=500, detail='Failed to turn on all nodes')
 
 #--------------------------------------------------------------
+# Fuction to turn  on specific node 
 
+@app.post('/turn_on_node')
+def call_turn_on_node(request:TurnNode):
+    try:
+        logging.info(f"Received request data: {request}")
+        interface=system_manager_api.get_switch_interface(request.node_name)
+        system_manager_api.turn_on_node(interface)
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(status_code=500, detail='Failed to turn on node')
+    
+# Fuction to turn off  specific node 
 
+@app.post('/turn_off_node')
+def call_turn_off_node(request:TurnNode):
+    try:
+        logging.info(f"Received request data: {request}")
+        interface=system_manager_api.get_switch_interface(request.node_name)
+        system_manager_api.turn_off_node(interface)
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(status_code=500, detail='Failed to turn off  node')
 #--------------------------------------------------------------
 # Function to get user info
 #--------------------------------------------------------------
 
 @app.post('/get_user_info')
-async def call_get_user_info(request: CreateUser):
+async def call_get_user_info(request:CreateUser):
     try:
         logging.info(f"Received request data: {request}")
         # Call the function with the extracted data
@@ -132,13 +171,31 @@ async def call_get_user_info(request: CreateUser):
 
 #--------------------------------------------------------------
 
+#--------------------------------------------------------------
+# Function to flash jetson 
+#--------------------------------------------------------------
 
+@app.post('/flash_jetson')
+async def call_flash_jetson(request:jetsonInfo):
+    try:
+        logging.info(f"Received request data: {request}")
+        # Call the function with the extracted data
+        flash_info = system_manager_api.flash_jetson(request.nfs_ip_addr ,request.nfs_path,request.usb_instance)
+        return flash_info
+
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail='Failed to flash jetson')
 #---------------------------------------------------------------
 #--------------------------------------------------
     
 def run():
-    uvicorn.run(app, host="localhost", port=8000)
+    uvicorn.run(app, host="193.55.250.148", port=8083)
 
 run()
     
 #-------------------------------------------------------------------------------------------------------------------
+"""
+
+"sudo adduser $USER lxd"  for permision
+"""

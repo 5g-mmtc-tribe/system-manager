@@ -4,10 +4,12 @@ import os
 import sys
 import json
 import time
+import pandas as pd
 
 # Get the absolute path of the parent directory
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts'))
 sys.path.append(script_path)
+
 # Now import the function from the script
 from create_env import launch_env
 from destroy_env import destroy_user_env
@@ -16,7 +18,7 @@ from jetson_ctl import Jetson
 from ip_addr_manager import IpAddr
 from create_env_vm import VmManager
 from macvlan import MacVlan
-
+from container_create import Container
 
 # Switch imports
 # Get the absolute path of the parent directory
@@ -27,7 +29,7 @@ from poe_manager import PoeManager
 
 
 # Specify the path to your JSON file
-switch_config = "switch/switch_config.json"
+switch_config = "../switch/switch_config.json"
 
 # Open and load the JSON file
 with open(switch_config, 'r') as file:
@@ -79,6 +81,49 @@ def turn_on_all_nodes():
     switch_interfaces = power.get_switch_interfaces()
     print(switch_interfaces)
     power.turn_all_on()
+
+def turn_on_node(interface):
+    device = switch_config
+    switch = SwitchManager(device_type = device['device_type'],
+                                ip = device['ip'],
+                                port = device['port'],
+                                password = device['password'])
+
+    power = PoeManager(switch)
+    power.turn_on(interface)
+    print(interface,"is up ")
+
+def turn_off_node(interface):
+    device = switch_config
+    switch = SwitchManager(device_type = device['device_type'],
+                                ip = device['ip'],
+                                port = device['port'],
+                                password = device['password'])
+
+    power = PoeManager(switch)
+    power.turn_off(interface)
+    print(interface,"is down ")
+
+# Function to get the switch interface
+def get_switch_interface(device_name: str) -> str:
+    """
+    Get the switch_interface for a given device name.
+
+    Args:
+        device_name (str): The name of the device.
+
+    Returns:
+        str: The switch_interface associated with the given device name.
+
+    Raises:
+        ValueError: If the device name is not found in the DataFrame.
+    """
+    df =pd.DataFrame(get_resource_list())
+    result = df[df['name'] == device_name]
+    if not result.empty:
+        return result.iloc[0]['switch_interface']
+    else:
+        raise ValueError(f"Device name '{device_name}' not found")
 
 
 
@@ -183,7 +228,8 @@ def get_user_info(user_name, user_network_id):
 
 ## For VM
 def destroy_user_env_vm(vm_name, macvlan_name):
-    interface_name = "enp2s0"
+    #interface_name = "enp2s0"
+    interface_name = "eno3"
     macvlan_manager = MacVlan(interface_name)
     vm_manager = VmManager()
     vm_manager.delete_vm(vm_name)
@@ -218,49 +264,75 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
     nfs_ip_addr = user_info["nfs_ip_addr"]
 
     # interface name on which macvlan is to be created
-    interface_name = "enp2s0"
+    #interface_name = "enp2s0"
+    interface_name = "eno3"
     macvlan_manager = MacVlan(interface_name)
     vm_manager = VmManager()
     
-    vm_manager.create_user_vm(ubuntu_version, vm_name, root_size)
-    time.sleep(20)
-    print(macvlan_ip_addr)
+    existed =vm_manager.create_user_vm(ubuntu_version, vm_name, root_size)
+    if existed["created"]:
+        # new vm created 
+        time.sleep(20)
+        print(macvlan_ip_addr)
 
-    vm_manager.create_macvlan_for_vm(macvlan_manager, macvlan_name)
+        vm_manager.create_macvlan_for_vm(macvlan_manager, macvlan_name,macvlan_ip_addr)
 
-    vm_manager.attach_macvlan_to_vm(vm_name, macvlan_name)
+        vm_manager.attach_macvlan_to_vm(vm_name, macvlan_name)
 
-    res = vm_manager.interface_check(vm_name, "enp6s0")
-    print(res)
-    vm_manager.set_nfs_ip_addr(vm_name, nfs_ip_addr)
+        res = vm_manager.interface_check(vm_name, "enp6s0")
+        time.sleep(10)
+        print(res)
+        vm_manager.set_nfs_ip_addr(vm_name, nfs_ip_addr)
+        # prepare the device to use 
+        vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)   
+        time.sleep(7)
+        return {"vm_ip_address":vm_manager.get_vm_ip(vm_name),"status": "User Env Created"}
+    else :# vm alrady exist 
+          vm_manager.start_vm(vm_name)
+          time.sleep(7)
+          return {"vm_name":"10.29.50.181","status": "User Env Created"}
+          # prepare the device to use 
+          #vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)      
+def stop_user_vm( vm_name):
+    vm_manager = VmManager()
+    vm_manager.stop_vm(vm_name)
+
+# flash jetson xavier with rom from server
+def flash_jetson( nfs_ip_addres ,nfspath,usb_instance ):
+    #turn on ,off jetson just in case 
+    testbed_reset()
+    turn_on_all_nodes()
+    Jetson_class= Jetson()
+    result = Jetson_class.flash_jetson (nfs_ip_addres,nfspath ,usb_instance)
+    time.sleep(7)
+    return result
 
 
-# TO IMPLEMENT
-def flash_jetson(usb_instance):
-    pass
+#test 
+#testbed_reset()
+#turn_on_all_nodes()
+#time.sleep(20)
 
 
 
-
-
-print(get_user_info('cedric', 97))
+#print(get_user_info('cedric', 97))
 # ----------------------
 # Creating user env
 
 # Define the parameters
-# ubuntu_version = "24.04"
-# vm_name = "testvm"
-# root_size = "4GiB"
-# user_info = {
-#         "user_name": "testvm",
-#         "user_network_id": 75,
-#         "user_subnet": "192.168.75.0/24",
-#         "nfs_ip_addr": "192.168.75.1/24",
-#         "macvlan_interface": "macvlan_testvm",
-#         "macvlan_ip_addr": "192.168.75.2/24"
-#     }
-# create_user_env_vm(ubuntu_version, vm_name, root_size, user_info)
-
+ubuntu_version = "24.04"
+vm_name = "debbah"
+root_size = "40GiB"
+user_info =        {
+        "user_name": "debbah",
+        "user_network_id": 226,
+        "user_subnet": "192.168.0.226/24",
+        "nfs_ip_addr": "192.168.0.227/24",
+        "macvlan_interface": "macvlan_debbah",
+        "macvlan_ip_addr": "192.168.0.228/24"
+    }
+#create_user_env_vm(ubuntu_version, vm_name, root_size, user_info)
+#flash_jetson("192.168.0.10/24","rootfs")
 # --------------------------
 #
 # --------------
