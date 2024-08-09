@@ -285,12 +285,12 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
         vm_manager.set_nfs_ip_addr(vm_name, nfs_ip_addr)
         # prepare the device to use 
         vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)   
-        time.sleep(7)
-        return {"vm_ip_address":vm_manager.get_vm_ip(vm_name),"status": "User Env Created"}
+        time.sleep(2)
+        return {"vm_ip_address":"10.0.0.0","status": "User Env Created"}
     else :# vm alrady exist 
           vm_manager.start_vm(vm_name)
-          time.sleep(7)
-          return {"vm_name":"10.29.50.181","status": "User Env Created"}
+          time.sleep(2)
+          return {"vm_name":"10.0.0.0","status": "User Env Created"}
           # prepare the device to use 
           #vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)      
 def stop_user_vm( vm_name):
@@ -311,7 +311,7 @@ def flash_jetson( nfs_ip_addres ,nfspath,usb_instance ):
 #test 
 #testbed_reset()
 #turn_on_all_nodes()
-flash_jetson("192.168.0.227/24","/root/nfsroot/rootfs","1-1.2")
+#flash_jetson("192.168.0.227/24","/root/nfsroot/rootfs","1-1.2")
 #time.sleep(20)
 
 

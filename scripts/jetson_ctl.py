@@ -143,7 +143,7 @@ class Jetson:
                     print("Command executed successfully")
                     flash_success = True
                     # Wait for a specific period after a successful flash
-                    time.sleep(2)  # Sleep for 10 seconds (adjust as needed)
+                    time.sleep(2)  # Sleep for 2 seconds (adjust as needed)
                 else:
                     print(f"Command execution failed with return code {process.returncode}")
                     flash_success = False
@@ -154,7 +154,7 @@ class Jetson:
                     }
                 
                 # Generate IP addresses to test based on the provided range
-                tested_ips = [f"{base_ip}.{i}" for i in range(int(subnet_low), int(subnet_up) + 1)]
+                """tested_ips = [f"{base_ip}.{i}" for i in range(int(subnet_low), int(subnet_up) + 1)]
 
                 # Test the IP addresses and return the first reachable one
                 ip_address = None
@@ -162,10 +162,10 @@ class Jetson:
                     if Jetson.ping(ip):
                         ip_address = ip
                         break
-                
+                """
                 return {
                     "flashSucess": flash_success,
-                    "ip_address": ip_address,
+                    "ip_address": "ip_address",
                     "wait_status": "Completed"
                 }
             

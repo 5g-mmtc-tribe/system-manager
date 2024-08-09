@@ -19,31 +19,72 @@ class VmManager():
     jetson_path =  os.path.join(data_dir, 'jetson')
     bsp_path = os.path.join(data_dir, 'jetson_linux_r35.4.1_aarch64.tbz2')
     rootfs_path = os.path.join(data_dir, 'tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2')
-    def start_vm(self, vm_name):
-        command = ['lxc', 'start', vm_name]
-        try:
-            result =subprocess.run(command, check=True)
-            print("STDOUT:", result.stdout)
-        except subprocess.CalledProcessError as e:
-            # Print the error details
-            print("Command failed with return code:", e.returncode)
-            print("Command output:", e.output)
-            print("STDOUT:", e.stdout)
-            print("STDERR:", e.stderr)
+
+    def is_vm_running(self, vm_name):
+        # Command to check if the instance is running
+        list_command = ["lxc", "list", vm_name, "--format", "json"]
         
+        try:
+            result = subprocess.run(list_command, capture_output=True, text=True, check=True)
+            instances = json.loads(result.stdout)
+            
+            if instances and instances[0]["name"] == vm_name and instances[0]["status"] == "Running":
+                return True
+            else:
+                return False
+        except subprocess.CalledProcessError as e:
+            print("Failed to execute command:", e)
+            print("STDOUT:\n", e.stdout)
+            print("STDERR:\n", e.stderr)
+            return False
+    def is_vm_stopped(self, vm_name):
+        # Command to check if the instance is running
+        list_command = ["lxc", "list", vm_name, "--format", "json"]
+        
+        try:
+            result = subprocess.run(list_command, capture_output=True, text=True, check=True)
+            instances = json.loads(result.stdout)
+            
+            if instances and instances[0]["name"] == vm_name and instances[0]["status"] == "stopped":
+                return True
+            else:
+                return False
+        except subprocess.CalledProcessError as e:
+            print("Failed to execute command:", e)
+            print("STDOUT:\n", e.stdout)
+            print("STDERR:\n", e.stderr)
+            return False
+    def start_vm(self, vm_name):
+        if  not  self.is_vm_running(vm_name):
+            #check if the vm already runnig 
+            command = ['lxc', 'start', vm_name]
+            try:
+                result =subprocess.run(command, check=True)
+                print("STDOUT:", result.stdout)
+            except subprocess.CalledProcessError as e:
+                # Print the error details
+                print("Command failed with return code:", e.returncode)
+                print("Command output:", e.output)
+                print("STDOUT:", e.stdout)
+                print("STDERR:", e.stderr)
+        else :
+               print("VM",vm_name," is alerady Runnig !")
 
     def stop_vm(self, vm_name):
+        if  not  self.is_vm_stopped(vm_name):
+            command = ['lxc', 'stop', vm_name, '--force']
+            try:
+                result =subprocess.run(command, check=True)
+                print("STDOUT:", result.stdout)
+            except subprocess.CalledProcessError as e:
+                # Print the error details
+                print("Command failed with return code:", e.returncode)
+                print("Command output:", e.output)
+                print("STDOUT:", e.stdout)
+                print("STDERR:", e.stderr)
+        else :
+               print("VM",vm_name," is alerady stopped!")
 
-        command = ['lxc', 'stop', vm_name, '--force']
-        try:
-            result =subprocess.run(command, check=True)
-            print("STDOUT:", result.stdout)
-        except subprocess.CalledProcessError as e:
-            # Print the error details
-            print("Command failed with return code:", e.returncode)
-            print("Command output:", e.output)
-            print("STDOUT:", e.stdout)
-            print("STDERR:", e.stderr)
     def get_vm_ip(self ,vm_name):
         # Connect to LXD
         client = pylxd.Client()
@@ -98,23 +139,6 @@ class VmManager():
             print("STDERR:", e.stderr)
             
         
-    def is_vm_running(self, vm_name):
-        # Command to check if the instance is running
-        list_command = ["lxc", "list", vm_name, "--format", "json"]
-        
-        try:
-            result = subprocess.run(list_command, capture_output=True, text=True, check=True)
-            instances = json.loads(result.stdout)
-            
-            if instances and instances[0]["name"] == vm_name and instances[0]["status"] == "Running":
-                return True
-            else:
-                return False
-        except subprocess.CalledProcessError as e:
-            print("Failed to execute command:", e)
-            print("STDOUT:\n", e.stdout)
-            print("STDERR:\n", e.stderr)
-            return False
 
     def delete_vm(self, vm_name):
         if self.is_vm_running(vm_name):
@@ -323,7 +347,10 @@ class VmManager():
         # Commands to be executed inside the LXC VM
         commands = [
             'sysctl -w net.ipv4.ip_forward=1',
-            'iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE'
+            'iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE',
+            'apt-get install iptables-persistent',
+            'netfilter-persistent save',
+            'netfilter-persistent reload'
         ]
         
         try:
