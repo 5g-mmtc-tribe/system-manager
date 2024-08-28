@@ -4,6 +4,7 @@ from network_interface import NetworkInterface
 import json
 import os ,sys
 import pylxd
+import redis
 from macvlan import MacVlan
 # Get the absolute path of the parent directory
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts'))
@@ -637,6 +638,55 @@ class VmManager():
              # configure Nat 
             vm_manager.configure_vm_nat(vm_name,"install_torch.sh")
 
+    def add_ssh_key_to_lxd(self,username, lxd_vm_name):
+        # Fixed index name
+        index_name = 'UserIdxs'
+        redis_client = redis.Redis(host='localhost', port=6379)
+        # Search for the user in Redis using RediSearch
+        search_results = redis_client.ft(index_name).search(f"@login:({username})")
+        
+        # Check if we got any results
+        if not search_results.docs:
+            raise ValueError(f"No user found with login: {username}")
+
+        # Assuming the first result is the user we want (adapt as needed)
+        user_data = search_results.docs[0].json
+        user_data=json.loads(user_data)
+        
+        # Extract the SSH keys from the user data
+        ssh_keys = user_data.get('user', {}).get('sshKeys', [])
+        if not ssh_keys:
+            raise ValueError("No SSH keys found for the user")
+
+        # Join all keys into a single string (in case there are multiple keys)
+        ssh_key_str = "\n".join(ssh_keys)
+        
+        # Define the path to the SSH directory and authorized_keys file
+        ssh_dir = "/root/.ssh"
+        authorized_keys_file = f"{ssh_dir}/authorized_keys"
+        
+        # Check if the LXD VM is running
+        result = subprocess.run(['lxc', 'info', lxd_vm_name], capture_output=True, text=True)
+        if 'Status: RUNNING' not in result.stdout:
+            raise RuntimeError(f"LXD VM {lxd_vm_name} is not running")
+
+        # Create the .ssh directory if it doesn't exist
+        subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'mkdir', '-p', ssh_dir], check=True)
+        
+        # Append the SSH public key to the authorized_keys file
+        subprocess.run(
+            ['lxc', 'exec', lxd_vm_name, '--', 'bash', '-c', f'echo "{ssh_key_str}" >> {authorized_keys_file}'],
+            check=True
+        )
+        
+        # Set correct permissions
+        subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'chmod', '700', ssh_dir], check=True)
+        subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'chmod', '600', authorized_keys_file], check=True)
+        subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'chown', 'root:root', ssh_dir], check=True)
+        subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'chown', 'root:root', authorized_keys_file], check=True)
+
+        print(f"SSH public key added to root in VM {lxd_vm_name}")
+
     def install_5gmmtctool(_self ,vm_name , nfs_ip_addr):
             # copy dhcp config 
             ip = IpAddr()
@@ -706,5 +756,5 @@ ip_addr = IpAddr()
 #vm_manager.delete_vm(vm_name)
 # vm_manager.delete_macvlan_for_vm(macvlan_manager, macvlan_name)
 
-
+#vm_manager.add_ssh_key_to_lxd("debbah","debbah")
 
