@@ -10,7 +10,9 @@ script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../script
 sys.path.append(script_path)
 from ip_addr_manager import IpAddr
 user_script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../user-scripts'))
-
+switch_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../switch'))
+sys.path.append(switch_path)
+from switch_manager import SwitchManager
 
 class VmManager():
     # Get the absolute path to the resource.json file
@@ -216,7 +218,7 @@ class VmManager():
             print("STDERR:", e.stderr)
 
 
-    def set_nfs_ip_addr(self, vm_name, nfs_ip_addr):
+    def set_nfs_ip_addr(self, vm_name, nfs_ip_addr,user_vlan_ip ,network_id ,switch_config):
         interface_name = "enp6s0"
         
         if self.interface_check(vm_name, interface_name):
@@ -259,7 +261,23 @@ class VmManager():
                 print("STDERR:\n", e.stderr)"""
             # set the ip of the nfs 
             ip = IpAddr()
-            ip.update_network_config("ipconfig.txt", nfs_ip_addr)
+             
+             
+
+            # add vlan interface 
+            # Define the LXC command to add the NIC device
+            command1 = ["lxc", "config", "device", "add", vm_name, "eth2", "nic", f"nictype=macvlan", f"parent=eno3", f"vlan={network_id}"]
+            # Run the first LXC command
+            VmManager.run_command(command1, f"Adding eth2 NIC to LXC vm '{vm_name}' with MACVLAN and VLAN {network_id}")
+            device = switch_config
+            switch = SwitchManager(device_type = device['device_type'],
+                                ip = device['ip'],
+                                port = device['port'],
+                                password = device['password'])
+            
+            switch.configure_vlan(network_id,"vlan"+str(network_id))
+
+            ip.update_network_config("ipconfig.txt", nfs_ip_addr ,user_vlan_ip)
             # set up  the nfs ip address
             command_librray_install=   ["sudo","lxc", "file","push" ,"ipconfig.txt" ,vm_name+"/root/"]
             VmManager.run_command(command_librray_install,"copy nfs ip address config")
@@ -337,6 +355,8 @@ class VmManager():
             else:
                   error_message = f"Command execution failed with return code {process.returncode}"
                   raise Exception(error_message)
+
+
     def configure_vm_nat(self, vm_name, src_script_path):
         """
         Configures the LXC VM by enabling IP forwarding, setting up NAT, and copying a script to the VM.
@@ -348,11 +368,11 @@ class VmManager():
         commands = [
             'sysctl -w net.ipv4.ip_forward=1',
             'iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE',
-            'apt-get install iptables-persistent',
-            'netfilter-persistent save',
-            'netfilter-persistent reload'
+            'apt-get install iptables-persistent -y',
+            
         ]
-        
+        #'netfilter-persistent save -y',
+        #   'netfilter-persistent reload -y'
         try:
             # Execute commands in the LXC VM
             for cmd in commands:
@@ -593,7 +613,7 @@ class VmManager():
                     print("STDERR:\n", e.stderr)
                     return
 
-    def install_library_for_flashing_jetson(_self ,vm_name ,nfs_ip_addr):
+    def install_library_for_flashing_jetson(_self ,vm_name ,nfs_ip_addr ) :
             #VmManager.download_Jetson_driver()
             vm_manager = VmManager()
             command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "apt" ,"update" ]
@@ -614,8 +634,9 @@ class VmManager():
                 print("STDOUT:\n", e.stdout)
                 print("STDERR:\n", e.stderr)
                 return   
-            # configure Nat 
+             # configure Nat 
             vm_manager.configure_vm_nat(vm_name,"install_torch.sh")
+
     def install_5gmmtctool(_self ,vm_name , nfs_ip_addr):
             # copy dhcp config 
             ip = IpAddr()

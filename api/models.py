@@ -22,6 +22,7 @@ class UserNetworkInfo(BaseModel):
     nfs_ip_addr: str
     macvlan_interface: str
     macvlan_ip_addr: str
+    vlan_ip_addr :str
 
 class CreateUserEnvVMRequest(BaseModel):
     ubuntu_version: str 

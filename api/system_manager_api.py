@@ -164,6 +164,7 @@ def allocate_active_users(user_name, user_network_id):
         user_subnet = ip_addr.user_subnet(user_network_id)
         nfs_ip_addr = ip_addr.nfs_interface_ip(user_network_id)
         macvlan_ip_addr = ip_addr.macvlan_interface_ip(user_network_id)
+        vlan_ip_addr = ip_addr.vlan_ip(user_network_id)
 
         # macvlan name
         user_macvlan = f"macvlan_{user_name}"
@@ -176,7 +177,8 @@ def allocate_active_users(user_name, user_network_id):
             "user_subnet": user_subnet,
             "nfs_ip_addr": nfs_ip_addr,
             "macvlan_interface": user_macvlan,
-            "macvlan_ip_addr": macvlan_ip_addr
+            "macvlan_ip_addr": macvlan_ip_addr,
+            "vlan_ip_addr":vlan_ip_addr
         }
 
         # Append user data to the existing users list
@@ -258,10 +260,13 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
     check_args_type_create_user_env_vm(ubuntu_version, vm_name, root_size, user_info)
 
     # Extracting the information
+    
     macvlan_name = user_info["macvlan_interface"]
     user_name = user_info["user_name"]
     macvlan_ip_addr = user_info["macvlan_ip_addr"]
     nfs_ip_addr = user_info["nfs_ip_addr"]
+    user_network_id = user_info["user_network_id"]
+    user_vlan_ip =  user_info["vlan_ip_addr"]
 
     # interface name on which macvlan is to be created
     #interface_name = "enp2s0"
@@ -282,7 +287,7 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
         res = vm_manager.interface_check(vm_name, "enp6s0")
         time.sleep(10)
         print(res)
-        vm_manager.set_nfs_ip_addr(vm_name, nfs_ip_addr)
+        vm_manager.set_nfs_ip_addr(vm_name, nfs_ip_addr,user_vlan_ip , user_network_id ,switch_config)
         # prepare the device to use 
         vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)   
         time.sleep(2)

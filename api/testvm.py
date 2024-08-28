@@ -12,26 +12,27 @@ from models import CreateUserEnvVMRequest, UserNetworkInfo ,jetsonInfo
 # Global variables: user_name and user_network_id
 #------------------------------------------------------------------------------------------------------------------
 
+
+
 data = {
-    'user_name': "mehdivm",
-    'user_network_id': '10'
+    'user_name': "cedric",
+    'user_network_id': '120'
 }
 
 #-------------------------------------------------------------------------------------------------------------------
 ## Creating new users
 #-------------------------------------------------------------------------------------------------------------------
-
-"""response = requests.post('http://193.55.250.148:8083/create_user', json=data)
+response = requests.post('http://193.55.250.148:8083/create_user', json=data)
 print(response.status_code)
 print(response.json())
-"""
+
 # #-----------------------------------------------------------------------
 # # Getting user info
 # #-----------------------------------------------------------------------
 
 data = {
-    'user_name': "mehdivm",
-    'user_network_id': '10'
+    'user_name': "cedric",
+    'user_network_id': '120'
 }
 
 
@@ -58,6 +59,7 @@ print(response.json())
 # Creating user env
 #----------------------------------------------------
 
+
 user_env_info = {
     'ubuntu_version': '24.04',
    'vm_name': user_info_data['user_name'],
@@ -78,11 +80,11 @@ print(response.json())
 # test flashing 
 #----------------------------------------------------
 # # Create Pydantic model instance
-request_data={}
+"""request_data={}
 request_data['nfs_ip_addr']=user_info_data['nfs_ip_addr']
 request_data['nfs_path']= '/root/nfsroot/rootfs'
 request_data['usb_instance']='1-1.2'
 # # Send request
 response = requests.post('http://193.55.250.148:8083/flash_jetson', json=request_data)
 print(response.status_code)
-print(response.json())
+print(response.json())"""
