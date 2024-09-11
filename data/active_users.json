@@ -2,19 +2,8 @@
     {
         "user_name": "debbah",
         "user_network_id": 226,
-        "user_subnet": "192.168.0.226/24",
-        "nfs_ip_addr": "192.168.0.228/24",
-        "macvlan_interface": "macvlan_debbah",
-        "macvlan_ip_addr": "192.168.0.229/24",
-        "vlan_ip_addr": "10.111.226.228/24"
-    },
-    {
-        "user_name": "cedric",
-        "user_network_id": 120,
-        "user_subnet": "192.168.0.120/24",
-        "nfs_ip_addr": "192.168.0.122/24",
-        "macvlan_interface": "macvlan_cedric",
-        "macvlan_ip_addr": "192.168.0.123/24",
-        "vlan_ip_addr": "10.111.120.122/24"
+        "user_subnet": "10.111.226.0/24",
+        "nfs_ip_addr": "10.111.226.4/24",
+        "macvlan_interface": "macvlan_debbah"
     }
 ]

@@ -82,7 +82,7 @@ def turn_on_all_nodes():
     print(switch_interfaces)
     power.turn_all_on()
 
-def turn_on_node(interface):
+def turn_on_node(interface ):
     device = switch_config
     switch = SwitchManager(device_type = device['device_type'],
                                 ip = device['ip'],
@@ -91,6 +91,7 @@ def turn_on_node(interface):
 
     power = PoeManager(switch)
     power.turn_on(interface)
+
     print(interface,"is up ")
 
 def turn_off_node(interface):
@@ -103,6 +104,16 @@ def turn_off_node(interface):
     power = PoeManager(switch)
     power.turn_off(interface)
     print(interface,"is down ")
+
+def attach_vlan_device_interface(interface ,vlan_id):
+    device = switch_config
+    switch = SwitchManager(device_type = device['device_type'],
+                                ip = device['ip'],
+                                port = device['port'],
+                                password = device['password'])
+    switch.mode_access(interface)
+    switch.vlan_access(interface ,vlan_id)
+    print(interface,"is on vlan  "+str(vlan_id))
 
 # Function to get the switch interface
 def get_switch_interface(device_name: str) -> str:
@@ -163,8 +174,6 @@ def allocate_active_users(user_name, user_network_id):
 
         user_subnet = ip_addr.user_subnet(user_network_id)
         nfs_ip_addr = ip_addr.nfs_interface_ip(user_network_id)
-        macvlan_ip_addr = ip_addr.macvlan_interface_ip(user_network_id)
-        vlan_ip_addr = ip_addr.vlan_ip(user_network_id)
 
         # macvlan name
         user_macvlan = f"macvlan_{user_name}"
@@ -177,8 +186,6 @@ def allocate_active_users(user_name, user_network_id):
             "user_subnet": user_subnet,
             "nfs_ip_addr": nfs_ip_addr,
             "macvlan_interface": user_macvlan,
-            "macvlan_ip_addr": macvlan_ip_addr,
-            "vlan_ip_addr":vlan_ip_addr
         }
 
         # Append user data to the existing users list
@@ -263,31 +270,26 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
     
     macvlan_name = user_info["macvlan_interface"]
     user_name = user_info["user_name"]
-    macvlan_ip_addr = user_info["macvlan_ip_addr"]
     nfs_ip_addr = user_info["nfs_ip_addr"]
     user_network_id = user_info["user_network_id"]
-    user_vlan_ip =  user_info["vlan_ip_addr"]
+   
 
     # interface name on which macvlan is to be created
     #interface_name = "enp2s0"
     interface_name = "eno3"
-    macvlan_manager = MacVlan(interface_name)
     vm_manager = VmManager()
     
     existed =vm_manager.create_user_vm(ubuntu_version, vm_name, root_size)
     if existed["created"]:
         # new vm created 
         time.sleep(20)
-        print(macvlan_ip_addr)
 
-        vm_manager.create_macvlan_for_vm(macvlan_manager, macvlan_name,macvlan_ip_addr)
-
-        vm_manager.attach_macvlan_to_vm(vm_name, macvlan_name)
+        vm_manager.create_macvlan_for_vm(user_name,user_network_id ,switch_config, interface_name ,macvlan_name )
 
         res = vm_manager.interface_check(vm_name, "enp6s0")
         time.sleep(10)
         print(res)
-        vm_manager.set_nfs_ip_addr(vm_name, nfs_ip_addr,user_vlan_ip , user_network_id ,switch_config)
+        vm_manager.set_nfs_ip_addr(vm_name, nfs_ip_addr )
         # prepare the device to use 
         vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)   
         time.sleep(2)
@@ -358,3 +360,5 @@ user_info =        {
 #allocate_active_users("cedric", 75)
 #allocate_active_users("cedric", 76)
 # ----------------------------
+
+attach_vlan_device_interface("Gigabit 1/0/13" ,226)

@@ -4,7 +4,7 @@ class IpAddr:
     def __init__(self):
         pass
 
-    def user_subnet(self, user_id, n=3 ,base_subnet="192.168.0.0/24"):
+    def user_subnet(self, user_id, n=2 ,base_subnet="10.111.0.0/24"):
         # Start with a base subnet (e.g., "192.168.0.0/24")
         
         # Split the subnet into its components
@@ -27,12 +27,11 @@ class IpAddr:
         # Split the subnet into its components
         prefix = user_subnet.split('/')
         prefix_parts = prefix[0].split('.')
-        
+
         # Change the nth part of the IP address
-        if 0 <= n < len(prefix_parts)-1:
-            prefix_parts[n+1] = str(1)
-        elif n == len(prefix_parts)-1:
-            prefix_parts[n] = str(user_id+2)
+        if 0 <= n < len(prefix_parts):
+            prefix_parts[n] = str(4)
+
         # Reassemble the IP address and subnet mask
         nfs_interface = f"{'.'.join(prefix_parts)}/{prefix[1]}"
         return nfs_interface
@@ -85,7 +84,7 @@ class IpAddr:
         print("jetson_ip",jetson_ip)
         return jetson_ip 
     
-    def update_network_config(self,file_path, new_ip,vlan_ip):
+    def update_network_config(self,file_path, new_ip):
         # Check if file exists
         if not os.path.exists(file_path):
             print(f"Error: File '{file_path}' not found.")
@@ -102,16 +101,6 @@ class IpAddr:
                 if next_line_index < len(lines):
                     lines[next_line_index] = f"              - {new_ip}\n"
        
-        # Modify the IP address for enp7s0
-        in_enp7s0_section = False
-        for i, line in enumerate(lines):
-            if "enp7s0:" in line:
-                in_enp7s0_section = True
-            elif in_enp7s0_section and "addresses:" in line:
-                next_line_index = i + 1
-                if next_line_index < len(lines):
-                    lines[next_line_index] = f"              - {vlan_ip}\n"
-                in_enp7s0_section = False
 
         # Write the modified content back to the file
         with open(file_path, 'w') as file:
@@ -126,7 +115,7 @@ class IpAddr:
             subnet_low = str(int(ips[3]) + 2)
             subnet_up = str(int(ips[3]) + 5)
 
-            new_content = f"""subnet 192.168.0.0 netmask 255.255.255.0 {{
+            new_content = f"""subnet {plage}.0 netmask 255.255.255.0 {{
             range {plage}.{subnet_low} {plage}.{subnet_up};
             option routers {net};
             option domain-name-servers 8.8.8.8, 8.8.4.4;
@@ -148,7 +137,7 @@ class IpAddr:
 ip = IpAddr()
 # subnet = ip.user_subnet(4)
 # print(subnet)
-# print(ip.nfs_interface_ip(6))
+#print(ip.nfs_interface_ip(6))
 # print(ip.macvlan_interface_ip(5))
-#ip.update_dhcp_configuration("/home/mehdi/system-manager/api/dhcpConfig.txt","192.168.0.11/24")
+#ip.update_dhcp_configuration("/home/mehdi/system-manager/api/dhcpConfig.txt","10.111.100.6/24")
 #ip.update_network_config("/home/mehdi/system-manager/api/ipconfig.txt","192.168.0.11/24","10.111.150.110/24")
