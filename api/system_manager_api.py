@@ -111,8 +111,8 @@ def attach_vlan_device_interface(interface ,vlan_id):
                                 ip = device['ip'],
                                 port = device['port'],
                                 password = device['password'])
-    switch.mode_access(interface)
     switch.vlan_access(interface ,vlan_id)
+    time.sleep(7)
     print(interface,"is on vlan  "+str(vlan_id))
 
 # Function to get the switch interface
@@ -360,5 +360,5 @@ user_info =        {
 #allocate_active_users("cedric", 75)
 #allocate_active_users("cedric", 76)
 # ----------------------------
-
-attach_vlan_device_interface("Gigabit 1/0/13" ,226)
+#interface=get_switch_interface("Jetson Xavier 2")
+#attach_vlan_device_interface("Gigabit 1/0/11" ,1)

@@ -84,37 +84,25 @@ class SwitchManager():
         self.sendCommand(mode_access)
         self.sendCommand("end")
     
-    def vlan_access(self ,interface,vlan_id):
-        if not self.check_enable_mode():
-                self.enable_device()
-        conf_t = "configure terminal"
-        self.sendCommand(conf_t)
-        self.sendCommand("interface " +interface)
-        mode_access = "switchport access vlan " +str(vlan_id)
-        self.sendCommand(mode_access)
-        self.sendCommand("end")
-
-    def check_interface_on(self , interface):
-        # return if interface is up or down 
+    def vlan_access(self, interface, vlan_id):
+        # Check if in enable mode, if not, enter it
         if not self.check_enable_mode():
             self.enable_device()
-        output=self.sendCommand(f'show interface {interface} ')
-        # Print the raw output (optional)
-        #print(output)
-        # Parse the output
-        # Print the raw output (optional)
-        print("Raw Output:\n", output)
 
-        # Parse the output for specific details
-        interface_status = {}
+        # Create the commands to configure the interface
+        config_commands = [
+            f"interface {interface}",
+            "switchport mode access",
+            f"switchport access vlan {vlan_id}"
+        ]
 
-        # Extract interface status
-        if "line protocol is up" in output :
-            interface_status['Status'] = 'up'
-        else:
-            interface_status['Status'] = 'down'
+        # Sending the commands in configuration mode
+        self.sendCommand('configure terminal')
+        for cmd in config_commands:
+            self.sendCommand(cmd)
 
-        return interface_status
+        # Exit config mode
+        self.sendCommand('end')
 
 # Define the device
 device = {
