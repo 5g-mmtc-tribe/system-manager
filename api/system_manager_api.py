@@ -82,7 +82,7 @@ def turn_on_all_nodes():
     print(switch_interfaces)
     power.turn_all_on()
 
-def turn_on_node(interface):
+def turn_on_node(interface ):
     device = switch_config
     switch = SwitchManager(device_type = device['device_type'],
                                 ip = device['ip'],
@@ -91,6 +91,7 @@ def turn_on_node(interface):
 
     power = PoeManager(switch)
     power.turn_on(interface)
+
     print(interface,"is up ")
 
 def turn_off_node(interface):
@@ -103,6 +104,16 @@ def turn_off_node(interface):
     power = PoeManager(switch)
     power.turn_off(interface)
     print(interface,"is down ")
+
+def attach_vlan_device_interface(interface ,vlan_id):
+    device = switch_config
+    switch = SwitchManager(device_type = device['device_type'],
+                                ip = device['ip'],
+                                port = device['port'],
+                                password = device['password'])
+    switch.vlan_access(interface ,vlan_id)
+    time.sleep(7)
+    print(interface,"is on vlan  "+str(vlan_id))
 
 # Function to get the switch interface
 def get_switch_interface(device_name: str) -> str:
@@ -163,7 +174,6 @@ def allocate_active_users(user_name, user_network_id):
 
         user_subnet = ip_addr.user_subnet(user_network_id)
         nfs_ip_addr = ip_addr.nfs_interface_ip(user_network_id)
-        macvlan_ip_addr = ip_addr.macvlan_interface_ip(user_network_id)
 
         # macvlan name
         user_macvlan = f"macvlan_{user_name}"
@@ -176,7 +186,6 @@ def allocate_active_users(user_name, user_network_id):
             "user_subnet": user_subnet,
             "nfs_ip_addr": nfs_ip_addr,
             "macvlan_interface": user_macvlan,
-            "macvlan_ip_addr": macvlan_ip_addr
         }
 
         # Append user data to the existing users list
@@ -258,39 +267,39 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
     check_args_type_create_user_env_vm(ubuntu_version, vm_name, root_size, user_info)
 
     # Extracting the information
+    
     macvlan_name = user_info["macvlan_interface"]
     user_name = user_info["user_name"]
-    macvlan_ip_addr = user_info["macvlan_ip_addr"]
     nfs_ip_addr = user_info["nfs_ip_addr"]
+    user_network_id = user_info["user_network_id"]
+   
 
     # interface name on which macvlan is to be created
     #interface_name = "enp2s0"
     interface_name = "eno3"
-    macvlan_manager = MacVlan(interface_name)
     vm_manager = VmManager()
     
     existed =vm_manager.create_user_vm(ubuntu_version, vm_name, root_size)
     if existed["created"]:
         # new vm created 
         time.sleep(20)
-        print(macvlan_ip_addr)
 
-        vm_manager.create_macvlan_for_vm(macvlan_manager, macvlan_name,macvlan_ip_addr)
-
-        vm_manager.attach_macvlan_to_vm(vm_name, macvlan_name)
+        vm_manager.create_macvlan_for_vm(user_name,user_network_id ,switch_config, interface_name ,macvlan_name )
 
         res = vm_manager.interface_check(vm_name, "enp6s0")
         time.sleep(10)
         print(res)
-        vm_manager.set_nfs_ip_addr(vm_name, nfs_ip_addr)
+        vm_manager.set_nfs_ip_addr(vm_name, nfs_ip_addr )
         # prepare the device to use 
         vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)   
-        time.sleep(7)
-        return {"vm_ip_address":vm_manager.get_vm_ip(vm_name),"status": "User Env Created"}
+        time.sleep(2)
+        vm_manager.add_ssh_key_to_lxd(user_name,user_name)
+        return {"vm_ip_address":"10.0.0.0","status": "User Env Created"}
     else :# vm alrady exist 
+          
           vm_manager.start_vm(vm_name)
-          time.sleep(7)
-          return {"vm_name":"10.29.50.181","status": "User Env Created"}
+          time.sleep(2)
+          return {"vm_name":"10.0.0.0","status": "User Env Created"}
           # prepare the device to use 
           #vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)      
 def stop_user_vm( vm_name):
@@ -304,13 +313,14 @@ def flash_jetson( nfs_ip_addres ,nfspath,usb_instance ):
     turn_on_all_nodes()
     Jetson_class= Jetson()
     result = Jetson_class.flash_jetson (nfs_ip_addres,nfspath ,usb_instance)
-    time.sleep(7)
+    #time.sleep(7)
     return result
 
 
 #test 
 #testbed_reset()
 #turn_on_all_nodes()
+#flash_jetson("192.168.0.227/24","/root/nfsroot/rootfs","1-1.2")
 #time.sleep(20)
 
 
@@ -350,3 +360,5 @@ user_info =        {
 #allocate_active_users("cedric", 75)
 #allocate_active_users("cedric", 76)
 # ----------------------------
+#interface=get_switch_interface("Jetson Xavier 2")
+#attach_vlan_device_interface("Gigabit 1/0/11" ,1)

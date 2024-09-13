@@ -7,7 +7,7 @@ import system_manager_api
 import logging
 import uvicorn
 from pydantic import BaseModel
-from models import DestroyEnvVMRequest, CreateUser,  CreateUserEnvVMRequest ,TurnNode ,jetsonInfo
+from models import DestroyEnvVMRequest, CreateUser,  CreateUserEnvVMRequest ,TurnNode, VlanNode ,jetsonInfo
 
 
 logging.basicConfig(level=logging.ERROR)
@@ -153,6 +153,19 @@ def call_turn_off_node(request:TurnNode):
     except Exception as e:
         logging.error(e)
         raise HTTPException(status_code=500, detail='Failed to turn off  node')
+    
+# fuction to put switch interface conneted to a device in the same vlan 
+@app.post('/add_vlan_int')
+def call_add_vlan_int(request: VlanNode):
+    try:
+        logging.info(f"Received request data: {request}")
+        interface=system_manager_api.get_switch_interface(request.node_name)
+        system_manager_api.attach_vlan_device_interface(interface ,request.vlan_id)
+    except Exception as e:
+        logging.error(e)
+        raise HTTPException(status_code=500, detail='Failed to turn off  node')
+    
+
 #--------------------------------------------------------------
 # Function to get user info
 #--------------------------------------------------------------
@@ -195,7 +208,3 @@ def run():
 run()
     
 #-------------------------------------------------------------------------------------------------------------------
-"""
-
-"sudo adduser $USER lxd"  for permision
-"""

@@ -21,7 +21,7 @@ class UserNetworkInfo(BaseModel):
     user_subnet: str
     nfs_ip_addr: str
     macvlan_interface: str
-    macvlan_ip_addr: str
+
 
 class CreateUserEnvVMRequest(BaseModel):
     ubuntu_version: str 
@@ -31,3 +31,7 @@ class CreateUserEnvVMRequest(BaseModel):
 
 class TurnNode(BaseModel):
     node_name :str
+
+class VlanNode(BaseModel):
+    node_name :str
+    vlan_id :int

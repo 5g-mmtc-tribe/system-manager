@@ -4,13 +4,16 @@ from network_interface import NetworkInterface
 import json
 import os ,sys
 import pylxd
+import redis
 from macvlan import MacVlan
 # Get the absolute path of the parent directory
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts'))
 sys.path.append(script_path)
 from ip_addr_manager import IpAddr
 user_script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../user-scripts'))
-
+switch_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../switch'))
+sys.path.append(switch_path)
+from switch_manager import SwitchManager
 
 class VmManager():
     # Get the absolute path to the resource.json file
@@ -19,31 +22,96 @@ class VmManager():
     jetson_path =  os.path.join(data_dir, 'jetson')
     bsp_path = os.path.join(data_dir, 'jetson_linux_r35.4.1_aarch64.tbz2')
     rootfs_path = os.path.join(data_dir, 'tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2')
-    def start_vm(self, vm_name):
-        command = ['lxc', 'start', vm_name]
-        try:
-            result =subprocess.run(command, check=True)
-            print("STDOUT:", result.stdout)
-        except subprocess.CalledProcessError as e:
-            # Print the error details
-            print("Command failed with return code:", e.returncode)
-            print("Command output:", e.output)
-            print("STDOUT:", e.stdout)
-            print("STDERR:", e.stderr)
+    ###  helper #####
+
+    def run_command(command, description):
+            print(f"Running: {description}")
+            print(f"Command: {' '.join(command)}")
+
+            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+            
+            while True:
+                output = process.stdout.readline()
+                if output == "" and process.poll() is not None:
+                    break
+                if output:
+                    print(output.strip())
+            
+            stderr = process.communicate()[1]
+            if stderr:
+                print(stderr)
+                        # Check if the command was successful
+            if process.returncode == 0:
+                print("Command executed successfully")
+            else:
+                  error_message = f"Command execution failed with return code {process.returncode}"
+                  raise Exception(error_message)
+
+    def is_vm_running(self, vm_name):
+        # Command to check if the instance is running
+        list_command = ["lxc", "list", vm_name, "--format", "json"]
         
+        try:
+            result = subprocess.run(list_command, capture_output=True, text=True, check=True)
+            instances = json.loads(result.stdout)
+            
+            if instances and instances[0]["name"] == vm_name and instances[0]["status"] == "Running":
+                return True
+            else:
+                return False
+        except subprocess.CalledProcessError as e:
+            print("Failed to execute command:", e)
+            print("STDOUT:\n", e.stdout)
+            print("STDERR:\n", e.stderr)
+            return False
+    def is_vm_stopped(self, vm_name):
+        # Command to check if the instance is running
+        list_command = ["lxc", "list", vm_name, "--format", "json"]
+        
+        try:
+            result = subprocess.run(list_command, capture_output=True, text=True, check=True)
+            instances = json.loads(result.stdout)
+            
+            if instances and instances[0]["name"] == vm_name and instances[0]["status"] == "stopped":
+                return True
+            else:
+                return False
+        except subprocess.CalledProcessError as e:
+            print("Failed to execute command:", e)
+            print("STDOUT:\n", e.stdout)
+            print("STDERR:\n", e.stderr)
+            return False
+    def start_vm(self, vm_name):
+        if  not  self.is_vm_running(vm_name):
+            #check if the vm already runnig 
+            command = ['lxc', 'start', vm_name]
+            try:
+                result =subprocess.run(command, check=True)
+                print("STDOUT:", result.stdout)
+            except subprocess.CalledProcessError as e:
+                # Print the error details
+                print("Command failed with return code:", e.returncode)
+                print("Command output:", e.output)
+                print("STDOUT:", e.stdout)
+                print("STDERR:", e.stderr)
+        else :
+               print("VM",vm_name," is alerady Runnig !")
 
     def stop_vm(self, vm_name):
+        if  not  self.is_vm_stopped(vm_name):
+            command = ['lxc', 'stop', vm_name, '--force']
+            try:
+                result =subprocess.run(command, check=True)
+                print("STDOUT:", result.stdout)
+            except subprocess.CalledProcessError as e:
+                # Print the error details
+                print("Command failed with return code:", e.returncode)
+                print("Command output:", e.output)
+                print("STDOUT:", e.stdout)
+                print("STDERR:", e.stderr)
+        else :
+               print("VM",vm_name," is alerady stopped!")
 
-        command = ['lxc', 'stop', vm_name, '--force']
-        try:
-            result =subprocess.run(command, check=True)
-            print("STDOUT:", result.stdout)
-        except subprocess.CalledProcessError as e:
-            # Print the error details
-            print("Command failed with return code:", e.returncode)
-            print("Command output:", e.output)
-            print("STDOUT:", e.stdout)
-            print("STDERR:", e.stderr)
     def get_vm_ip(self ,vm_name):
         # Connect to LXD
         client = pylxd.Client()
@@ -98,23 +166,6 @@ class VmManager():
             print("STDERR:", e.stderr)
             
         
-    def is_vm_running(self, vm_name):
-        # Command to check if the instance is running
-        list_command = ["lxc", "list", vm_name, "--format", "json"]
-        
-        try:
-            result = subprocess.run(list_command, capture_output=True, text=True, check=True)
-            instances = json.loads(result.stdout)
-            
-            if instances and instances[0]["name"] == vm_name and instances[0]["status"] == "Running":
-                return True
-            else:
-                return False
-        except subprocess.CalledProcessError as e:
-            print("Failed to execute command:", e)
-            print("STDOUT:\n", e.stdout)
-            print("STDERR:\n", e.stderr)
-            return False
 
     def delete_vm(self, vm_name):
         if self.is_vm_running(vm_name):
@@ -131,7 +182,7 @@ class VmManager():
 
 
 
-    def create_macvlan_for_vm(self, macvlan_manager, macvlan_name,macvlan_ip_addr) :
+    def create_macvlan_for_vm_old(self, macvlan_manager, macvlan_name,macvlan_ip_addr) :
 
         if macvlan_manager.macvlan_exists(macvlan_name) == False:
             macvlan_manager.create_macvlan(macvlan_name)
@@ -140,6 +191,22 @@ class VmManager():
         else:
             print("Macvlan for user exists")
 
+
+    def create_macvlan_for_vm(self, vm_name ,network_id,switch_config,interface_name ,macvlan_name) :
+        # add vlan interface 
+        # Define the LXC command to add the NIC device
+        command1 = ["lxc", "config", "device", "add", vm_name, macvlan_name, "nic", f"nictype=macvlan", f"parent={interface_name}" , f"vlan={network_id}"]
+        # Run the first LXC command
+        VmManager.run_command(command1, f"Adding eth2 NIC to LXC vm '{vm_name}' with MACVLAN and VLAN {network_id}")
+        device = switch_config
+        switch = SwitchManager(device_type = device['device_type'],
+                            ip = device['ip'],
+                            port = device['port'],
+                            password = device['password'])
+        
+        switch.configure_vlan(network_id,"vlan"+str(network_id))
+
+  
 
     def delete_macvlan_for_vm(self, macvlan_manager, macvlan_name):
         
@@ -192,7 +259,7 @@ class VmManager():
             print("STDERR:", e.stderr)
 
 
-    def set_nfs_ip_addr(self, vm_name, nfs_ip_addr):
+    def set_nfs_ip_addr(self, vm_name, nfs_ip_addr ):
         interface_name = "enp6s0"
         
         if self.interface_check(vm_name, interface_name):
@@ -210,32 +277,10 @@ class VmManager():
                 print("STDOUT:\n", e.stdout)
                 print("STDERR:\n", e.stderr)
                 return
-            
-            # Add the IP address if not already allocated
-            """command_add_ip = ["lxc", "exec", vm_name, "--", "ip", "addr", "add", nfs_ip_addr, "dev", interface_name]
-            print(command_add_ip)
-            try:
-                result = subprocess.run(command_add_ip, capture_output=True, text=True, check=True)
-                print(f"IP address {nfs_ip_addr} added to {interface_name}.")
-            except subprocess.CalledProcessError as e:
-                print("Failed to execute command:", e)
-                print("STDOUT:\n", e.stdout)
-                print("STDERR:\n", e.stderr)
-                return
-            
-            # Set the interface up
-            command_set_interface_up = ["lxc", "exec", vm_name, "--", "ip", "link", "set", "dev", interface_name, "up"]
-            print(command_set_interface_up)
-            try:
-                result = subprocess.run(command_set_interface_up, capture_output=True, text=True, check=True)
-                print(f"Interface {interface_name} set up.")
-            except subprocess.CalledProcessError as e:
-                print("Failed to execute command:", e)
-                print("STDOUT:\n", e.stdout)
-                print("STDERR:\n", e.stderr)"""
+    
             # set the ip of the nfs 
             ip = IpAddr()
-            ip.update_network_config("ipconfig.txt", nfs_ip_addr)
+            ip.update_network_config("ipconfig.txt",nfs_ip_addr)
             # set up  the nfs ip address
             command_librray_install=   ["sudo","lxc", "file","push" ,"ipconfig.txt" ,vm_name+"/root/"]
             VmManager.run_command(command_librray_install,"copy nfs ip address config")
@@ -291,29 +336,37 @@ class VmManager():
                 print("STDOUT:\n", e.stdout)
                 print("STDERR:\n", e.stderr)
 
-    def run_command(command, description):
-            print(f"Running: {description}")
-            print(f"Command: {' '.join(command)}")
 
-            process = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+    def configure_vm_nat(self, vm_name, src_script_path):
+        """
+        Configures the LXC VM by enabling IP forwarding, setting up NAT, and copying a script to the VM.
+        
+        :param vm_name: Name of the LXC VM
+        :param src_script_path: Path to the script on the host to be copied to the VM
+        """
+        # Commands to be executed inside the LXC VM
+        commands = [
+            'sysctl -w net.ipv4.ip_forward=1',
+            'iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE',
             
-            while True:
-                output = process.stdout.readline()
-                if output == "" and process.poll() is not None:
-                    break
-                if output:
-                    print(output.strip())
             
-            stderr = process.communicate()[1]
-            if stderr:
-                print(stderr)
-                        # Check if the command was successful
-            if process.returncode == 0:
-                print("Command executed successfully")
-            else:
-                  error_message = f"Command execution failed with return code {process.returncode}"
-                  raise Exception(error_message)
-     
+        ]
+        # 'apt-get install iptables-persistent -y',
+        # 'netfilter-persistent save -y',
+        #   'netfilter-persistent reload -y'
+        try:
+            # Execute commands in the LXC VM
+            for cmd in commands:
+                subprocess.run(['lxc', 'exec', vm_name, '--', 'sh', '-c', cmd], check=True)
+                print(f"Command '{cmd}' executed successfully in {vm_name}")
+
+            # Copy the script to the LXC VM
+            subprocess.run(['lxc', 'file', 'push', src_script_path, f'{vm_name}/root/install_torch'], check=True)
+            print(f"File copied successfully to {vm_name}:/root/install_torch")
+        
+        except subprocess.CalledProcessError as e:
+            print(f"Error during configuration: {e}")
+
     def create_dhcp_server(self ,vm_name,nfs_ip_addr):
             # install  the  DHCP server 
             command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "apt" ,"install" ,"-y","isc-dhcp-server"]
@@ -413,135 +466,8 @@ class VmManager():
             VmManager.run_command(command_librray_install," Restart nfs service")
 
 
-    def download_Jetson_driver():
 
-                #installing the bzip2 package
-                command_librray_install = [ "sudo", "apt-get", "install", "bzip2"]
-                print("command",command_librray_install)
-                
-                try:
-                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                    print("STDOUT:", result.stdout)
-                except subprocess.CalledProcessError as e:
-                    print("Failed to execute command:", e)
-                    print("STDOUT:\n", e.stdout)
-                    print("STDERR:\n", e.stderr)
-                    return
-                #installing the qemu
-                command_librray_install = [ "sudo", "add-apt-repository","-y" ,"universe"]
-                print("command",command_librray_install)
-                try:
-                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                    print("STDOUT:", result.stdout)
-                except subprocess.CalledProcessError as e:
-                    print("Failed to execute command:", e)
-                    print("STDOUT:\n", e.stdout)
-                    print("STDERR:\n", e.stderr)
-                    return
-                #installing the Update 
-                command_librray_install = [ "sudo","apt-get" ,"update"]
-                print("command",command_librray_install)
-                try:
-                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                    print("STDOUT:", result.stdout)
-                except subprocess.CalledProcessError as e:
-                    print("Failed to execute command:", e)
-                    print("STDOUT:\n", e.stdout)
-                    print("STDERR:\n", e.stderr)
-                    return
-                # Create jeston folder
-                command_librray_install=  ["sudo" , "mkdir" ,"jetson" ]
-
-                print("command",command_librray_install)
-                try:
-                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                    print("STDOUT:", result.stdout)
-                except subprocess.CalledProcessError as e:
-                    print("Failed to execute command:", e)
-                    print("STDOUT:\n", e.stdout)
-                    print("STDERR:\n", e.stderr)
-                    return
-            
-                #extracting the jeston the rootfs and the bsp. 
-                command_librray_install = ["sudo", "tar","-xf" ,VmManager.bsp_path ,"-C","jetson"]
-                print("command",command_librray_install)
-                try:
-                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                    print("STDOUT:", result.stdout) 
-                except subprocess.CalledProcessError as e:
-                    print("Failed to execute command:", e)
-                    print("STDOUT:\n", e.stdout)
-                    print("STDERR:\n", e.stderr)
-                    return
-                command_librray_install = ["tar", "xpf" ,VmManager.rootfs_path, "-C","jetson/Linux_for_Tegra/rootfs/"]
-                print("command",command_librray_install)
-                try:
-                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                    print("STDOUT:", result.stdout) 
-                except subprocess.CalledProcessError as e:
-                    print("Failed to execute command:", e)
-                    print("STDOUT:\n", e.stdout)
-                    print("STDERR:\n", e.stderr)
-                    return
-                # apply_binaries for jetson
-                command_librray_install = ["sudo", "apt-get", "install", "qemu-user-static"]
-                print("command",command_librray_install)
-                try:
-                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                    print("STDOUT:", result.stdout)
-                except subprocess.CalledProcessError as e:
-                    print("Failed to execute command:", e)
-                    print("STDOUT:\n", e.stdout)
-                    print("STDERR:\n", e.stderr)
-                    return
-                
-                script_path = "jetson/Linux_for_Tegra/apply_binaries.sh"
-                print("command",script_path )
-                try:
-                    # Run the script
-                    result = subprocess.run(["sudo","bash", script_path], capture_output=True, text=True)
-                    #result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                    print("STDOUT:", result.stdout)
-                except subprocess.CalledProcessError as e:
-                    print("Failed to execute command:", e)
-                    print("STDOUT:\n", e.stdout)
-                    print("STDERR:\n", e.stderr)
-                    return
-                #installing the libraries for  flashing the jetson
-                command_librray_install = [ "sudo",   "apt-get", "install", "-y" ,"lz4" ]
-                print("command",command_librray_install)
-                try:
-                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                    print("STDOUT:", result.stdout)
-                except subprocess.CalledProcessError as e:
-                    print("Failed to execute command:", e)
-                    print("STDOUT:\n", e.stdout)
-                    print("STDERR:\n", e.stderr)
-                    return
-                
-                command_librray_install=   ["sudo", "apt-get" ,"install" ,"libxml2-utils"]
-                print("command",command_librray_install)
-                try:
-                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                    print("STDOUT:", result.stdout)
-                except subprocess.CalledProcessError as e:
-                    print("Failed to execute command:", e)
-                    print("STDOUT:\n", e.stdout)
-                    print("STDERR:\n", e.stderr)
-                    return
-                ## Create default user (EULA Acceptance / User configuration)
-                command_librray_install=   [ "sudo", "jetson/Linux_for_Tegra/tools/l4t_create_default_user.sh" ,'-u' ,vm_name,'-p',vm_name ,'-n',vm_name,'--accept-license']
-                print("command",command_librray_install)
-                try:
-                    result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-                    print("STDOUT:", result.stdout)
-                except subprocess.CalledProcessError as e:
-                    print("Failed to execute command:", e)
-                    print("STDOUT:\n", e.stdout)
-                    print("STDERR:\n", e.stderr)
-                    return
-
-    def install_library_for_flashing_jetson(_self ,vm_name ,nfs_ip_addr):
+    def install_library_for_flashing_jetson(_self ,vm_name ,nfs_ip_addr ) :
             #VmManager.download_Jetson_driver()
             vm_manager = VmManager()
             command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "apt" ,"update" ]
@@ -562,6 +488,58 @@ class VmManager():
                 print("STDOUT:\n", e.stdout)
                 print("STDERR:\n", e.stderr)
                 return   
+             # configure Nat 
+            vm_manager.configure_vm_nat(vm_name,"install_torch.sh")
+
+    def add_ssh_key_to_lxd(self,username, lxd_vm_name):
+        # Fixed index name
+        index_name = 'UserIdxs'
+        redis_client = redis.Redis(host='localhost', port=6379)
+        # Search for the user in Redis using RediSearch
+        search_results = redis_client.ft(index_name).search(f"@login:({username})")
+        
+        # Check if we got any results
+        if not search_results.docs:
+            raise ValueError(f"No user found with login: {username}")
+
+        # Assuming the first result is the user we want (adapt as needed)
+        user_data = search_results.docs[0].json
+        user_data=json.loads(user_data)
+        
+        # Extract the SSH keys from the user data
+        ssh_keys = user_data.get('user', {}).get('sshKeys', [])
+        if not ssh_keys:
+            raise ValueError("No SSH keys found for the user")
+
+        # Join all keys into a single string (in case there are multiple keys)
+        ssh_key_str = "\n".join(ssh_keys)
+        
+        # Define the path to the SSH directory and authorized_keys file
+        ssh_dir = "/root/.ssh"
+        authorized_keys_file = f"{ssh_dir}/authorized_keys"
+        
+        # Check if the LXD VM is running
+        result = subprocess.run(['lxc', 'info', lxd_vm_name], capture_output=True, text=True)
+        if 'Status: RUNNING' not in result.stdout:
+            raise RuntimeError(f"LXD VM {lxd_vm_name} is not running")
+
+        # Create the .ssh directory if it doesn't exist
+        subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'mkdir', '-p', ssh_dir], check=True)
+        
+        # Append the SSH public key to the authorized_keys file
+        subprocess.run(
+            ['lxc', 'exec', lxd_vm_name, '--', 'bash', '-c', f'echo "{ssh_key_str}" >> {authorized_keys_file}'],
+            check=True
+        )
+        
+        # Set correct permissions
+        subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'chmod', '700', ssh_dir], check=True)
+        subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'chmod', '600', authorized_keys_file], check=True)
+        subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'chown', 'root:root', ssh_dir], check=True)
+        subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'chown', 'root:root', authorized_keys_file], check=True)
+
+        print(f"SSH public key added to root in VM {lxd_vm_name}")
+
     def install_5gmmtctool(_self ,vm_name , nfs_ip_addr):
             # copy dhcp config 
             ip = IpAddr()
@@ -584,7 +562,6 @@ user_info = {
         "user_subnet": "192.168.75.0/24",
         "nfs_ip_addr": "192.168.75.1/24",
         "macvlan_interface": "macvlan_testvm",
-        "macvlan_ip_addr": "192.168.75.2/24"
     }
 
 
@@ -594,7 +571,6 @@ user_info = {
 # Extracting the information
 macvlan_name = user_info["macvlan_interface"]
 user_name = user_info["user_name"]
-macvlan_ip_addr = user_info["macvlan_ip_addr"]
 nfs_ip_addr = user_info["nfs_ip_addr"]
 
 # interface name on which macvlan is to be created
@@ -631,5 +607,5 @@ ip_addr = IpAddr()
 #vm_manager.delete_vm(vm_name)
 # vm_manager.delete_macvlan_for_vm(macvlan_manager, macvlan_name)
 
-
+#vm_manager.add_ssh_key_to_lxd("debbah","debbah")
 
