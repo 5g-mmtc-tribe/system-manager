@@ -1,4 +1,3 @@
-Here’s a clean, refactored version of your documentation in Markdown format:
 
 ---
 
