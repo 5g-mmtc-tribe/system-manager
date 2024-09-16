@@ -28,7 +28,9 @@ The steps below are only to run the `system-manager` standalone.
 
      sudo snap install lxd --channel=latest/stable
      pip install fastapi
-
+     pip install pandas 
+     pip install pylxd 
+     pip install netmiko
      Download 	the rootfs and the bsp for jeston flashing into 
         cd system-manager/data
         1. bsp
@@ -47,7 +49,7 @@ The steps below are only to run the `system-manager` standalone.
 
 ### Step 4: Run the system manager API
 
-    python system_manager_service.py
+    python3 system_manager_service.py
 
 
 You can now use the API as shown in the examples in the file test_service.py

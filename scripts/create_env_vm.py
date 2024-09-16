@@ -195,7 +195,7 @@ class VmManager():
     def create_macvlan_for_vm(self, vm_name ,network_id,switch_config,interface_name ,macvlan_name) :
         # add vlan interface 
         # Define the LXC command to add the NIC device
-        command1 = ["lxc", "config", "device", "add", vm_name, macvlan_name, "nic", f"nictype=macvlan", f"parent={interface_name}" , f"vlan={network_id}"]
+        command1 = ["lxc", "config", "device", "add", vm_name, 'eth2', "nic", f"nictype=macvlan", f"parent={interface_name}" , f"vlan={network_id}"]
         # Run the first LXC command
         VmManager.run_command(command1, f"Adding eth2 NIC to LXC vm '{vm_name}' with MACVLAN and VLAN {network_id}")
         device = switch_config
@@ -416,10 +416,11 @@ class VmManager():
             #command_librray_install=   vmcommand +["sudo","rsync" ,"-aAXv" ,"jetson/Linux_for_Tegra/rootfs/" ,"/root/nfsroot"]
             #command_librray_install=["sudo","lxc", "file","push" ,"-r","jetson/Linux_for_Tegra/rootfs/" ,vm_name+"/root/nfsroot"] 
             # Define the command to run
+            web_server_ip = "10.200.23.224:70"
             """ command = [
                 'sudo', 'lxc', 'file', 'push', '-r', 'jetson/Linux_for_Tegra/rootfs/', 'mehdivm/root/nfsroot'
             ]"""
-            command = [ 'sudo' , 'lxc'  ,"exec" , vm_name , "--" , "wget", "http://193.55.250.148/rootfs-noeula-user.tar.gz"]
+            command = [ 'sudo' , 'lxc'  ,"exec" , vm_name , "--" , "wget", "http://"+web_server_ip +"/rootfs-noeula-user.tar.gz"]
             print(command)
             # Execute the command using subprocess.run()
             try:

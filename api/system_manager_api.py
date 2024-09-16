@@ -89,8 +89,8 @@ def turn_on_node(interface ):
                                 port = device['port'],
                                 password = device['password'])
 
-    power = PoeManager(switch)
-    power.turn_on(interface)
+    #power = PoeManager(switch)
+    #power.turn_on(interface)
 
     print(interface,"is up ")
 
@@ -101,8 +101,8 @@ def turn_off_node(interface):
                                 port = device['port'],
                                 password = device['password'])
 
-    power = PoeManager(switch)
-    power.turn_off(interface)
+    #power = PoeManager(switch)
+    #power.turn_off(interface)
     print(interface,"is down ")
 
 def attach_vlan_device_interface(interface ,vlan_id):
@@ -276,7 +276,8 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
 
     # interface name on which macvlan is to be created
     #interface_name = "enp2s0"
-    interface_name = "eno3"
+    interface_name = "eno3" # old config server 
+    #interface_name = "enx747827f0dd4e"
     vm_manager = VmManager()
     
     existed =vm_manager.create_user_vm(ubuntu_version, vm_name, root_size)

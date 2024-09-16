@@ -2,7 +2,7 @@
 
     {
         "name": "Jetson Xavier 2",
-        "switch_interface": "Gigabit 1/0/13",
-        "usb_instance": "1-1.2"
+        "switch_interface": "fastEthernet 0/1",
+        "usb_instance": "3-2.2"
     }
 ]

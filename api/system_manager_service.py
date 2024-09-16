@@ -203,7 +203,7 @@ async def call_flash_jetson(request:jetsonInfo):
 #--------------------------------------------------
     
 def run():
-    uvicorn.run(app, host="193.55.250.148", port=8083)
+    uvicorn.run(app, host="localhost", port=8083)
 
 run()
     
