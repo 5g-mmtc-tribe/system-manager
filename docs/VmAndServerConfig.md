@@ -1,3 +1,4 @@
+Here’s a refactored version of your setup, with placeholders for variables and constants, and URLs remaining constant:
 
 ---
 
@@ -8,16 +9,15 @@
 ### 1. Launch Ubuntu VM with LXC
 
 ```bash
-lxc launch ubuntu:24.04 mehdivm --vm --device root,size=40GiB -c limits.cpu=4 -c limits.memory=4GiB
+lxc launch ubuntu:24.04 <vmName> --vm --device root,size=<diskSize> -c limits.cpu=<cpuLimit> -c limits.memory=<memoryLimit>
 ```
 
-### 2. Set Up Macvlan
+### 2. Set Up Macvlan VLAN
 
 ```bash
-sudo ip link add <macvlan_name> link eno3 type macvlan mode bridge
-sudo ip link set <macvlan_name> up
-sudo ip addr add <macvlan_ip>/24 dev <macvlan_name>
-lxc config device add mehdivm eth1 nic nictype=macvlan parent=<macvlan_name>
+lxc config device add <vmName> eth2 nic nictype=macvlan parent=<serverInterface> vlan=<vlanID>
+ip addr add <vmVlanAddress> dev enp7s0
+ip link set enp7s0 up
 ```
 
 ### 3. Configure Netplan with NFS IP Address
@@ -39,7 +39,7 @@ network:
     enp6s0:
       dhcp4: no
       addresses:
-        - 192.168.0.10/24
+        - <nfsAddress>/24
 ```
 
 ### 4. Set Up NFS Root
@@ -51,7 +51,7 @@ sudo chown -R nobody:nogroup /nfsroot
 sudo chmod 755 /nfsroot
 ```
 
-Copy the necessary files:
+### 5. Set Up Lighttpd Web Server
 
 ```bash
 sudo apt install lighttpd -y
@@ -67,20 +67,20 @@ wget http://193.55.250.148/rootfs-noeula-user.tar.gz
 sudo tar xpzf /root/rootfs-noeula-user.tar.gz -C /root/nfsroot/
 ```
 
-Configure the NFS export:
+### 6. Configure NFS Export
 
 ```bash
-sudo lxc exec mehdivm -- bash -c 'echo "/nfsroot *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000)" >> /etc/exports'
+sudo lxc exec <vmName> -- bash -c 'echo "/nfsroot *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000)" >> /etc/exports'
 sudo exportfs -a
 sudo systemctl restart nfs-kernel-server
 sudo systemctl enable nfs-kernel-server
 sudo apt install binutils
 ```
 
-### 5. Set Up DHCP Server
+### 7. Set Up DHCP Server
 
 ```bash
-lxc exec mehdivm -- bash -c 'sudo cat /root/test.txt > /etc/dhcp/dhcpd.conf'
+lxc exec <vmName> -- bash -c 'sudo cat /root/test.txt > /etc/dhcp/dhcpd.conf'
 sudo apt install isc-dhcp-server
 sudo vi /etc/dhcp/dhcpd.conf
 ```
@@ -88,10 +88,10 @@ sudo vi /etc/dhcp/dhcpd.conf
 Add the following configuration:
 
 ```bash
-subnet 192.168.0.0 netmask 255.255.255.0 {
-  range 192.168.0.12 192.168.0.15;
-  option routers 192.168.0.10;
-  option domain-name-servers 8.8.8.8, 8.8.4.4;
+subnet <subnetAddress> netmask <netmask> {
+  range <rangeStart> <rangeEnd>;
+  option routers <gatewayAddress>;
+  option domain-name-servers <dns1>, <dns2>;
 }
 ```
 
@@ -134,7 +134,7 @@ sudo ./apply_binaries.sh
 
 ```bash
 sudo apt-get install -y lz4 libxml2-utils
-sudo ./tools/l4t_create_default_user.sh -u iotuser -p iotuser -n iotuser --accept-license
+sudo ./tools/l4t_create_default_user.sh -u <username> -p <password> -n <hostname> --accept-license
 ```
 
 ### 5. Save Driver Files
@@ -147,7 +147,7 @@ sudo cp rootfs-noeula-user.tar.gz /var/www/html/
 ### 6. Flash the Device
 
 ```bash
-sudo ./flash.sh -N <nfsIP> --rcm-boot jetson-xavier-nx-devkit-emmc eth0
+sudo ./flash.sh -N <nfsIP> --rcm-boot <jetsonDevice> eth0
 ```
 
 ## Jetson Setup
@@ -155,7 +155,7 @@ sudo ./flash.sh -N <nfsIP> --rcm-boot jetson-xavier-nx-devkit-emmc eth0
 ### 1. Enable NAT and Internet Access
 
 ```bash
-ip route del default via 192.168.55.100
+ip route del default via <gatewayIP>
 sudo sysctl -w net.ipv4.ip_forward=1
 sudo iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE
 ```
@@ -215,8 +215,8 @@ dh /etc/openvpn/dh.pem
 tls-auth /etc/openvpn/ta.key 0
 server 10.8.0.0 255.255.255.0
 push "redirect-gateway def1 bypass-dhcp"
-push "dhcp-option DNS 8.8.8.8"
-push "dhcp-option DNS 8.8.4.4"
+push "dhcp-option DNS <dns1>"
+push "dhcp-option DNS <dns2>"
 keepalive 10 120
 cipher AES-256-CBC
 auth SHA256
@@ -234,21 +234,21 @@ sudo nano /etc/sysctl.conf
 ### 5. Create Client Configuration
 
 ```bash
-./easyrsa gen-req debbah nopass
-./easyrsa sign-req client debbah
+./easyrsa gen-req <clientName> nopass
+./easyrsa sign-req client <clientName>
 ```
 
 Create the client `.ovpn` file:
 
 ```bash
-cat <<EOF > /root/openvpn-ca/debbah.ovpn
+cat <<EOF > /root/openvpn-ca/<clientName>.ovpn
 client
 dev tun
 proto tcp
-remote 193.55.250.147 2221
-route 10.111.150.0 255.255.255.0
-route 10.29.50.0 255.255.255.0
-route 10.8.0.0 255.255.255.0
+remote <vpnServerIP> <vpnPort>
+route <route1> <netmask1>
+route <route2> <netmask2>
+route <route3> <netmask3>
 resolv-retry infinite
 nobind
 persist-key
@@ -266,14 +266,25 @@ route-nopull
 $(cat /etc/openvpn/ca.crt)
 </ca>
 <cert>
-$(cat /root/openvpn-ca/pki/issued/debbah.crt)
+$(cat /root/openvpn-ca/pki/issued/<clientName>.crt)
 </cert>
 <key>
-$(cat /root/openvpn-ca/pki/private/debbah.key)
+$(cat /root/openvpn-ca/pki/private/<clientName>.key)
 </key>
 EOF
-sudo openvpn --config debbah.ovpn
+sudo openvpn --config <clientName>.ovpn
 ```
+
+### 6. OpenVPN VLAN Configuration
+
+```bash
+lxc config device add <vpnVM> eth130 nic nictype=macvlan parent=<serverInterface> vlan=<vlanID>
+ip addr add <vpnVlanAddress> dev <vpnInterface>
+sudo ip link set dev <vpnInterface> up
+sudo iptables -t nat -A POSTROUTING -o <interface> -j MASQUERADE
+```
+
+---
 
 ## Annex
 
@@ -286,5 +297,5 @@ sudo iptables -t nat -L -n -v
 ### 2. Add Public Key
 
 ```bash
-sudo lxc file push -r jetson/Linux_for_Tegra/rootfs-noeula.tar.gz mehdivm/root/nfsroot
-ssh-copy-id -i ~/.ssh/id_rsa.pub root@10.29.50
+sudo lxc file push -r <sourceFile> <vmName>/<destinationPath>
+ssh-copy-id -i ~/.ssh
