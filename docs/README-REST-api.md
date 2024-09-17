@@ -1,8 +1,8 @@
-# REST API Documentation (7 Aug 2024)
+# REST API Documentation (11 JUN 2024)
 
 ## Overview
 
-This REST API, built with FastAPI, provides endpoints to manage system resources, user environments, and testbed nodes.
+This REST API, built with FastAPI, provides endpoints to manage system resources, user environments, testbed nodes, and Jetson devices.
 
 ## Endpoints
 
@@ -42,8 +42,19 @@ This REST API, built with FastAPI, provides endpoints to manage system resources
   - **root_size**: Root size.
   - **user_info**: User information object containing user-specific details.
 - **Responses**:
-  - **200 OK**: `{"status": "User Env Created"}`
+  - **200 OK**: Response details from the environment creation process.
   - **500 Internal Server Error**: Failed to create VM environment.
+
+#### Stop User VM
+
+- **URL**: `/stop_vm`
+- **Method**: `POST`
+- **Description**: Stops a running user VM.
+- **Request Body**:
+  - **vm_name**: Name of the VM.
+- **Responses**:
+  - **200 OK**: `{"status": "User vm stopped"}`
+  - **500 Internal Server Error**: Failed to stop VM.
 
 ### User Management
 
@@ -99,5 +110,45 @@ This REST API, built with FastAPI, provides endpoints to manage system resources
 - **Responses**:
   - **200 OK**: All nodes turned on.
   - **500 Internal Server Error**: Failed to turn on all nodes.
+
+#### Turn On Specific Node
+
+- **URL**: `/turn_on_node`
+- **Method**: `POST`
+- **Description**: Turns on a specific node.
+- **Request Body**:
+  - **node_name**: Name of the node.
+- **Responses**:
+  - **200 OK**: Node turned on.
+  - **500 Internal Server Error**: Failed to turn on node.
+
+#### Turn Off Specific Node
+
+- **URL**: `/turn_off_node`
+- **Method**: `POST`
+- **Description**: Turns off a specific node.
+- **Request Body**:
+  - **node_name**: Name of the node.
+- **Responses**:
+  - **200 OK**: Node turned off.
+  - **500 Internal Server Error**: Failed to turn off node.
+
+### Jetson Management
+
+#### Flash Jetson
+
+- **URL**: `/flash_jetson`
+- **Method**: `POST`
+- **Description**: Flashes a Jetson device with specified configurations.
+- **Request Body**:
+  - **nfs_ip_addr**: NFS server IP address.
+  - **nfs_path**: Path on the NFS server.
+  - **usb_instance**: USB instance for flashing.
+- **Responses**:
+  - **200 OK**: Flashing details or success confirmation.
+  - **500 Internal Server Error**: Failed to flash Jetson.
+
+---
+
 
 
