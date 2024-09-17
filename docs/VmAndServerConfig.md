@@ -1,4 +1,3 @@
-Here’s a refactored version of your setup, with placeholders for variables and constants, and URLs remaining constant:
 
 ---
 
