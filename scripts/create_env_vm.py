@@ -416,7 +416,7 @@ class VmManager():
             #command_librray_install=   vmcommand +["sudo","rsync" ,"-aAXv" ,"jetson/Linux_for_Tegra/rootfs/" ,"/root/nfsroot"]
             #command_librray_install=["sudo","lxc", "file","push" ,"-r","jetson/Linux_for_Tegra/rootfs/" ,vm_name+"/root/nfsroot"] 
             # Define the command to run
-            web_server_ip = "10.200.23.224:70"
+            web_server_ip = "192.168.0.8:70"
             """ command = [
                 'sudo', 'lxc', 'file', 'push', '-r', 'jetson/Linux_for_Tegra/rootfs/', 'mehdivm/root/nfsroot'
             ]"""
@@ -474,7 +474,7 @@ class VmManager():
             command_librray_install=   ["lxc", "exec", vm_name, "--", "sudo", "apt" ,"update" ]
             VmManager.run_command(command_librray_install,"update apt")
             # copy  5gmmtool file 
-            command_librray_install=   ["sudo","lxc", "file","push" ,user_script_path+"/5gmmtctool" ,vm_name+"/root/"]
+            command_librray_install=   ["lxc", "file","push" ,user_script_path+"/5gmmtctool" ,vm_name+"/root/"]
             VmManager.run_command(command_librray_install,"copy 5gmmtctool ")
             vm_manager.create_nfs_server(vm_name=vm_name,nfs_ip_addres= nfs_ip_addr)
             vm_manager.create_dhcp_server(vm_name,nfs_ip_addr)

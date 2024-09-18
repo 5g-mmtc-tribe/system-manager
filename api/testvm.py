@@ -15,14 +15,14 @@ from models import CreateUserEnvVMRequest, UserNetworkInfo ,jetsonInfo
 
 
 data = {
-    'user_name': "cedric",
-    'user_network_id': '120'
+    'user_name': "mehdi",
+    'user_network_id': '177'
 }
 
 #-------------------------------------------------------------------------------------------------------------------
 ## Creating new users
 #-------------------------------------------------------------------------------------------------------------------
-response = requests.post('http://193.55.250.148:8083/create_user', json=data)
+response = requests.post('http://localhost:8083/create_user', json=data)
 print(response.status_code)
 print(response.json())
 
@@ -30,13 +30,15 @@ print(response.json())
 # # Getting user info
 # #-----------------------------------------------------------------------
 
+
 data = {
-    'user_name': "cedric",
-    'user_network_id': '120'
+    'user_name': "mehdi",
+    'user_network_id': '177'
 }
 
 
-response_user_info = requests.post('http://193.55.250.148:8083/get_user_info', json=data)
+
+response_user_info = requests.post('http://localhost:8083/get_user_info', json=data)
 print(response_user_info.status_code)
 print(response_user_info.json())
 # Convert JSON string to dictionary
@@ -59,7 +61,7 @@ print(response.json())
 # Creating user env
 #----------------------------------------------------
 
-
+""""
 user_env_info = {
     'ubuntu_version': '24.04',
    'vm_name': user_info_data['user_name'],
@@ -75,7 +77,7 @@ response = requests.post('http://193.55.250.148:8083/create_user_env_vm', json=r
 print(response.status_code)
 print(response.json())
 
-
+"""
 #----------------------------------------------------
 # test flashing 
 #----------------------------------------------------

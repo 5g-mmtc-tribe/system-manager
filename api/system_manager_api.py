@@ -362,4 +362,4 @@ user_info =        {
 #allocate_active_users("cedric", 76)
 # ----------------------------
 #interface=get_switch_interface("Jetson Xavier 2")
-#attach_vlan_device_interface("Gigabit 1/0/11" ,1)
+#attach_vlan_device_interface(interface ,106)
