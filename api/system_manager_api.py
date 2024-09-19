@@ -313,9 +313,13 @@ def flash_jetson( nfs_ip_addres ,nfspath,usb_instance ):
     testbed_reset()
     turn_on_all_nodes()
     Jetson_class= Jetson()
-    result = Jetson_class.flash_jetson (nfs_ip_addres,nfspath ,usb_instance)
+    try :
+    
+        result = Jetson_class.flash_jetson (nfs_ip_addres,nfspath ,usb_instance)
     #time.sleep(7)
-    return result
+        return result
+    except Exception as e:
+        return e 
 
 
 #test 

@@ -8,7 +8,7 @@
 ### 1. Launch Ubuntu VM with LXC
 
 ```bash
-lxc launch ubuntu:24.04 <vmName> --vm --device root,size=<diskSize> -c limits.cpu=<cpuLimit> -c limits.memory=<memoryLimit>
+lxc launch ubuntu:24.04 <vmName> --vm --device root,size=<diskSize GB> -c limits.cpu=4 -c limits.memory=4GiB
 ```
 
 ### 2. Set Up Macvlan VLAN
@@ -205,7 +205,7 @@ Add the following configuration:
 
 ```bash
 port 1194
-proto udp
+proto tcp
 dev tun
 ca /etc/openvpn/ca.crt
 cert /etc/openvpn/server.crt
@@ -213,9 +213,13 @@ key /etc/openvpn/server.key
 dh /etc/openvpn/dh.pem
 tls-auth /etc/openvpn/ta.key 0
 server 10.8.0.0 255.255.255.0
-push "redirect-gateway def1 bypass-dhcp"
-push "dhcp-option DNS <dns1>"
-push "dhcp-option DNS <dns2>"
+#define the  webportal network 
+push "10.154.195.235 255.255.255.255"
+#define the vlan ip address 
+push "10.111.106.0 255.255.255.0"
+#push "redirect-gateway def1 bypass-dhcp"
+push "dhcp-option DNS 8.8.8.8
+push "dhcp-option DNS 8.8.8.4
 keepalive 10 120
 cipher AES-256-CBC
 auth SHA256
@@ -240,14 +244,11 @@ sudo nano /etc/sysctl.conf
 Create the client `.ovpn` file:
 
 ```bash
-cat <<EOF > /root/openvpn-ca/<clientName>.ovpn
+cat <<EOF > /root/openvpn-ca/tribe.ovpn
 client
 dev tun
 proto tcp
-remote <vpnServerIP> <vpnPort>
-route <route1> <netmask1>
-route <route2> <netmask2>
-route <route3> <netmask3>
+remote 10.154.195.130  1194
 resolv-retry infinite
 nobind
 persist-key
@@ -265,10 +266,10 @@ route-nopull
 $(cat /etc/openvpn/ca.crt)
 </ca>
 <cert>
-$(cat /root/openvpn-ca/pki/issued/<clientName>.crt)
+$(cat /root/openvpn-ca/pki/issued/tribe.crt)
 </cert>
 <key>
-$(cat /root/openvpn-ca/pki/private/<clientName>.key)
+$(cat /root/openvpn-ca/pki/private/tribe.key)
 </key>
 EOF
 sudo openvpn --config <clientName>.ovpn
@@ -278,9 +279,9 @@ sudo openvpn --config <clientName>.ovpn
 
 ```bash
 lxc config device add <vpnVM> eth130 nic nictype=macvlan parent=<serverInterface> vlan=<vlanID>
-ip addr add <vpnVlanAddress> dev <vpnInterface>
+ip addr add <vpnVlanAddress>/24 dev <vpnInterface>
 sudo ip link set dev <vpnInterface> up
-sudo iptables -t nat -A POSTROUTING -o <interface> -j MASQUERADE
+sudo iptables -t nat -A POSTROUTING -o <vpninterface> -j MASQUERADE
 ```
 
 ---
