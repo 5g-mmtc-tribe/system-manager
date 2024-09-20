@@ -1,5 +1,6 @@
 from pydantic import BaseModel
-
+class sshInfo(BaseModel):
+    user_name :str
 class jetsonInfo(BaseModel):
     nfs_ip_addr: str
     nfs_path:str

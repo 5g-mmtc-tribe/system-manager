@@ -7,7 +7,7 @@ import system_manager_api
 import logging
 import uvicorn
 from pydantic import BaseModel
-from models import DestroyEnvVMRequest, CreateUser,  CreateUserEnvVMRequest ,TurnNode, VlanNode ,jetsonInfo
+from models import DestroyEnvVMRequest, CreateUser,  CreateUserEnvVMRequest ,TurnNode, VlanNode ,jetsonInfo ,sshInfo
 
 
 logging.basicConfig(level=logging.ERROR)
@@ -183,7 +183,20 @@ async def call_get_user_info(request:CreateUser):
         raise HTTPException(status_code=500, detail='Failed to create User')
 
 #--------------------------------------------------------------
+#--------------------------------------------------------------
+# Function to ADD ssh pub key to the vm
+#--------------------------------------------------------------
 
+@app.post('/ssh_add')
+async def call_ssh_add(request:sshInfo):
+    try:
+        logging.info(f"Received request data: {request}")
+        # Call the function with the extracted data
+        return system_manager_api.update_ssh(request.user_name)
+
+    except Exception as e:
+        logging.error(f"An error occurred: {e}")
+        raise HTTPException(status_code=500, detail='Failed to flash jetson')
 #--------------------------------------------------------------
 # Function to flash jetson 
 #--------------------------------------------------------------

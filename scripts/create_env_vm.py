@@ -519,9 +519,8 @@ class VmManager():
         ssh_dir = "/root/.ssh"
         authorized_keys_file = f"{ssh_dir}/authorized_keys"
         
-        # Check if the LXD VM is running
-        result = subprocess.run(['lxc', 'info', lxd_vm_name], capture_output=True, text=True)
-        if 'Status: RUNNING' not in result.stdout:
+        # Check if the LXD VM is running     
+        if  self.is_vm_running(lxd_vm_name)== False:
             raise RuntimeError(f"LXD VM {lxd_vm_name} is not running")
 
         # Create the .ssh directory if it doesn't exist

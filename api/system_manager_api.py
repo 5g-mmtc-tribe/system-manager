@@ -262,6 +262,9 @@ def check_args_type_create_user_env_vm(ubuntu_version, vm_name, root_size, user_
     
 
 ## For VM
+def update_ssh(user_name):
+    vm_manager = VmManager()
+    vm_manager.add_ssh_key_to_lxd(user_name,user_name)
 def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
     
     check_args_type_create_user_env_vm(ubuntu_version, vm_name, root_size, user_info)
@@ -299,6 +302,7 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
     else :# vm alrady exist 
           
           vm_manager.start_vm(vm_name)
+          vm_manager.add_ssh_key_to_lxd(user_name,vm_name)
           time.sleep(2)
           return {"vm_name":"10.0.0.0","status": "User Env Created"}
           # prepare the device to use 
