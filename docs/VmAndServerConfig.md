@@ -284,7 +284,7 @@ lxc config device add <vpnVM> eth130 nic nictype=macvlan parent=<serverInterface
 ip addr add <vpnVlanAddress>/24 dev <vpnInterface>
 sudo ip link set dev <vpnInterface> up
 sudo iptables -t nat -A POSTROUTING -o <vpninterface> -j MASQUERADE
-socat TCP-LISTEN:1194,Fork TCP:ip_OF_VPN:1194
+socat TCP-LISTEN:1194,fork TCP:10.154.195.130:1194 &
 ```
 
 ---
