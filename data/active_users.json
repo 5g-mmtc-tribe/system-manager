@@ -12,5 +12,12 @@
         "user_subnet": "10.111.138.0/24",
         "nfs_ip_addr": "10.111.138.4/24",
         "macvlan_interface": "macvlan_sofiane"
+    },
+    {
+        "user_name": "cedric",
+        "user_network_id": 24,
+        "user_subnet": "10.111.24.0/24",
+        "nfs_ip_addr": "10.111.24.4/24",
+        "macvlan_interface": "macvlan_cedric"
     }
 ]

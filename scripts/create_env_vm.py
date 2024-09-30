@@ -86,8 +86,18 @@ class VmManager():
             #check if the vm already runnig 
             command = ['lxc', 'start', vm_name]
             try:
-                result =subprocess.run(command, check=True)
-                print("STDOUT:", result.stdout)
+                subprocess.run(command, check=True)
+                print("VM"+vm_name+"  is  Started:")
+                        # Commands to be executed inside the LXC VM
+                time.sleep(7)
+                """commands = [
+                'sysctl -w net.ipv4.ip_forward=1',
+                'iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE']
+                #Execute commands in the LXC VM
+                for cmd in commands:
+                    subprocess.run(['lxc', 'exec', vm_name, '--', 'sh', '-c', cmd]capture_output=True, text=True, check=True) 
+                    print(f"Command '{cmd}' executed successfully in {vm_name}")"""
+            
             except subprocess.CalledProcessError as e:
                 # Print the error details
                 print("Command failed with return code:", e.returncode)
@@ -520,8 +530,9 @@ class VmManager():
         authorized_keys_file = f"{ssh_dir}/authorized_keys"
         
         # Check if the LXD VM is running     
-        if  self.is_vm_running(lxd_vm_name)== False:
-            raise RuntimeError(f"LXD VM {lxd_vm_name} is not running")
+        """if  self.is_vm_running(lxd_vm_name)== False:
+            raise RuntimeError(f"LXD VM {lxd_vm_name} is not running")"""
+    
 
         # Create the .ssh directory if it doesn't exist
         subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'mkdir', '-p', ssh_dir], check=True)
@@ -585,7 +596,7 @@ ip_addr = IpAddr()
 
 #vm_manager.set_nfs_ip_addr(vm_name ,"192.168.90.1/24")#
 #vm_manager.install_library_for_flashing_jetson(vm_name,"192.168.20.10/24")
-
+    
 #---------------
 # # create vm for user
 #vm_manager.create_user_vm(ubuntu_version, vm_name, root_size)
