@@ -1,0 +1,11 @@
+- name: Configure System Manager
+  hosts: sys
+  become: true
+  roles:
+    - system
+
+#- name: Configure Cisco Switch
+#  hosts: switch
+#  gather_facts: false
+#  roles:
+#   - switch

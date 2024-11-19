@@ -1,0 +1,5 @@
+enable_secret: tribe
+hostname: tribe
+vlan_ip: 192.168.1.1
+vlan_subnet: 255.255.255.0
+vty_password: lame2016

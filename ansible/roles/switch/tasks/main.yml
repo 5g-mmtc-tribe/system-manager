@@ -1,0 +1,12 @@
+---
+- name: Configure switch
+  ios_config:
+    lines:
+      - enable secret pass: "{{ enable_secret }}"
+      - hostname "{{ hostname }}"
+      - interface vlan 1
+      - ip address "{{ vlan_ip }}" "{{ vlan_subnet }}"
+      - no shutdown
+      - line vty 0 15
+      - password "{{ vty_password }}"
+      - transport input telnet

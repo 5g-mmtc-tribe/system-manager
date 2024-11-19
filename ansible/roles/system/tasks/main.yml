@@ -1,0 +1,42 @@
+---
+- name: Install LXD
+  shell: snap install lxd --channel=latest/stable
+
+- name: Initialize LXD
+  shell: lxd init --minimal
+
+- name: Install Python dependencies
+  pip:
+    name: "{{ item }}"
+  loop:
+    - fastapi
+    - pandas
+    - pylxd
+    - netmiko
+
+- name: Check if BSP file exists
+  stat:
+    path: "../../data/{{ bsp_file_name }}"
+  register: bsp_stat
+
+- name: Check if rootfs file exists
+  stat:
+    path: "../../data/{{ rootfs_file_name }}"
+  register: rootfs_stat
+
+- name: Download BSP if not already present
+  get_url:
+    url: "{{ bsp_url }}"
+    dest: "../../data/{{ bsp_file_name }}"
+  when: not bsp_stat.stat.exists
+
+- name: Download rootfs if not already present
+  get_url:
+    url: "{{ rootfs_url }}"
+    dest: "../../data/{{ rootfs_file_name }}"
+  when: not rootfs_stat.stat.exists
+
+#- name: Start system manager service
+#  shell: python3 api/system_manager_service.py &
+#  args:
+#    executable: /bin/bash
