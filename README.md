@@ -63,40 +63,43 @@ To install the **system-manager** manually, follow these steps:
    lxd init --minimal
    ```
 
-5. **Navigate to the `/system-manager/api` Folder:**
+
+---
+
+
+#### **2. Installation Using Ansible Playbook**
+
+To automate the installation and configuration of the **system-manager**, use the **Ansible playbook**. This will configure all necessary components, including LXD group permissions, LXD service restarts, and Python dependencies.
+
+1. **Run the Ansible Playbook:**
+   ```bash
+   cd ansible && ansible-playbook -i inventory.ini playbooks/site.yml --ask-become-pass
+   ```
+
+---
+
+### **Important Note about Group Membership and Rebooting**
+
+After adding the user to the **`lxd`** group (which is necessary to interact with LXD), a **reboot** may be required for the changes to take effect. While you can use the `newgrp lxd` command in some cases to apply the new group membership, a **system reboot** is the most reliable method in automated environments.
+
+
+---
+
+### **Running the System Manager API**
+
+Once the **system-manager** is installed and properly configured (either manually or via Ansible), you can run the **API** as follows:
+
+1. **Navigate to the `/system-manager/api` directory:**
    ```bash
    cd system-manager/api
    ```
 
-6. **Run the System Manager API:**
+2. **Start the system manager API service:**
    ```bash
    python3 system_manager_service.py
    ```
 
-Now, the API will be running, and you can interact with it using the provided examples in the `test_service.py` file.
-
----
-
-#### **2. Installation Using Ansible Playbook**
-
-If you prefer to automate the installation and configuration of the **system-manager**, you can use the **Ansible playbook**. This will ensure that the necessary components, including LXD group permissions, LXD service restarts, and Python dependencies, are correctly configured.
-
-To install the **system-manager** using Ansible, follow these steps:
-
-1. **Run the Ansible Playbook:**
-
-   ```bash
-    cd ansible &&
-    ansible-playbook -i inventory.ini playbooks/site.yml --ask-become-pass
-   ```
-
-This will:
-- Install **LXD**.
-- Initialize **LXD**.
-- Install the required **Python dependencies** (`fastapi`, `pandas`, `pylxd`, etc.).
-- Ensure the correct user is added to the **LXD group** (with necessary permissions).
-- Restart the **LXD** service.
-- Optionally reboot the system to apply group membership changes.
+The **system-manager** API will now be running, and you can interact with it via the API endpoints provided in `system_manager_api.py` or through the exported REST API service.
 
 ---
 
