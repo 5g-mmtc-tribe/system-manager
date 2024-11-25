@@ -64,7 +64,6 @@ To install the **system-manager** manually, follow these steps:
    ```
 
 
----
 
 
 #### **2. Installation Using Ansible Playbook**
@@ -76,7 +75,7 @@ To automate the installation and configuration of the **system-manager**, use th
    cd ansible && ansible-playbook -i inventory.ini playbooks/site.yml --ask-become-pass
    ```
 
----
+
 
 ### **Important Note about Group Membership and Rebooting**
 
@@ -101,5 +100,5 @@ Once the **system-manager** is installed and properly configured (either manuall
 
 The **system-manager** API will now be running, and you can interact with it via the API endpoints provided in `system_manager_api.py` or through the exported REST API service.
 
----
+
 
