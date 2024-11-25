@@ -1,12 +1,46 @@
 ---
-- name: Configure switch
+# Task 1: Set enable secret password
+- name: Set enable secret password
   ios_config:
     lines:
-      - enable secret pass: "{{ enable_secret }}"
-      - hostname "{{ hostname }}"
-      - interface vlan 1
-      - ip address "{{ vlan_ip }}" "{{ vlan_subnet }}"
-      - no shutdown
-      - line vty 0 15
-      - password "{{ vty_password }}"
-      - transport input telnet
+      - "enable secret {{ enable_secret }}"
+  become: yes
+
+# Task 2: Set hostname
+- name: Set hostname
+  ios_config:
+    lines:
+      - "hostname {{ hostname }}"
+  become: yes
+
+
+- name: Set IP address for VLAN 1 and wait for connection
+  block:
+    - name: Configure VLAN 1 IP address
+      ios_config:
+        lines:
+          - "interface vlan 1"
+          - "ip address {{ vlan_ip }} {{ vlan_subnet }}"
+      become: yes
+      register: ip_set_result
+      ignore_errors: yes  # Ignore timeout errors when the connection is lost after setting IP
+
+    - name: Wait for switch to become reachable after IP change
+      wait_for:
+        host: "{{ vlan_ip }}"
+        port: 22
+        timeout: 40
+        state: started
+      delegate_to: localhost
+
+
+    - name: Update Ansible inventory to use new IP
+      set_fact:
+        ansible_host: "{{ vlan_ip }}"
+
+    - name: Set VLAN 1 to no shutdown after IP change
+      ios_config:
+        lines:
+          - "interface vlan 1"
+          - "no shutdown"
+      become: yes

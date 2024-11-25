@@ -4,8 +4,19 @@
   roles:
     - system
 
-#- name: Configure Cisco Switch
-#  hosts: switch
-#  gather_facts: false
-#  roles:
-#   - switch
+- name: Configure Cisco Switch
+  hosts: console_switches
+  gather_facts: false
+  roles:
+   - switch
+  vars_prompt:
+  - name: "ansible_host"
+    prompt: "Please enter the IP address of the switch (used for Ansible connection)"
+    private: no  # Set to 'yes' if you want to hide the input
+
+- name: Configure Server
+  hosts: sys
+  gather_facts: false
+  roles:
+   - server
+

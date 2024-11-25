@@ -23,33 +23,80 @@ The system-manager provides an API for the user to manage all the hardware and s
 It is designed to be used as part of a large platform (with other components), and thus repackaged.
 The steps below are only to run the `system-manager` standalone.
 
-### Step 1: Installation 
-(To be done once only)
-
-     sudo snap install lxd --channel=latest/stable
-     pip install fastapi
-     pip install pandas 
-     pip install pylxd 
-     pip install netmiko
-     Download 	the rootfs and the bsp for jeston flashing into 
-        cd system-manager/data
-        1. bsp
-            wget https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v4.1/release/jetson_linux_r35.4.1_aarch64.tbz2
-        2. rootfs
-            wget https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v4.1/release/tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2
-
-### Step 2: LXD initialization
-(To be done once only)
-
-    lxd init --minimal
-
-### Step 3: Navigate in the /system-manager/api folder
-
-    cd system-manager/api
-
-### Step 4: Run the system manager API
-
-    python3 system_manager_service.py
+You can install and configure the **`system-manager`** either **manually** or **using an Ansible playbook**.
 
 
-You can now use the API as shown in the examples in the file test_service.py
+#### **1. Manual Installation**
+
+To install the **system-manager** manually, follow these steps:
+
+1. **Install LXD:**
+   ```bash
+   sudo snap install lxd --channel=latest/stable
+   ```
+
+2. **Install Python Dependencies:**
+   ```bash
+   pip install fastapi
+   pip install pandas 
+   pip install pylxd 
+   pip install netmiko
+   ```
+
+3. **Download the Rootfs and BSP for Jetson flashing into the `data` folder:**
+   ```bash
+   cd system-manager/data
+   ```
+
+   - **BSP:**
+     ```bash
+     wget https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v4.1/release/jetson_linux_r35.4.1_aarch64.tbz2
+     ```
+
+   - **Rootfs:**
+     ```bash
+     wget https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v4.1/release/tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2
+     ```
+
+4. **LXD Initialization (done once only):**
+   ```bash
+   lxd init --minimal
+   ```
+
+5. **Navigate to the `/system-manager/api` Folder:**
+   ```bash
+   cd system-manager/api
+   ```
+
+6. **Run the System Manager API:**
+   ```bash
+   python3 system_manager_service.py
+   ```
+
+Now, the API will be running, and you can interact with it using the provided examples in the `test_service.py` file.
+
+---
+
+#### **2. Installation Using Ansible Playbook**
+
+If you prefer to automate the installation and configuration of the **system-manager**, you can use the **Ansible playbook**. This will ensure that the necessary components, including LXD group permissions, LXD service restarts, and Python dependencies, are correctly configured.
+
+To install the **system-manager** using Ansible, follow these steps:
+
+1. **Run the Ansible Playbook:**
+
+   ```bash
+    cd ansible &&
+    ansible-playbook -i inventory.ini playbooks/site.yml --ask-become-pass
+   ```
+
+This will:
+- Install **LXD**.
+- Initialize **LXD**.
+- Install the required **Python dependencies** (`fastapi`, `pandas`, `pylxd`, etc.).
+- Ensure the correct user is added to the **LXD group** (with necessary permissions).
+- Restart the **LXD** service.
+- Optionally reboot the system to apply group membership changes.
+
+---
+

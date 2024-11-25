@@ -1,0 +1,12 @@
+# MAC address and desired network interface name
+mac_address: "ac:91:a1:dd:02:a2"
+new_interface_name: "eno3"
+
+# Static IP configuration
+static_ip: "192.168.0.8"
+
+# Optional: Use NetworkManager for persistence
+use_nmcli: true
+
+# Reboot control
+reboot_required: true

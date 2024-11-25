@@ -1,0 +1,26 @@
+---
+  # Task 1: Configure Netplan for interface renaming and static IP
+  - name: Configure Netplan for renaming and static IP
+    copy:
+      dest: /etc/netplan/01-network-manager-all.yaml
+      content: |
+        # Let NetworkManager manage all devices on this system
+        network:
+          version: 2
+          renderer: NetworkManager
+          ethernets:
+            {{ new_interface_name }}:
+              match:
+                macaddress: "{{ mac_address }}"
+              set-name: "{{ new_interface_name }}"
+              dhcp4: no
+              addresses:
+                - "{{ static_ip }}/24"
+      mode: "0644"
+    become: yes
+  
+  # Task 2: Apply Netplan configuration
+  - name: Apply Netplan configuration
+    shell: netplan apply
+    become: yes
+  
