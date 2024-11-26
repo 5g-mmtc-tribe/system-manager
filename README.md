@@ -41,6 +41,7 @@ To install the **system-manager** manually, follow these steps:
    pip install pandas 
    pip install pylxd 
    pip install netmiko
+   pip install uvicorn
    ```
 
 3. **Download the Rootfs and BSP for Jetson flashing into the `data` folder:**

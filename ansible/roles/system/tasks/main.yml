@@ -29,6 +29,7 @@
     - pylxd
     - netmiko
     - ansible-pylibssh
+    - uvicorn
   become: yes
 
 # Task 5: Check if BSP file exists
