@@ -12,7 +12,9 @@ from models import DestroyEnvVMRequest, CreateUser,  CreateUserEnvVMRequest ,Tur
 
 logging.basicConfig(level=logging.ERROR)
 app = FastAPI()
-
+@app.get("/")
+def read_root():
+    return {" this is the systeme manager"}
 #--------------------------------------------------
 # Get resource list
 #--------------------------------------------------
