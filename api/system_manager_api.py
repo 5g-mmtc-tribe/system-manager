@@ -106,6 +106,7 @@ def turn_off_node(interface):
     print(interface,"is down ")
 
 def attach_vlan_device_interface(interface ,vlan_id):
+    print("here")
     device = switch_config
     switch = SwitchManager(device_type = device['device_type'],
                                 ip = device['ip'],

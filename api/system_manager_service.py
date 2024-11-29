@@ -165,7 +165,7 @@ def call_add_vlan_int(request: VlanNode):
         system_manager_api.attach_vlan_device_interface(interface ,request.vlan_id)
     except Exception as e:
         logging.error(e)
-        raise HTTPException(status_code=500, detail='Failed to turn off  node')
+        raise HTTPException(status_code=500, detail='Failed to ADD VLAN')
     
 
 #--------------------------------------------------------------
