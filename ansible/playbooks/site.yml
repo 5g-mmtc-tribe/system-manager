@@ -20,15 +20,15 @@
 #  roles:
 #   - server
 
-- name: Deploy Testbed Web Portal
-  hosts: localhost
-  gather_facts: no
-  roles:
-    - webportal
-  vars_prompt:
-    - name: "github_user"
-      prompt: "Please enter your GitHub username"
-      private: no  # Set to yes to hide input
-    - name: "github_token"
-      prompt: "Please enter your GitHub personal access token"
-      private: yes  # This ensures the token is hidden during input
+#- name: Deploy Testbed Web Portal
+#  hosts: localhost
+#  gather_facts: no
+#  roles:
+#    - webportal
+#  vars_prompt:
+#    - name: "github_user"
+#      prompt: "Please enter your GitHub username"
+#      private: no  # Set to yes to hide input
+#    - name: "github_token"
+#      prompt: "Please enter your GitHub personal access token"
+#      private: yes  # This ensures the token is hidden during input

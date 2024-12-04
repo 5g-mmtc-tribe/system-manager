@@ -430,7 +430,8 @@ class VmManager():
             """ command = [
                 'sudo', 'lxc', 'file', 'push', '-r', 'jetson/Linux_for_Tegra/rootfs/', 'mehdivm/root/nfsroot'
             ]"""
-            command = [ 'sudo' , 'lxc'  ,"exec" , vm_name , "--" , "wget", "http://"+web_server_ip +"/rootfs-noeula-user.tar.gz"]
+            #command = [ 'sudo' , 'lxc'  ,"exec" , vm_name , "--" , "wget", "http://"+web_server_ip +"/rootfs-noeula-user.tar.gz"]
+            command = [ 'sudo' , 'lxc'  ,"file" ,"push","rootfs-noeula-user.tar.gz",vm_name+"/root/"]
             print(command)
             # Execute the command using subprocess.run()
             try:
@@ -560,6 +561,78 @@ class VmManager():
             # copy  5gmmtool file 
             command_librray_install=   ["sudo","lxc", "file","push" ,user_script_path+"/5gmmtctool" ,vm_name+"/root/"]
             VmManager.run_command(command_librray_install,"copy 5gmmtctool ")
+
+    
+
+
+def setup_jetson(base_dir, username, password, hostname):
+    """
+    Sets up Jetson environment by performing the following steps:
+    1. Extract and prepare files from the given base directory.
+    2. Apply binaries.
+    3. Create a default user.
+    4. Compress the root filesystem and place the tarball in the api directory.
+
+    Parameters:
+    - base_dir (str): Directory containing the Jetson tar files.
+    - username (str): Username for the default user.
+    - password (str): Password for the default user.
+    - hostname (str): Hostname for the Jetson device.
+    """
+    try:
+        # Define file paths
+        jetson_tar = os.path.join(base_dir, "Jetson_Linux_R35.4.1_aarch64.tbz2")
+        tegra_tar = os.path.join(base_dir, "Tegra_Linux_Sample-Root-Filesystem_R35.4.1_aarch64.tbz2")
+        output_dir = os.path.join("api", "jetson")
+
+        # Create api/jetson directory
+        os.makedirs(output_dir, exist_ok=True)
+
+        # Step 1: Extract Jetson Linux package
+        print("Extracting Jetson Linux package...")
+        subprocess.run(["sudo", "tar", "-xf", jetson_tar, "-C", output_dir], check=True)
+
+        # Step 2: Extract Tegra root filesystem
+        print("Extracting Tegra root filesystem...")
+        tegra_rootfs = os.path.join(output_dir, "Linux_for_Tegra", "rootfs")
+        os.makedirs(tegra_rootfs, exist_ok=True)
+        subprocess.run(["sudo", "tar", "xpf", tegra_tar, "-C", tegra_rootfs], check=True)
+
+        # Step 3: Apply binaries
+        print("Adding universe repository and installing dependencies...")
+        subprocess.run(["sudo", "add-apt-repository", "universe"], check=True)
+        subprocess.run(["sudo", "apt-get", "update"], check=True)
+        subprocess.run(["sudo", "apt-get", "install", "-y", "qemu-user-static"], check=True)
+
+        print("Applying binaries...")
+        apply_binaries_script = os.path.join(output_dir, "Linux_for_Tegra", "apply_binaries.sh")
+        subprocess.run(["sudo", apply_binaries_script], check=True)
+
+        # Step 4: Create default user
+        print("Installing additional dependencies...")
+        subprocess.run(["sudo", "apt-get", "install", "-y", "lz4", "libxml2-utils"], check=True)
+
+        print("Creating default user...")
+        create_user_script = os.path.join(output_dir, "Linux_for_Tegra", "tools", "l4t_create_default_user.sh")
+        subprocess.run([
+            "sudo", create_user_script,
+            "-u", username, "-p", password, "-n", hostname, "--accept-license"
+        ], check=True)
+
+        # Step 5: Compress root filesystem
+        print("Compressing root filesystem into rootfs-noeula-user.tar.gz...")
+        rootfs_dir = os.path.join(output_dir, "Linux_for_Tegra", "rootfs")
+        tarball_path = os.path.join("api", "rootfs-noeula-user.tar.gz")
+        subprocess.run(["sudo", "tar", "czvf", tarball_path, "-C", rootfs_dir, "."], check=True)
+
+        print(f"Root filesystem compressed successfully to {tarball_path}.")
+        print("Jetson setup completed successfully.")
+
+    except subprocess.CalledProcessError as e:
+        print(f"Error while running command: {e.cmd}")
+        print(f"Output: {e.output}")
+        raise
+
 # Define the parameters
 ubuntu_version = "24.04"
 vm_name = "testvm"
@@ -590,7 +663,7 @@ macvlan_manager = MacVlan(interface_name)
 vm_manager = VmManager()
 vm_name="mehdivm"
 ip_addr = IpAddr()
-
+#setup_jetson('data', 'iotuser', 'iotuser', 'iotuser')
 #print(vm_manager.get_vm_ip("debbah"))
 #vm_manager.install_5gmmtctool("debbah" ,"")
 

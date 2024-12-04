@@ -58,6 +58,80 @@
     dest: "../../data/{{ rootfs_file_name }}"
   when: not rootfs_stat.stat.exists
 
+# Step 1: Check if api/jetson directory exists, if not, create it
+- name: Ensure api/jetson directory exists
+  file:
+    path: "{{system_manager_base_path}}/api/jetson"
+    state: directory
+
+# Step 2: Extract Jetson Linux package
+- name: Extract Jetson Linux package
+  unarchive:
+    src: "{{ base_dir }}/Jetson_Linux_R35.4.1_aarch64.tbz2"
+    dest: "{{system_manager_base_path}}/api/jetson"
+    remote_src: yes
+
+# Step 3: Extract Tegra root filesystem
+- name: Extract Tegra root filesystem
+  unarchive:
+    src: "{{ base_dir }}/Tegra_Linux_Sample-Root-Filesystem_R35.4.1_aarch64.tbz2"
+    dest: "{{system_manager_base_path}}/api/jetson/Linux_for_Tegra/rootfs"
+    remote_src: yes
+
+# Step 4: Add universe repository and install dependencies
+- name: Add universe repository
+  apt_repository:
+    repo: "deb http://archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }} universe"
+    state: present
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install qemu-user-static
+  apt:
+    name: qemu-user-static
+    state: present
+
+# Step 5: Apply binaries
+- name: Apply Jetson binaries
+  shell: "sudo ./apply_binaries.sh"
+  args:
+    chdir: "{{system_manager_base_path}}/api/jetson/Linux_for_Tegra"
+
+# Step 6: Install additional dependencies for user creation
+- name: Install lz4 and libxml2-utils
+  apt:
+    name:
+      - lz4
+      - libxml2-utils
+    state: present
+
+# Step 7: Create default user
+- name: Create default user
+  shell: |
+    sudo ./tools/l4t_create_default_user.sh -u {{ username }} -p {{ password }} -n {{ hostname }} --accept-license
+  args:
+    chdir: "{{system_manager_base_path}}/api/jetson/Linux_for_Tegra"
+
+# Step 8: Compress the root filesystem into tarball
+- name: Compress root filesystem into rootfs-noeula-user.tar.gz
+  shell: |
+    sudo tar czvf {{system_manager_base_path}}/api/rootfs-noeula-user.tar.gz rootfs 
+  args:
+    chdir: "{{system_manager_base_path}}/api/jetson/Linux_for_Tegra"
+
+# Step 9: Verify the tarball exists
+- name: Verify rootfs tarball exists
+  stat:
+    path: "{{system_manager_base_path}}/api/rootfs-noeula-user.tar.gz"
+  register: tarball_stat
+
+- name: Print success message
+  debug:
+    msg: "Jetson setup completed successfully and rootfs tarball created at api/rootfs-noeula-user.tar.gz"
+  when: tarball_stat.stat.exists
+
 
 
 # Optional Task: Start the system manager service (if needed)

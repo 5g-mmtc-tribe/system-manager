@@ -3,3 +3,9 @@ bsp_url: "https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v4.1/r
 rootfs_url: "https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v4.1/release/tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2"
 bsp_file_name : "Jetson_Linux_R35.4.1_aarch64.tbz2"
 rootfs_file_name: "Tegra_Linux_Sample-Root-Filesystem_R35.4.1_aarch64.tbz2"
+base_dir: "{{system_manager_base_path}}/data"  # Base directory containing BSP and rootfs files
+username: "iotuser"   # Desired username
+password: "iotuser"   # Desired password
+hostname: "iotuser"   # Desired hostname
+# Base path for system_ Manager
+system_manager_base_path: "{{ playbook_dir | dirname}}/.."

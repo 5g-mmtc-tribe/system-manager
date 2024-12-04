@@ -191,8 +191,8 @@ class Jetson:
         except Exception as e:
             print(f"An error occurred during ping test: {e}")
             return False
-#jetson = Jetson()
-#jetson.flash_jetson("192.168.0.227/24","/root/nfsroot/rootfs")
+jetson = Jetson()
+#jetson.flash_jetson("10.111.217.4/24","/root/nfsroot/rootfs",'3-3.3')
 #number = jetson.number_of_jetsons_xavier_connected()
 
 #print(jetson.get_xavier_instances())
