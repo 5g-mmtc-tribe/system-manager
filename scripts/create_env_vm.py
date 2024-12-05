@@ -303,10 +303,10 @@ class VmManager():
             ip = IpAddr()
             ip.update_network_config("ipconfig.txt",nfs_ip_addr)
             # set up  the nfs ip address
-            command_librray_install=   ["sudo","lxc", "file","push" ,"ipconfig.txt" ,vm_name+"/root/"]
+            command_librray_install=   ["lxc", "file","push" ,"ipconfig.txt" ,vm_name+"/root/"]
             VmManager.run_command(command_librray_install,"copy nfs ip address config")
             time.sleep(7)
-            command = "sudo cat /root/ipconfig.txt > /etc/netplan/50-cloud-init.yaml"
+            command = "cat /root/ipconfig.txt > /etc/netplan/50-cloud-init.yaml"
 
             lxc_command = f"lxc exec {vm_name} -- sh -c \"{command}\""
             print(lxc_command)
@@ -396,7 +396,7 @@ class VmManager():
                         # set the ip of the nfs 
             ip = IpAddr()
             ip.update_dhcp_configuration("dhcpConfig.txt", nfs_ip_addr)
-            command_librray_install=   ["sudo","lxc", "file","push" ,"dhcpConfig.txt" ,vm_name+"/root/"]
+            command_librray_install=   ["lxc", "file","push" ,"dhcpConfig.txt" ,vm_name+"/root/"]
             VmManager.run_command(command_librray_install,"copy dhcp config")
             
             command = "sudo cat /root/dhcpConfig.txt >> /etc/dhcp/dhcpd.conf"
@@ -442,7 +442,7 @@ class VmManager():
                 'sudo', 'lxc', 'file', 'push', '-r', 'jetson/Linux_for_Tegra/rootfs/', 'mehdivm/root/nfsroot'
             ]"""
             #command = [ 'sudo' , 'lxc'  ,"exec" , vm_name , "--" , "wget", "http://"+web_server_ip +"/rootfs-noeula-user.tar.gz"]
-            command = [ 'sudo' , 'lxc'  ,"file" ,"push","rootfs-noeula-user.tar.gz",vm_name+"/root/"]
+            command = [  'lxc'  ,"file" ,"push","rootfs-noeula-user.tar.gz",vm_name+"/root/"]
             print(command)
             # Execute the command using subprocess.run()
             try:
@@ -452,7 +452,7 @@ class VmManager():
                 print("Failed to execute command:", e)
                 print("STDOUT:\n", e.stdout)
                 print("STDERR:\n", e.stderr)
-            command = [ 'sudo' , 'lxc'  ,"exec" , vm_name , "--" , "tar" ,"xpzf","/root/rootfs-noeula-user.tar.gz" ,"-C", "/root/nfsroot/"]
+            command = [ 'lxc'  ,"exec" , vm_name , "--" , "tar" ,"xpzf","/root/rootfs-noeula-user.tar.gz" ,"-C", "/root/nfsroot/"]
             print(command)
             # Execute the command using subprocess.run()
             try:
@@ -543,12 +543,12 @@ class VmManager():
         authorized_keys_file = f"{ssh_dir}/authorized_keys"
 
         # Create the .ssh directory if it doesn't exist
-        subprocess.run(['sudo', 'lxc', 'exec', lxd_vm_name, '--', 'bash', '-c', f'if [ ! -d "{ssh_dir}" ]; then mkdir -p "{ssh_dir}"; fi'], check=True)
+        subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'bash', '-c', f'if [ ! -d "{ssh_dir}" ]; then mkdir -p "{ssh_dir}"; fi'], check=True)
 
         # Check if the key already exists in the authorized_keys file
         try:
             result = subprocess.run(
-                ['sudo', 'lxc', 'exec', lxd_vm_name, '--', 'bash', '-c', f'cat {authorized_keys_file}'],
+                ['lxc', 'exec', lxd_vm_name, '--', 'bash', '-c', f'cat {authorized_keys_file}'],
                 capture_output=True, text=True, check=True
             )
             existing_keys = result.stdout.splitlines()
@@ -562,7 +562,7 @@ class VmManager():
         if new_keys:
             keys_to_add = "\n".join(new_keys)
             subprocess.run(
-                ['sudo', 'lxc', 'exec', lxd_vm_name, '--', 'bash', '-c', f'echo "{keys_to_add}" >> {authorized_keys_file}'],
+                [ 'lxc', 'exec', lxd_vm_name, '--', 'bash', '-c', f'echo "{keys_to_add}" >> {authorized_keys_file}'],
                 check=True
             )
             print(f"Added new SSH keys to {authorized_keys_file} in VM {lxd_vm_name}")
@@ -581,10 +581,10 @@ class VmManager():
             # copy dhcp config 
             ip = IpAddr()
             ip.update_dhcp_configuration("dhcpConfig.txt", nfs_ip_addr)
-            command_librray_install=   ["sudo","lxc", "file","push" ,"dhcpConfig.txt" ,vm_name+"/root/"]
+            command_librray_install=   ["lxc", "file","push" ,"dhcpConfig.txt" ,vm_name+"/root/"]
             VmManager.run_command(command_librray_install,"copy dhcp config")
             # copy  5gmmtool file 
-            command_librray_install=   ["sudo","lxc", "file","push" ,user_script_path+"/5gmmtctool" ,vm_name+"/root/"]
+            command_librray_install=   ["lxc", "file","push" ,user_script_path+"/5gmmtctool" ,vm_name+"/root/"]
             VmManager.run_command(command_librray_install,"copy 5gmmtctool ")
 
     
