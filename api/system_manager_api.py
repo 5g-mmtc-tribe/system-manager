@@ -106,7 +106,6 @@ def turn_off_node(interface):
     print(interface,"is down ")
 
 def attach_vlan_device_interface(interface ,vlan_id):
-    print("here")
     device = switch_config
     switch = SwitchManager(device_type = device['device_type'],
                                 ip = device['ip'],
@@ -304,11 +303,12 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
           
           vm_manager.start_vm(vm_name)
           time.sleep(2)
-          vm_manager.add_ssh_key_to_lxd(user_name,vm_name)
+          vm_manager.add_ssh_key_to_lxd(user_name,user_name)
           
           return {"vm_name":"10.0.0.0","status": "User Env Created"}
           # prepare the device to use 
-          #vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)      
+          #vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)     
+           
 def stop_user_vm( vm_name):
     vm_manager = VmManager()
     vm_manager.stop_vm(vm_name)

@@ -81,22 +81,32 @@ class VmManager():
             print("STDOUT:\n", e.stdout)
             print("STDERR:\n", e.stderr)
             return False
-    def start_vm(self, vm_name):
-        if  not  self.is_vm_running(vm_name):
-            #check if the vm already runnig 
+    def start_vm(self, vm_name):  
+        if not self.is_vm_running(vm_name):
+            # Check if the VM is already running
             command = ['lxc', 'start', vm_name]
             try:
                 subprocess.run(command, check=True)
-                print("VM"+vm_name+"  is  Started:")
-                        # Commands to be executed inside the LXC VM
-                time.sleep(7)
+                print(f"VM {vm_name} is starting...")
+
+                # Wait until the VM is running
+                
+                print(f"Waiting for VM {vm_name} to start...")
+                time.sleep(10)  # Check every 2 seconds if the VM is running
+                
+                print(f"VM {vm_name} has successfully started.")
+
+                # Once VM is running, you can execute further commands if needed.
                 """commands = [
-                'sysctl -w net.ipv4.ip_forward=1',
-                'iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE']
-                #Execute commands in the LXC VM
+                    'sysctl -w net.ipv4.ip_forward=1',
+                    'iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE'
+                ]
+                # Execute commands inside the LXC VM
                 for cmd in commands:
-                    subprocess.run(['lxc', 'exec', vm_name, '--', 'sh', '-c', cmd]capture_output=True, text=True, check=True) 
+                    subprocess.run(['lxc', 'exec', vm_name, '--', 'sh', '-c', cmd], capture_output=True, text=True, check=True)
                     print(f"Command '{cmd}' executed successfully in {vm_name}")"""
+
+                return 0
             
             except subprocess.CalledProcessError as e:
                 # Print the error details
@@ -104,8 +114,9 @@ class VmManager():
                 print("Command output:", e.output)
                 print("STDOUT:", e.stdout)
                 print("STDERR:", e.stderr)
-        else :
-               print("VM",vm_name," is alerady Runnig !")
+        
+        else:
+            print(f"VM {vm_name} is already running!")
 
     def stop_vm(self, vm_name):
         if  not  self.is_vm_stopped(vm_name):
@@ -503,10 +514,11 @@ class VmManager():
              # configure Nat 
             vm_manager.configure_vm_nat(vm_name,"install_torch.sh")
 
-    def add_ssh_key_to_lxd(self,username, lxd_vm_name):
+    def add_ssh_key_to_lxd(self, username, lxd_vm_name):
         # Fixed index name
         index_name = 'UserIdxs'
         redis_client = redis.Redis(host='localhost', port=6379)
+
         # Search for the user in Redis using RediSearch
         search_results = redis_client.ft(index_name).search(f"@login:({username})")
         
@@ -516,7 +528,7 @@ class VmManager():
 
         # Assuming the first result is the user we want (adapt as needed)
         user_data = search_results.docs[0].json
-        user_data=json.loads(user_data)
+        user_data = json.loads(user_data)
         
         # Extract the SSH keys from the user data
         ssh_keys = user_data.get('user', {}).get('sshKeys', [])
@@ -529,28 +541,41 @@ class VmManager():
         # Define the path to the SSH directory and authorized_keys file
         ssh_dir = "/root/.ssh"
         authorized_keys_file = f"{ssh_dir}/authorized_keys"
-        
-        # Check if the LXD VM is running     
-        """if  self.is_vm_running(lxd_vm_name)== False:
-            raise RuntimeError(f"LXD VM {lxd_vm_name} is not running")"""
-    
 
         # Create the .ssh directory if it doesn't exist
-        subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'mkdir', '-p', ssh_dir], check=True)
-        
-        # Append the SSH public key to the authorized_keys file
-        subprocess.run(
-            ['lxc', 'exec', lxd_vm_name, '--', 'bash', '-c', f'echo "{ssh_key_str}" >> {authorized_keys_file}'],
-            check=True
-        )
-        
+        subprocess.run(['sudo', 'lxc', 'exec', lxd_vm_name, '--', 'bash', '-c', f'if [ ! -d "{ssh_dir}" ]; then mkdir -p "{ssh_dir}"; fi'], check=True)
+
+        # Check if the key already exists in the authorized_keys file
+        try:
+            result = subprocess.run(
+                ['sudo', 'lxc', 'exec', lxd_vm_name, '--', 'bash', '-c', f'cat {authorized_keys_file}'],
+                capture_output=True, text=True, check=True
+            )
+            existing_keys = result.stdout.splitlines()
+        except subprocess.CalledProcessError:
+            # If the file doesn't exist or is inaccessible, assume no keys exist
+            existing_keys = []
+
+        # Add the key only if it's not already in the file
+        new_keys = [key for key in ssh_keys if key not in existing_keys]
+
+        if new_keys:
+            keys_to_add = "\n".join(new_keys)
+            subprocess.run(
+                ['sudo', 'lxc', 'exec', lxd_vm_name, '--', 'bash', '-c', f'echo "{keys_to_add}" >> {authorized_keys_file}'],
+                check=True
+            )
+            print(f"Added new SSH keys to {authorized_keys_file} in VM {lxd_vm_name}")
+        else:
+            print(f"No new SSH keys to add. All keys already exist in {authorized_keys_file}.")
+
         # Set correct permissions
         subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'chmod', '700', ssh_dir], check=True)
         subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'chmod', '600', authorized_keys_file], check=True)
         subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'chown', 'root:root', ssh_dir], check=True)
         subprocess.run(['lxc', 'exec', lxd_vm_name, '--', 'chown', 'root:root', authorized_keys_file], check=True)
 
-        print(f"SSH public key added to root in VM {lxd_vm_name}")
+        print(f"SSH key verification and update complete for VM {lxd_vm_name}.")
 
     def install_5gmmtctool(_self ,vm_name , nfs_ip_addr):
             # copy dhcp config 
