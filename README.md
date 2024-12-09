@@ -103,3 +103,26 @@ The **system-manager** API will now be running, and you can interact with it via
 
 
 
+---
+
+### **Docker and LXD Compatibility**
+
+If **Docker** is installed alongside **LXD**, you may encounter networking issues. To resolve this, ensure you add the following iptables rules:
+
+1. **Allow communication from Docker to LXD network:**
+   ```bash
+   iptables -I DOCKER-USER -i lxdbr0 -j ACCEPT
+   ```
+
+2. **Allow communication from LXD network to Docker:**
+   ```bash
+   iptables -I DOCKER-USER -o lxdbr0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
+   ```
+
+Additionally, if **Docker** is running, stop it to avoid conflicts with **LXD**:
+
+```bash
+sudo systemctl stop docker
+```
+
+---

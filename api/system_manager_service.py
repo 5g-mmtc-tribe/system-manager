@@ -6,6 +6,7 @@ from fastapi import FastAPI, Request, HTTPException
 import system_manager_api 
 import logging
 import uvicorn
+import time
 from pydantic import BaseModel
 from models import DestroyEnvVMRequest, CreateUser,  CreateUserEnvVMRequest ,TurnNode, VlanNode ,jetsonInfo ,sshInfo
 
@@ -58,6 +59,7 @@ async def call_create_user_env_vm(request: CreateUserEnvVMRequest):
             request.root_size,
             request.user_info.dict()  # Convert Pydantic model to dictionary
         )
+        time.sleep(2)
         return  resp
 
     except Exception as e:
