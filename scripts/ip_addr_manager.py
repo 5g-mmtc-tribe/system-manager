@@ -116,7 +116,7 @@ class IpAddr:
             subnet_up = str(int(ips[3]) + 5)
 
             new_content = f"""subnet {plage}.0 netmask 255.255.255.0 {{
-            range {plage}.{subnet_low} {plage}.{subnet_low};
+            range {plage}.{subnet_low} {plage}.{subnet_up};
             option routers {net};
             option domain-name-servers 8.8.8.8, 8.8.4.4;
             }}"""
