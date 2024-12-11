@@ -1,6 +1,6 @@
 # Network Configuration Guide
 
-## Switch Configuration
+## Switch Configuration init 
 
 ### 1. Set the Enable Secret and Passwords
 
@@ -32,7 +32,7 @@ transport input telnet
 ```
 
 ---
-
+## switch advanced setting 
 ## Enabling SSH on the Switch
 
 ### Step 1: Configure Basic Settings

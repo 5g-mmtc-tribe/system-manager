@@ -26,7 +26,7 @@ The steps below are only to run the `system-manager` standalone.
 You can install and configure the **`system-manager`** either **manually** or **using an Ansible playbook**.
 
 
-#### **1. Manual Installation**
+#### **1.a Manual Installation**
 
 To install the **system-manager** manually, follow these steps:
 
@@ -67,31 +67,44 @@ To install the **system-manager** manually, follow these steps:
 
 
 
-#### **2. Installation Using Ansible Playbook**
+#### **1.b Installation Using Ansible Playbook**
 
 To automate the installation and configuration of the **system-manager**, use the **Ansible playbook**. This will configure all necessary components, including LXD group permissions, LXD service restarts, and Python dependencies.
 
-1. **Run the Ansible Playbook:**
+1. **Set the MAC Address for Jetson Network Interface:**
+
+   Before launching Ansible, you need to set the MAC address of the network interface that will be used to connect the **system-manager** to the switch. This can be done in the `ansible/roles/server/vars/main.yml` file. Update the `mac_address` field accordingly.
+
+2. **Run the Ansible Playbook:**
    ```bash
    cd ansible && ansible-playbook -i inventory.ini playbooks/site.yml --ask-become-pass
    ```
 
+3. **Reboot the System:**
+
+   After running the playbook and configuring the necessary components, a **system reboot** is required to apply all changes effectively.
 
 
-### **Important Note about Group Membership and Rebooting**
+### **2. Switch Configuration Before Running the System Manager API**
 
-After adding the user to the **`lxd`** group (which is necessary to interact with LXD), a **reboot** may be required for the changes to take effect. While you can use the `newgrp lxd` command in some cases to apply the new group membership, a **system reboot** is the most reliable method in automated environments.
+Before running the **system-manager API**, ensure that the switch is properly configured. This involves setting up the network connections between the Jetson devices and the switch. For detailed steps on how to configure the switch, please refer to the instructions in the [docs/switch-config.md](docs/switch-config.md) file.
 
+---
+### **3. Matching Jetson Devices with Switch Interfaces**
+
+To properly match each Jetson device with its corresponding switch interface, you will need to manually map the devices. This is necessary to ensure proper network connectivity between the Jetsons and the switch.
+
+Use the `get_xavier_instances()` function from the [jetson_ctl.py](scripts/jetson_ctl.py) script to help detect and identify each Jetson device. This function will assist in detecting Jetson devices one by one, enabling you to make the correct mapping between each Jetson and its corresponding switch interface.
 
 ---
 
-### **Running the System Manager API**
+### **4. Running the System Manager API**
 
 Once the **system-manager** is installed and properly configured (either manually or via Ansible), you can run the **API** as follows:
 
-1. **Navigate to the `/system-manager/api` directory:**
+1. **Navigate to the `api` directory:**
    ```bash
-   cd system-manager/api
+   cd api
    ```
 
 2. **Start the system manager API service:**

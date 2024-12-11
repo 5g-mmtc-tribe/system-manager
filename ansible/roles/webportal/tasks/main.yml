@@ -13,7 +13,7 @@
     lxc list WebPortal --format=json | jq -r '.[0].state.network.enp5s0.addresses[] | select(.family == "inet") | .address'
   register: lxc_vm_ip
   retries: 10
-  delay: 5
+  delay: 10
   until: lxc_vm_ip.stdout.strip() != ""
   changed_when: false
 
@@ -46,15 +46,9 @@
   add_host:
     name: "{{ lxc_vm_ip.stdout.strip() }}"
     ansible_user: root
-    ansible_ssh_private_key_file: /home/tribe/.ssh/id_rsa
+    ansible_ssh_private_key_file: ~/.ssh/id_rsa
     ansible_connection: ssh
 
-# Step 7: Test SSH connection to the LXC VM as root (using root user)
-- name: Test SSH connection to the WebPortal LXC VM as root
-  shell: |
-    ssh  -i /home/tribe/.ssh/id_rsa -o StrictHostKeyChecking=no root@{{ lxc_vm_ip.stdout.strip() }} echo "SSH Connection Successful"
-  delegate_to: localhost
-  register: ssh_test_result
 
 # Step 8: Clone the WebPortal repository from GitHub (using personal access token)
 - name: Clone WebPortal project repository from GitHub (private)
@@ -83,26 +77,26 @@
   become: yes
   delegate_to: "{{ lxc_vm_ip.stdout.strip() }}"
 
-#- name: Run local development server
-#  shell: |
-#    nohup npm run serve &
-#  args:
-#    chdir: /root/testbed-webportal
-#  async: 3600
-#  poll: 0
-#  register: webportal_job
-#  delegate_to: "{{ lxc_vm_ip.stdout.strip() }}"
+- name: Run local development server
+  shell: |
+    nohup npm run serve &
+  args:
+    chdir: /root/testbed-webportal
+  async: 3600
+  poll: 0
+  register: webportal_job
+  delegate_to: "{{ lxc_vm_ip.stdout.strip() }}"
 
-# Step 12: Wait for Web Portal to start
-#- name: Wait for Web Portal to start
-#  wait_for:
-#    host: "{{ lxc_vm_ip.stdout.strip() }}"
-#    port: 8080
-#    delay: 5
-#    timeout: 300
+#Step 12: Wait for Web Portal to start
+- name: Wait for Web Portal to start
+  wait_for:
+    host: "{{ lxc_vm_ip.stdout.strip() }}"
+    port: 8080
+    delay: 5
+    timeout: 300
 
 
 # Step 13: Display message that the app is running with its IP
 - name: run the app 
   debug:
-    msg: " cd /testbed-webportal && npm run serve "
+    msg: " the server start at {{ lxc_vm_ip.stdout.strip() }}:8080 "

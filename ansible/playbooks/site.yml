@@ -1,8 +1,27 @@
+- name: Configure Server
+  hosts: sys
+  gather_facts: false
+  roles:
+   - server
+   
 - name: Configure System Manager
   hosts: sys
   become: true
   roles:
     - system
+
+- name: Deploy Testbed Web Portal
+  hosts: localhost
+  gather_facts: no
+  roles:
+    - webportal
+  vars_prompt:
+    - name: "github_user"
+      prompt: "Please enter your GitHub username"
+      private: no  # Set to yes to hide input
+    - name: "github_token"
+      prompt: "Please enter your GitHub personal access token"
+      private: yes  # This ensures the token is hidden during input
 
 #- name: Configure Cisco Switch
 #  hosts: console_switches
@@ -14,21 +33,3 @@
 #    prompt: "Please enter the IP address of the switch (used for Ansible connection)"
 #    private: no  # Set to 'yes' if you want to hide the input
 
-#- name: Configure Server
-#  hosts: sys
-#  gather_facts: false
-#  roles:
-#   - server
-
-#- name: Deploy Testbed Web Portal
-#  hosts: localhost
-#  gather_facts: no
-#  roles:
-#    - webportal
-#  vars_prompt:
-#    - name: "github_user"
-#      prompt: "Please enter your GitHub username"
-#      private: no  # Set to yes to hide input
-#    - name: "github_token"
-#      prompt: "Please enter your GitHub personal access token"
-#      private: yes  # This ensures the token is hidden during input

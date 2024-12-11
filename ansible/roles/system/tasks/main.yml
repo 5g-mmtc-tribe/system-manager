@@ -32,6 +32,10 @@
     - uvicorn
   become: yes
 
+- name: install apt jq
+  apt:
+    name: jq 
+    state: present
 # Task 5: Check if BSP file exists
 - name: Check if BSP file exists
   stat:
@@ -133,9 +137,23 @@
   when: tarball_stat.stat.exists
 
 
+  # Task 10: Launch get_xavier_instances from jetson_ctl.py
+- name: Launch get_xavier_instances function from jetson_ctl.py
+  command: python3 {{ system_manager_base_path }}/scripts/jetson_ctl.py get_xavier_instances
+  become: yes
 
+# Task 11: Initialize active_users.json with an empty list
+- name: Initialize active_users.json with empty list
+  copy:
+    content: "[]"
+    dest: "{{ system_manager_base_path }}/data/active_users.json"
+    owner: nobody  # Generic non-root user
+    group: nogroup  # Generic non-root group
+    mode: '0666'  # Allow read and write access to everyone
+  become: yes
+  
 # Optional Task: Start the system manager service (if needed)
-# - name: Start system manager service
+#- name: Start system manager service
 #   shell: python3 api/system_manager_service.py &
 #   args:
 #     executable: /bin/bash
