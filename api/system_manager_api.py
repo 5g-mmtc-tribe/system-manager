@@ -58,7 +58,8 @@ def get_resource_list():
 
 
 
-def testbed_reset():   
+def testbed_reset():  
+    print("turn off node....") 
     device = switch_config
     switch = SwitchManager(device_type = device['device_type'],
                                 ip = device['ip'],
@@ -66,11 +67,12 @@ def testbed_reset():
                                 password = device['password'])
     power = PoeManager(switch)
     switch_interfaces = power.get_switch_interfaces()
-    print(switch_interfaces)
+    #print(switch_interfaces)
     power.turn_all_off()
 
     
 def turn_on_all_nodes():
+    print("turn on node....")
     device = switch_config
     switch = SwitchManager(device_type = device['device_type'],
                                 ip = device['ip'],
@@ -79,7 +81,7 @@ def turn_on_all_nodes():
 
     power = PoeManager(switch)
     switch_interfaces = power.get_switch_interfaces()
-    print(switch_interfaces)
+    #print(switch_interfaces)
     power.turn_all_on()
 
 def turn_on_node(interface ):
@@ -89,8 +91,8 @@ def turn_on_node(interface ):
                                 port = device['port'],
                                 password = device['password'])
 
-    #power = PoeManager(switch)
-    #power.turn_on(interface)
+    power = PoeManager(switch)
+    power.turn_on(interface)
 
     print(interface,"is up ")
 
@@ -101,8 +103,8 @@ def turn_off_node(interface):
                                 port = device['port'],
                                 password = device['password'])
 
-    #power = PoeManager(switch)
-    #power.turn_off(interface)
+    power = PoeManager(switch)
+    power.turn_off(interface)
     print(interface,"is down ")
 
 def attach_vlan_device_interface(interface ,vlan_id):
@@ -317,6 +319,9 @@ def flash_jetson( nfs_ip_addres ,nfspath,usb_instance ):
     #turn on ,off jetson just in case 
     testbed_reset()
     turn_on_all_nodes()
+    print("nfsIP :",nfs_ip_addres)
+    print("nfspath",nfspath)
+    print("usb_insatance",usb_instance)
     Jetson_class= Jetson()
     try :
     

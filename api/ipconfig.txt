@@ -11,4 +11,4 @@ network:
         enp6s0:
             dhcp4: no
             addresses:
-              - 10.111.24.4/24
+              - 10.111.226.4/24

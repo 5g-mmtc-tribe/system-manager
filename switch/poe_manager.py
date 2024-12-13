@@ -62,29 +62,29 @@ class PoeManager:
 
 
 
-# # Define the device
-# device = {
-#  'device_type': 'cisco_ios_telnet',
-#  'ip': '192.168.0.30',
-#  'port':23,
-#  'password': 'tribe',
-# }
+# Define the device
+device = {
+  'device_type': 'cisco_ios_telnet',
+  'ip': '192.168.0.30',
+  'port':23,
+  'password': 'tribe',
+ }
 
 
-# switch = SwitchManager(device_type = device['device_type'],
-#                             ip = device['ip'],
-#                             port = device['port'],
-#                             password = device['password'])
+switch = SwitchManager(device_type = device['device_type'],
+                             ip = device['ip'],
+                             port = device['port'],
+                             password = device['password'])
 
 
 
 
-# power = PoeManager(switch)
+power = PoeManager(switch)
 
 # switch_interfaces = power.get_switch_interfaces()
 # print(switch_interfaces)
 
-# power.turn_all_off()
+#power.turn_all_off()
 
 # # #out = switch_obj.sendCommand('show ip int bri')
 # # #print(out)
