@@ -437,11 +437,6 @@ class VmManager():
             #command_librray_install=   vmcommand +["sudo","rsync" ,"-aAXv" ,"jetson/Linux_for_Tegra/rootfs/" ,"/root/nfsroot"]
             #command_librray_install=["sudo","lxc", "file","push" ,"-r","jetson/Linux_for_Tegra/rootfs/" ,vm_name+"/root/nfsroot"] 
             # Define the command to run
-            web_server_ip = "192.168.0.8:70"
-            """ command = [
-                'sudo', 'lxc', 'file', 'push', '-r', 'jetson/Linux_for_Tegra/rootfs/', 'mehdivm/root/nfsroot'
-            ]"""
-            #command = [ 'sudo' , 'lxc'  ,"exec" , vm_name , "--" , "wget", "http://"+web_server_ip +"/rootfs-noeula-user.tar.gz"]
             command = [  'lxc'  ,"file" ,"push","rootfs-noeula-user.tar.gz",vm_name+"/root/"]
             print(command)
             # Execute the command using subprocess.run()

@@ -240,7 +240,7 @@ class Jetson:
                     "wait_status": "Error"
                 }
         
-        
+    
     def ping(ip):
         try:
             # Use the system ping command to check if the IP address is reachable
@@ -258,4 +258,4 @@ jetson = Jetson()
 #jetson.flash_jetson("10.111.217.4/24","/root/nfsroot/rootfs",'3-3.3')
 #number = jetson.number_of_jetsons_xavier_connected()
 
-#print(jetson.get_xavier_instances())
+print(jetson.get_xavier_instances())

@@ -1,5 +1,5 @@
 # MAC address and desired network interface name
-mac_address: "74:78:27:f0:dd:4e"
+mac_address: "00:24:9b:4f:21:69"
 new_interface_name: "eno3"
 
 # Static IP configuration
