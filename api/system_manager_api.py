@@ -305,7 +305,7 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
           
           vm_manager.start_vm(vm_name)
           time.sleep(2)
-          vm_manager.add_ssh_key_to_lxd(user_name,vm_name)
+          vm_manager.add_ssh_key_to_lxd(user_name,user_name)
           
           return {"vm_name":"10.0.0.0","status": "User Env Created"}
           # prepare the device to use 
