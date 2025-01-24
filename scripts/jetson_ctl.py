@@ -255,7 +255,8 @@ class Jetson:
             print(f"An error occurred during ping test: {e}")
             return False
 jetson = Jetson()
-#jetson.flash_jetson("10.111.217.4/24","/root/nfsroot/rootfs",'3-3.3')
+#jetson.flash_jetson("10.111.36.4/24","/root/nfsroot/rootfs",'1-2.3')
 #number = jetson.number_of_jetsons_xavier_connected()
 
-print(jetson.get_xavier_instances())
+#print(jetson.get_xavier_instances())
+#sudo ./flash.sh -N 10.111.36.4:/root/nfsroot/rootfs --rcm-boot jetson-xavier-nx-devkit-emmc eth0 

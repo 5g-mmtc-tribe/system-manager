@@ -97,14 +97,14 @@ class VmManager():
                 print(f"VM {vm_name} has successfully started.")
 
                 # ip forward for internet
-                commands = [
+                """commands = [
                     'sysctl -w net.ipv4.ip_forward=1',
                     'iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE'
                 ]
                 # Execute commands inside the LXC VM
                 for cmd in commands:
                     subprocess.run(['lxc', 'exec', vm_name, '--', 'sh', '-c', cmd], capture_output=True, text=True, check=True)
-                    print(f"Command '{cmd}' executed successfully in {vm_name}")
+                    print(f"Command '{cmd}' executed successfully in {vm_name}")"""
 
                 return 0
             

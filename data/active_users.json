@@ -1,9 +1,16 @@
 [
     {
         "user_name": "mehdi",
-        "user_network_id": 110,
-        "user_subnet": "10.111.110.0/24",
-        "nfs_ip_addr": "10.111.110.4/24",
+        "user_network_id": 12,
+        "user_subnet": "10.111.12.0/24",
+        "nfs_ip_addr": "10.111.12.4/24",
         "macvlan_interface": "macvlan_mehdi"
+    },
+    {
+        "user_name": "merco",
+        "user_network_id": 197,
+        "user_subnet": "10.111.197.0/24",
+        "nfs_ip_addr": "10.111.197.4/24",
+        "macvlan_interface": "macvlan_merco"
     }
 ]

@@ -30,12 +30,22 @@
     - netmiko
     - ansible-pylibssh
     - uvicorn
+    - redis
   become: yes
 
 - name: install apt jq
   apt:
     name: jq 
     state: present
+# Task 3: Add the user running the playbook to the LXD group
+- name: Add the local user running the playbook to the lxd group
+  user:
+    name: "{{ lookup('env', 'USER') }}"  # Retrieve the local user running the playbook
+    groups: lxd
+    append: yes  # Ensure the user is added to the lxd group without removing them from others
+  become: yes  # Required to modify user group membersh
+
+
 # Task 5: Check if BSP file exists
 - name: Check if BSP file exists
   stat:

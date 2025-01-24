@@ -2,6 +2,11 @@
     {
         "name": "Jetson Xavier 1",
         "switch_interface": "FastEthernet0/1",
-        "usb_instance": "3-1.3"
+        "usb_instance": "1-2.3"
+    },
+    {
+        "name": "Jetson Xavier 2",
+        "switch_interface": "FastEthernet0/2",
+        "usb_instance": "1-9"
     }
 ]

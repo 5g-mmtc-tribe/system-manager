@@ -70,6 +70,8 @@ To install the **system-manager** manually, follow these steps:
 #### **1.b Installation Using Ansible Playbook**
 
 To automate the installation and configuration of the **system-manager**, use the **Ansible playbook**. This will configure all necessary components, including LXD group permissions, LXD service restarts, and Python dependencies.
+0. **install ansible :**
+  sudo apt install ansible 
 
 1. **Set the MAC Address for Jetson Network Interface:**
 
@@ -126,7 +128,7 @@ If **Docker** is installed alongside **LXD**, you may encounter networking issue
    ```bash
    iptables -I DOCKER-USER -i lxdbr0 -j ACCEPT
    ```
-
+   
 2. **Allow communication from LXD network to Docker:**
    ```bash
    iptables -I DOCKER-USER -o lxdbr0 -m conntrack --ctstate RELATED,ESTABLISHED -j ACCEPT
