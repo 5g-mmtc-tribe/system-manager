@@ -3,13 +3,15 @@ import time
 
 class SwitchManager():
 
-    def __init__(self, device_type, ip, port, password):
+    def __init__(self, device_type, ip, port, password ,username=None, enable_password=None):
         
         self.esw = {
             'device_type': device_type,
             'ip': ip,
             'port': port,
-            'password': password
+            'password': password ,
+            'username': username,# For SSH
+            'secret': enable_password  # For enab
         }
         self.netCon = Netmiko(**self.esw)
 
@@ -104,24 +106,42 @@ class SwitchManager():
         # Exit config mode
         self.sendCommand('end')
 
-# Define the device
-device = {
- 'device_type': 'cisco_ios_telnet',
-  'ip': '192.168.0.30',
-  'port':23,
-  'password': 'tribe',
- }
 
 
-"""switch_obj = SwitchManager(device_type = device['device_type'],
-                             ip = device['ip'],
-                             port = device['port'],
-                             password = device['password'])
-
-switch_obj.check_interface_on("GigabitEthernet1/0/1")"""
 
 
+# Example usage:
+
+#device_telnet = {
+#    'device_type': 'cisco_ios_telnet',  # Telnet connection
+#    'ip': '192.168.0.30',
+#    'port': 23,
+#    'password': 'tribe',
+#    'username': None,  # Not needed for Telnet
+#    'secret': 'enable_password'  # Enable password
+#}
+#switch_obj = SwitchManager(device_type=device_telnet['device_type'],
+#                           ip=device_telnet['ip'],
+#                           port=device_telnet['port'],
+#                           password=device_telnet['password'],
+#                           username=device_telnet['username'],
+#                           enable_password=device_telnet['secret'])
 # out = switch_obj.sendCommand('show ip int bri')
+"""device_ssh = {
+    'device_type': 'cisco_ios_ssh',  # SSH connection
+    'ip': '192.168.0.30',
+    'port': 22,
+    'password': 'tribe',
+    'username': 'tribe',  # Required for SSH
+    'secret': 'tribe'  # Enable password
+}
+switch_obj = SwitchManager(device_type=device_ssh['device_type'],
+                           ip=device_ssh['ip'],
+                           port=device_ssh['port'],
+                           password=device_ssh['password'],
+                           username=device_ssh['username'],
+                           enable_password=device_ssh['secret'])"""
+
 # print(out)
 
 # print(switch_obj.check_enable_mode())
@@ -160,3 +180,16 @@ switch_obj.check_interface_on("GigabitEthernet1/0/1")"""
 # # time.sleep(30)
 
 # # switch_obj.poe_off(interface)
+# old version
+"""device = {
+ 'device_type': 'cisco_ios_telnet',
+  'ip': '192.168.0.30',
+  'port':23,
+  'password': 'tribe',
+ }
+
+
+switch_obj = SwitchManager(device_type = device['device_type'],
+                             ip = device['ip'],
+                             port = device['port'],
+                             password = device['password'])"""

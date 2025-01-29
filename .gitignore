@@ -1,3 +1,5 @@
 __pycache__/
 *.tbz2
 api/jetson/*
+credential.txt
+rootfs-noeula-user.tar.gz

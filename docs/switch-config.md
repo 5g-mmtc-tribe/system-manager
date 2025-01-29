@@ -18,6 +18,7 @@ Set up VLAN 1 with a default IP address of `192.168.0.30`:
 interface vlan 1
 ip address 192.168.0.30 255.255.255.0
 no shutdown
+switchport mode trunk
 ```
 
 > Replace `192.168.0.30` with a custom IP address if needed.

@@ -309,7 +309,8 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
           
           return {"vm_name":"10.0.0.0","status": "User Env Created"}
           # prepare the device to use 
-          #vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)      
+          #vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)     
+           
 def stop_user_vm( vm_name):
     vm_manager = VmManager()
     vm_manager.stop_vm(vm_name)
