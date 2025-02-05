@@ -17,7 +17,7 @@ lxc launch ubuntu:24.04 <vmName> --vm --device root,size=<diskSize GB> -c limits
 lxc config device add <vmName> eth2 nic nictype=macvlan parent=<serverInterface> vlan=<vlanID>
 ip addr add <vmVlanAddress> dev enp7s0
 ip link set enp7s0 up
-```
+```   
 
 ### 3. Configure Netplan with NFS IP Address
 
@@ -170,7 +170,7 @@ chmod +x install_torch.sh
 ```
 
 ## OpenVPN Setup
-
+lxc launch ubuntu:24.04 vm-openvpn --vm --device root,size=20GB -c limits.cpu=4 -c limits.memory=4GiB
 ### 1. Install OpenVPN and Easy-RSA
 
 ```bash
@@ -191,7 +191,7 @@ cd ~/openvpn-ca
 ./easyrsa gen-dh
 openvpn --genkey --secret ta.key
 ```
-
+pass pahase admin or iotlab 
 ### 3. Configure the OpenVPN Server
 
 Copy certificate files and create a server configuration:
@@ -204,6 +204,7 @@ sudo nano /etc/openvpn/server.conf
 Add the following configuration:
 
 ```bash
+local 192.168.0.8
 port 1194
 proto tcp
 dev tun
@@ -214,9 +215,9 @@ dh /etc/openvpn/dh.pem
 tls-auth /etc/openvpn/ta.key 0
 server 10.8.0.0 255.255.255.0
 #define the  webportal network 
-push "10.154.195.235 255.255.255.255"
+#push "10.5.21.8 255.255.255.255"
 #define the vlan ip address 
-push "10.111.106.0 255.255.255.0"
+#push "10.111.195.0 255.255.255.0"
 #push "redirect-gateway def1 bypass-dhcp"
 push "dhcp-option DNS 8.8.8.8
 push "dhcp-option DNS 8.8.8.4
@@ -227,28 +228,41 @@ status /var/log/openvpn-status.log
 log-append /var/log/openvpn.log
 verb 3
 ```
+sudo systemctl restart openvpn@server
+
+### 6. OpenVPN VLAN Configuration
+
+```bash
+lxc config device add vm-openvpn eth195 nic nictype=macvlan parent=eno3 vlan=195
+ip addr add 10.111.195.30/24 dev enp6s0
+sudo ip link set dev enp6s0 up
+sudo iptables -t nat -A POSTROUTING -o enp6s0 -j MASQUERADE
+
 
 ### 4. Enable IP Forwarding
 
 ```bash
 sudo nano /etc/sysctl.conf
+iptables -t nat -A POSTROUTING -s 10.5.0.0/24 -d 10.111.195.0/24 -j MASQUERADE
+
+# Allow forwarding between VPN and VLAN 195
+iptables -A FORWARD -i tun0 -o enp6s0 -j ACCEPT
+iptables -A FORWARD -i enp6s0 -o tun0 -j ACCEPT
 ```
-
 ### 5. Create Client Configuration
-
 ```bash
-./easyrsa gen-req <clientName> nopass
-./easyrsa sign-req client <clientName>
+./easyrsa gen-req minig nopass
+./easyrsa sign-req client minig
 ```
 
 Create the client `.ovpn` file:
 
 ```bash
-cat <<EOF > /root/openvpn-ca/tribe.ovpn
+cat <<EOF > /root/openvpn-ca/mehdi.ovpn
 client
 dev tun
 proto tcp
-remote 10.154.195.130  1194
+remote 10.111.195.30  1194
 resolv-retry infinite
 nobind
 persist-key
@@ -266,27 +280,25 @@ route-nopull
 $(cat /etc/openvpn/ca.crt)
 </ca>
 <cert>
-$(cat /root/openvpn-ca/pki/issued/tribe.crt)
+$(cat /root/openvpn-ca/pki/issued/mehdi.crt)
 </cert>
 <key>
-$(cat /root/openvpn-ca/pki/private/tribe.key)
+$(cat /root/openvpn-ca/pki/private/mehdi.key)
 </key>
+<tls-auth>
+$(cat /etc/openvpn/ta.key)
+</tls-auth>
 EOF
 sudo cp /etc/openvpn/ta.key #copy tls-auth key 
 
 sudo openvpn --config <clientName>.ovpn
 ```
 
-### 6. OpenVPN VLAN Configuration
 
-```bash
-lxc config device add <vpnVM> eth130 nic nictype=macvlan parent=<serverInterface> vlan=<vlanID>
-ip addr add <vpnVlanAddress>/24 dev <vpnInterface>
-sudo ip link set dev <vpnInterface> up
-sudo iptables -t nat -A POSTROUTING -o <vpninterface> -j MASQUERADE
+
 socat TCP-LISTEN:1194,fork TCP:10.154.195.130:1194 &
 ```
-
+sudo openvpn --config /etc/openvpn/server.conf
 ---
 
 ## Annex
@@ -302,3 +314,16 @@ sudo iptables -t nat -L -n -v
 ```bash
 sudo lxc file push -r <sourceFile> <vmName>/<destinationPath>
 ssh-copy-id -i ~/.ssh
+
+# To make this permanent, run on vpn 
+sysctl -w net.ipv4.ip_forward=1
+
+# Add NAT rule if you're using iptables for routing between networks
+
+
+#add this on webportal
+ip route add 10.8.0.0/24 via 10.5.21.232 dev enp5s0
+# ip of the vpn interface ensp5s0 10.5.21.232
+#addd this on the host 
+iptables -t nat -A PREROUTING -d 193.49.44.52 -p tcp --dport <PORT> -j DNAT --to-destination 10.5.21.232:<PORT>
+iptables -A FORWARD -d 10.5.21.232 -p tcp --dport <PORT> -j ACCEPT
