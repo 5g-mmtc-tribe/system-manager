@@ -1,7 +1,12 @@
 [
     {
-        "name": "Jetson Xavier 1",
-        "switch_interface": "FastEthernet0/1",
+        "name": "j20-tribe4",
+        "switch_interface": "FastEthernet0/2",
         "usb_instance": "1-2.3"
+    },
+    {
+        "name": "j20-tribe1",
+        "switch_interface": "FastEthernet0/1",
+        "usb_instance": "1-7"
     }
 ]

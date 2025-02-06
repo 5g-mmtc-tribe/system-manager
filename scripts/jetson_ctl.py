@@ -51,7 +51,7 @@ class Jetson:
         # Generate the list of Xavier instances with their properties
         xavier_instances = []
         for idx, usb_instance in enumerate(xavier_usb_instance):
-            name = f"Jetson Xavier {idx + 1}"
+            name = f"j20-tribe{idx + 1}"
             switch_interface = switch_interfaces[idx] if idx < len(switch_interfaces) else "UnknownInterface"
             xavier_instances.append(
                 {
@@ -258,6 +258,6 @@ jetson = Jetson()
 #jetson.flash_jetson("10.111.138.4/24","/root/nfsroot/jetson1/rootfs",'1-2.3')
 #number = jetson.number_of_jetsons_xavier_connected()
 
-print(jetson.get_xavier_instances())
+#print(jetson.get_xavier_instances())
 #sudo ./flash.sh -N 10.111.36.4:/root/nfsroot/rootfs --rcm-boot jetson-xavier-nx-devkit-emmc eth0 
 #sudo ./flash.sh --usb-instance '1-2.3'  -N 10.111.138.4:/root/nfsroot/jetson1/rootfs  --rcm-boot jetson-xavier-nx-devkit-emmc eth0 

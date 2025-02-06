@@ -583,6 +583,36 @@ class VmManager():
             VmManager.run_command(command_librray_install,"copy 5gmmtctool ")
 
     
+    def setup_nfs_jetson(self,vm_name, device_names):
+        """
+        Launches the NFS setup script inside an LXC VM.
+
+        :param vm_name: Name of the LXC virtual machine
+        :param device_names: List of device names to pass as arguments to the script
+        """
+        if not vm_name or not device_names:
+            print("Usage: launch_script_on_lxc_vm('<LXC_VM_NAME>', ['device1', 'device2', ...])")
+            return
+
+        script_path = "/root/nfs_setup.sh"
+        device_args = " ".join(device_names)  # Convert device list to space-separated string
+        vm_manager = VmManager()
+        try:
+            vm_manager.start_vm(vm_name=vm_name)
+            # copy nfs setup for multi jetson
+            command_librray_install=   ["lxc", "file","push" ,user_script_path+"/nfs_setup.sh" ,vm_name+"/root/"]
+            VmManager.run_command(command_librray_install,"copy nfs setup for multi jetson ")
+            time.sleep(10)
+            print("Setting script as executable inside LXC VM...")
+            subprocess.run(["lxc", "exec", vm_name, "--", "chmod", "+x", script_path], check=True)
+
+            print("Executing script inside LXC VM...")
+            subprocess.run(["lxc", "exec", vm_name, "--", "bash", "-c", f"{script_path} {device_args}"], check=True)
+
+            print(f"Script execution completed inside LXC VM: {vm_name}")
+
+        except subprocess.CalledProcessError as e:
+            raise RuntimeError(f"Error: {e}")
 
 
 def setup_jetson(base_dir, username, password, hostname):
@@ -683,6 +713,7 @@ macvlan_manager = MacVlan(interface_name)
 vm_manager = VmManager()
 vm_name="mehdivm"
 ip_addr = IpAddr()
+#vm_manager.setup_nfs_jetson("mehdi",["j20-tribe4"])
 #setup_jetson('data', 'iotuser', 'iotuser', 'iotuser')
 #print(vm_manager.get_vm_ip("debbah"))
 #vm_manager.install_5gmmtctool("debbah" ,"")

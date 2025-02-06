@@ -1,4 +1,5 @@
 #!/bin/bash
+
 # Directories
 BASE_ROOTFS="/root/nfsroot/rootfs"   # Shared root filesystem directory
 NFS_ROOT="/root/nfsroot"             # Base NFS directory for device-specific root filesystems
@@ -28,16 +29,20 @@ is_unique_dir() {
 
 # Setup root filesystem for each device
 for DEVICE in "${DEVICE_NAMES[@]}"; do
-    DEVICE_DIR="$NFS_ROOT/$DEVICE"
+    DEVICE_DIR="$NFS_ROOT/$DEVICE/"
     FINAL_ROOT="$DEVICE_DIR/rootfs"
+    SHARED_ROOT="$FINAL_ROOT/rootfs_shared"
 
     echo "Setting up root filesystem for $DEVICE..."
 
-    # Create the device root filesystem directory
+    # Create necessary directories
     mkdir -p "$FINAL_ROOT"
+    mkdir -p "$SHARED_ROOT"
 
-    # **Bind mount BASE_ROOTFS to FINAL_ROOT**
-    mount --bind "$BASE_ROOTFS" "$FINAL_ROOT"
+    # **Bind mount BASE_ROOTFS to SHARED_ROOT**
+    if ! mountpoint -q "$SHARED_ROOT"; then
+        mount --bind "$BASE_ROOTFS" "$SHARED_ROOT"
+    fi
 
     # Iterate through directories in BASE_ROOTFS
     for DIR in "$BASE_ROOTFS"/*; do
@@ -54,31 +59,34 @@ for DEVICE in "${DEVICE_NAMES[@]}"; do
             cp -a "$DIR" "$FINAL_ROOT/$DIR_NAME"
             echo "Copied unique directory $DIR_NAME for $DEVICE."
         else
-            # Create a **relative** symbolic link
-            ln -s "../rootfs/$DIR_NAME" "$FINAL_ROOT/$DIR_NAME"
+            # Create a **relative** symbolic link to SHARED_ROOT
+            ln -s "rootfs_shared/$DIR_NAME" "$FINAL_ROOT/$DIR_NAME"
             echo "Linked shared directory $DIR_NAME for $DEVICE (relative)."
         fi
     done
 
     # Customize hostname for each device
     echo "$DEVICE" > "$FINAL_ROOT/etc/hostname"
-    echo "Customized hostname for $DEVICE." 
+    echo "Customized hostname for $DEVICE."
+
 done
 
 # Export directories via NFS
 EXPORTS_FILE="/etc/exports"
 echo "#Configuring NFS exports..." > "$EXPORTS_FILE"
+
 echo "$BASE_ROOTFS *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000,crossmnt)" >> "$EXPORTS_FILE"
 for DEVICE in "${DEVICE_NAMES[@]}"; do
     FINAL_ROOT="$NFS_ROOT/$DEVICE/rootfs"
-    
     # Add to /etc/exports
-    echo "$FINAL_ROOT *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000,crossmnt)" >> "$EXPORTS_FILE"
+    echo "$FINAL_ROOT *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000,crossmnt)" >> "$EXPORTS_FILE"   
 done
 
 # Restart NFS server
+exportfs -a 
 echo "Restarting NFS server..."
-systemctl restart nfs-server
+systemctl restart nfs-kernel-server
+
 
 # Show final exports
 echo "NFS exports configured:"

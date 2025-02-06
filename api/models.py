@@ -1,4 +1,5 @@
 from pydantic import BaseModel
+from typing import Deque, List, Optional, Tuple
 class sshInfo(BaseModel):
     user_name :str
 class jetsonInfo(BaseModel):
@@ -29,6 +30,7 @@ class CreateUserEnvVMRequest(BaseModel):
     vm_name: str
     root_size: str
     user_info: UserNetworkInfo
+    nodes:Optional[list] = None
 
 class TurnNode(BaseModel):
     node_name :str

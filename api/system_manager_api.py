@@ -5,7 +5,7 @@ import sys
 import json
 import time
 import pandas as pd
-
+import logging
 # Get the absolute path of the parent directory
 script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts'))
 sys.path.append(script_path)
@@ -267,7 +267,7 @@ def check_args_type_create_user_env_vm(ubuntu_version, vm_name, root_size, user_
 def update_ssh(user_name):
     vm_manager = VmManager()
     vm_manager.add_ssh_key_to_lxd(user_name,user_name)
-def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
+def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info ,nodes):
     
     check_args_type_create_user_env_vm(ubuntu_version, vm_name, root_size, user_info)
 
@@ -287,6 +287,7 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
     
     existed =vm_manager.create_user_vm(ubuntu_version, vm_name, root_size)
     if existed["created"]:
+
         # new vm created 
         time.sleep(20)
 
@@ -300,16 +301,21 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info):
         vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)   
         time.sleep(2)
         vm_manager.add_ssh_key_to_lxd(user_name,user_name)
+        vm_manager.setup_nfs_jetson(user_name,nodes)
+
+        
         return {"vm_ip_address":"10.0.0.0","status": "User Env Created"}
     else :# vm alrady exist 
           
-          vm_manager.start_vm(vm_name)
-          time.sleep(2)
-          vm_manager.add_ssh_key_to_lxd(user_name,user_name)
-          
-          return {"vm_name":"10.0.0.0","status": "User Env Created"}
-          # prepare the device to use 
-          #vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)     
+            vm_manager.start_vm(vm_name)
+
+
+            vm_manager.add_ssh_key_to_lxd(user_name,user_name)
+            
+            return {"vm_name":"10.0.0.0","status": "User Env Created"}
+            # prepare the device to use 
+            #vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)    
+
            
 def stop_user_vm( vm_name):
     vm_manager = VmManager()
@@ -327,7 +333,7 @@ def flash_jetson( nfs_ip_addres ,nfspath,usb_instance ):
     try :
     
         result = Jetson_class.flash_jetson (nfs_ip_addres,nfspath ,usb_instance)
-    #time.sleep(7)
+        time.sleep(10)
         return result
     except Exception as e:
         return e 

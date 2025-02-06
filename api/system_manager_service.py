@@ -57,7 +57,8 @@ async def call_create_user_env_vm(request: CreateUserEnvVMRequest):
             request.ubuntu_version,
             request.vm_name,
             request.root_size,
-            request.user_info.dict()  # Convert Pydantic model to dictionary
+            request.user_info.dict(),  # Convert Pydantic model to dictionary
+            request.nodes 
         )
         time.sleep(2)
         return  resp
