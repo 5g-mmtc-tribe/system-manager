@@ -10,7 +10,7 @@ follows:
 - each Jetson is expected to be powered through PoE (in order to reboot)
 - each Jetson is put in recovery mode (physical), to have full control of the booting/reinstall process
 
-![network architecture](docs/figs/final_network_arch.jpeg)
+![network architecture](docs/figs/final_network_arch.png)
 
 ## The `system-manager`
 
