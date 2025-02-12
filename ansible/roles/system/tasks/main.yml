@@ -19,19 +19,28 @@
   become: yes  # Required to modify user group membersh
 
 
-# Task 4: Install required Python dependencies
-- name: Install Python dependencies
-  pip:
-    name: "{{ item }}"
+# Task 4: Install required Python dependencies (with --break-system-packages)
+# Task: Install required Python dependencies (Use apt where possible)
+- name: Install Python packages using apt
+  apt:
+    name:
+      - python3-fastapi
+      - python3-pandas
+      - python3-pylxd
+      - python3-uvicorn
+      - python3-redis
+      - python3-netmiko
+    state: present
+  become: yespoe_on
+
+- name: Install remaining Python dependencies with pip
+  command: > 
+    python3 -m pip install --break-system-packages {{ item }}
   loop:
-    - fastapi
-    - pandas
-    - pylxd
-    - netmiko
     - ansible-pylibssh
-    - uvicorn
-    - redis
   become: yes
+
+
 
 - name: install apt jq
   apt:

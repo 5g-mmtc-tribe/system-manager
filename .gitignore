@@ -3,3 +3,4 @@ __pycache__/
 api/jetson/*
 credential.txt
 rootfs-noeula-user.tar.gz
+rootfs-basic-jp3541-noeula-user.tar.gz

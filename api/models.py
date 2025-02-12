@@ -6,6 +6,7 @@ class jetsonInfo(BaseModel):
     nfs_ip_addr: str
     nfs_path:str
     usb_instance :str
+    switch_interface:str
 
 class DestroyEnvVMRequest(BaseModel):
     vm_name: str

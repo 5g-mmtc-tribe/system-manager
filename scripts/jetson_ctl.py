@@ -155,7 +155,7 @@ class Jetson:
             print("STDOUT:\n", e.stdout)
             print("STDERR:\n", e.stderr)
             return
-    def flash_jetson(self,nfs_ip_address, nfspath, usb_instance):
+    def flash_jetson(self,nfs_ip_address, nfspath, usb_instance ):
             # Get the directory of the current script
             script_dir = os.path.dirname(os.path.abspath(__file__))
 

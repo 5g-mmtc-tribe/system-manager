@@ -95,16 +95,16 @@ class VmManager():
                 time.sleep(10)  # Check every 2 seconds if the VM is running
                 
                 print(f"VM {vm_name} has successfully started.")
-
+                #time.sleep(10) 
                 # ip forward for internet
-                """commands = [
-                    'sysctl -w net.ipv4.ip_forward=1',
-                    'iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE'
-                ]
+                #commands = [
+                #    'sysctl -w net.ipv4.ip_forward=1',
+                #    'iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE'
+                #]
                 # Execute commands inside the LXC VM
-                for cmd in commands:
-                    subprocess.run(['lxc', 'exec', vm_name, '--', 'sh', '-c', cmd], capture_output=True, text=True, check=True)
-                    print(f"Command '{cmd}' executed successfully in {vm_name}")"""
+                #for cmd in commands:
+                #    subprocess.run(['lxc', 'exec', vm_name, '--', 'sh', '-c', cmd], capture_output=True, text=True, check=True)
+                #    print(f"Command '{cmd}' executed successfully in {vm_name}")
 
                 return 0
             
@@ -425,6 +425,8 @@ class VmManager():
             vmcommand =["lxc", "exec", vm_name, "--", "sudo"]
             command_librray_install=   vmcommand +["mkdir" ,"/root/nfsroot" ]
             VmManager.run_command(command_librray_install,"Create NFS folder to be used on the Jetson (on the VM)")
+            command_librray_install=   vmcommand +["mkdir" ,"/root/nfsroot/rootfs" ]
+            VmManager.run_command(command_librray_install,"Create rootfs folder to be used on the Jetson (on the VM)")
             
             vmcommand =["lxc", "exec", vm_name, "--"]
             command_librray_install = vmcommand +["chown","-R" ,"nobody:nogroup", "/root/nfsroot"]
@@ -437,7 +439,7 @@ class VmManager():
             #command_librray_install=   vmcommand +["sudo","rsync" ,"-aAXv" ,"jetson/Linux_for_Tegra/rootfs/" ,"/root/nfsroot"]
             #command_librray_install=["sudo","lxc", "file","push" ,"-r","jetson/Linux_for_Tegra/rootfs/" ,vm_name+"/root/nfsroot"] 
             # Define the command to run
-            command = [  'lxc'  ,"file" ,"push","rootfs-noeula-user.tar.gz",vm_name+"/root/"]
+            command = [  'lxc'  ,"file" ,"push","rootfs-basic-jp3541-noeula-user.tar.gz",vm_name+"/root/"]
             print(command)
             # Execute the command using subprocess.run()
             try:
@@ -447,7 +449,7 @@ class VmManager():
                 print("Failed to execute command:", e)
                 print("STDOUT:\n", e.stdout)
                 print("STDERR:\n", e.stderr)
-            command = [ 'lxc'  ,"exec" , vm_name , "--" , "tar" ,"xpzf","/root/rootfs-noeula-user.tar.gz" ,"-C", "/root/nfsroot/"]
+            command = [ 'lxc'  ,"exec" , vm_name , "--" , "tar" ,"xpzf","/root/rootfs-basic-jp3541-noeula-user.tar.gz" ,"-C", "/root/nfsroot/rootfs"]
             print(command)
             # Execute the command using subprocess.run()
             try:

@@ -80,7 +80,7 @@ switch = SwitchManager(device_type = device['device_type'],
 
 
 power = PoeManager(switch)
-
+#switch.poe_on("GigabitEthernet1/0/14")
 # switch_interfaces = power.get_switch_interfaces()
 # print(switch_interfaces)
 

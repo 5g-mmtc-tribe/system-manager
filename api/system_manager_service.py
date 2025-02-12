@@ -211,7 +211,7 @@ async def call_flash_jetson(request:jetsonInfo):
     try:
         logging.info(f"Received request data: {request}")
         # Call the function with the extracted data
-        flash_info = system_manager_api.flash_jetson(request.nfs_ip_addr ,request.nfs_path,request.usb_instance)
+        flash_info = system_manager_api.flash_jetson(request.nfs_ip_addr ,request.nfs_path,request.usb_instance,request.switch_interface)
         return flash_info
 
     except Exception as e:
@@ -221,7 +221,7 @@ async def call_flash_jetson(request:jetsonInfo):
 #--------------------------------------------------
     
 def run():
-    uvicorn.run(app, host="localhost", port=8083)
+    uvicorn.run(app, host="localhost", port=5000)
 
 run()
     

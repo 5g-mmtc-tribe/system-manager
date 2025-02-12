@@ -114,7 +114,7 @@ def attach_vlan_device_interface(interface ,vlan_id):
                                 port = device['port'],
                                 password = device['password'])
     switch.vlan_access(interface ,vlan_id)
-    time.sleep(7)
+    time.sleep(10)
     print(interface,"is on vlan  "+str(vlan_id))
 
 # Function to get the switch interface
@@ -240,7 +240,7 @@ def get_user_info(user_name, user_network_id):
 ## For VM
 def destroy_user_env_vm(vm_name, macvlan_name):
     #interface_name = "enp2s0"
-    interface_name = "eno3"
+    interface_name = "eno1"
     macvlan_manager = MacVlan(interface_name)
     vm_manager = VmManager()
     vm_manager.delete_vm(vm_name)
@@ -281,7 +281,7 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info ,nodes):
 
     # interface name on which macvlan is to be created
     #interface_name = "enp2s0"
-    interface_name = "eno3" # old config server 
+    interface_name = "eno1" # old config server 
     #interface_name = "enx747827f0dd4e"
     vm_manager = VmManager()
     
@@ -322,10 +322,12 @@ def stop_user_vm( vm_name):
     vm_manager.stop_vm(vm_name)
 
 # flash jetson xavier with rom from server
-def flash_jetson( nfs_ip_addres ,nfspath,usb_instance ):
+def flash_jetson( nfs_ip_addres ,nfspath,usb_instance ,switch_interface ):
     #turn on ,off jetson just in case 
-    testbed_reset()
-    turn_on_all_nodes()
+    #testbed_reset()
+    #turn_on_all_nodes()
+    turn_off_node(switch_interface)
+    turn_on_node(switch_interface)
     print("nfsIP :",nfs_ip_addres)
     print("nfspath",nfspath)
     print("usb_insatance",usb_instance)
@@ -333,7 +335,6 @@ def flash_jetson( nfs_ip_addres ,nfspath,usb_instance ):
     try :
     
         result = Jetson_class.flash_jetson (nfs_ip_addres,nfspath ,usb_instance)
-        time.sleep(10)
         return result
     except Exception as e:
         return e 

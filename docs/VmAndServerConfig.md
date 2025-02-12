@@ -233,7 +233,7 @@ sudo systemctl restart openvpn@server
 ### 6. OpenVPN VLAN Configuration
 
 ```bash
-lxc config device add vm-openvpn eth195 nic nictype=macvlan parent=eno3 vlan=195
+lxc config device add vm-openvpn eth195 nic nictype=macvlan parent=eno1 vlan=195
 ip addr add 10.111.195.30/24 dev enp6s0
 sudo ip link set dev enp6s0 up
 sudo iptables -t nat -A POSTROUTING -o enp6s0 -j MASQUERADE
@@ -252,7 +252,7 @@ iptables -A FORWARD -i enp6s0 -o tun0 -j ACCEPT
 ### 5. Create Client Configuration
 ```bash
 ./easyrsa gen-req minig nopass
-./easyrsa sign-req client minig
+./easyrsa sign-req client testcl
 ```
 
 Create the client `.ovpn` file:
@@ -323,7 +323,15 @@ sysctl -w net.ipv4.ip_forward=1
 
 #add this on webportal
 ip route add 10.8.0.0/24 via 10.5.21.232 dev enp5s0
+sudo iptables -A INPUT -s 10.8.0.0/24 -d 10.71.241.184 -j ACCEPT
+#secure webportal access 
+sudo iptables -A INPUT -s 10.8.0.0/24 -p tcp --dport 80 -j ACCEPT
+sudo iptables -A INPUT -p tcp --dport 80 -j DROP
+
 # ip of the vpn interface ensp5s0 10.5.21.232
 #addd this on the host 
 iptables -t nat -A PREROUTING -d 193.49.44.52 -p tcp --dport <PORT> -j DNAT --to-destination 10.5.21.232:<PORT>
 iptables -A FORWARD -d 10.5.21.232 -p tcp --dport <PORT> -j ACCEPT
+
+sudo iptables -t nat -A PREROUTING -p tcp --dport 1194 -j DNAT --to-destination 10.71.241.150:1194
+sudo iptables -A FORWARD -p tcp -d 10.71.241.150 --dport 1194 -j ACCEPT
