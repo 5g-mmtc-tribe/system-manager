@@ -23,7 +23,14 @@ class VmManager():
     bsp_path = os.path.join(data_dir, 'jetson_linux_r35.4.1_aarch64.tbz2')
     rootfs_path = os.path.join(data_dir, 'tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2')
     ###  helper #####
-
+    def run_lxc_command(vm_name, command):
+        """Runs a command inside an LXC VM."""
+        full_command = ["lxc", "exec", vm_name, "--"] + command
+        try:
+            subprocess.run(full_command, check=True, text=True)
+            print(f"✅ Command succeeded: {' '.join(command)}")
+        except subprocess.CalledProcessError as e:
+            print(f"❌ Command failed: {' '.join(command)}\nError: {e}")
     def run_command(command, description):
             print(f"Running: {description}")
             print(f"Command: {' '.join(command)}")
@@ -511,7 +518,45 @@ class VmManager():
             VmManager.run_command(command_librray_install," Restart nfs service")
 
 
+    def configure_nbd_on_lxc_vm(self,vm_name, nfs_server_ip):
+            """Configures NBD inside an LXC VM from the LXC host."""
+            
+            print(f"🔧 Setting up NBD inside LXC VM: {vm_name}")
 
+            # Install NBD server
+            VmManager.run_lxc_command(vm_name, ["apt", "update"])
+            VmManager.run_lxc_command(vm_name, ["apt", "install", "-y", "nbd-server"])
+
+            # Load the NBD kernel module and ensure it persists
+            VmManager.run_lxc_command(vm_name, ["modprobe", "nbd"])
+            VmManager.run_lxc_command(vm_name, ["sh", "-c", "echo 'nbd' >> /etc/modules"])
+
+            # Create NBD directory with correct permissions
+            VmManager.run_lxc_command(vm_name, ["mkdir", "-p", "/root/nbd_jetson"])
+            VmManager.run_lxc_command(vm_name, ["chmod", "755", "/root/nbd_jetson"])
+
+                # Define NBD configuration
+            config_content = f"""[generic]
+            allowlist = true
+
+            [nbd_jetson]
+            exportname = /root/nbd_jetson/nbd_jetson.img
+            readonly = false
+            listenaddr = {nfs_server_ip}
+            """
+
+            # Write configuration to /etc/nbd-server/config
+            VmManager.run_lxc_command(vm_name, ["sh", "-c", f"echo '{config_content}' > /etc/nbd-server/config"])
+
+            # Create the NBD image and format it
+            VmManager.run_lxc_command(vm_name, ["dd", "if=/dev/zero", "of=/root/nbd_jetson/nbd_jetson.img", "bs=1M", "count=16384"])
+            VmManager.run_lxc_command(vm_name, ["mkfs.ext4", "/root/nbd_jetson/nbd_jetson.img"])
+
+            # Restart NBD service
+            VmManager.run_lxc_command(vm_name, ["systemctl", "restart", "nbd-server"])
+
+            print("🚀 NBD setup completed successfully inside the LXC VM!")
+        
     def install_library_for_flashing_jetson(_self ,vm_name ,nfs_ip_addr ) :
             #VmManager.download_Jetson_driver()
             vm_manager = VmManager()
@@ -535,13 +580,15 @@ class VmManager():
                 return   
              # configure Nat 
             vm_manager.configure_vm_nat(vm_name,"install_torch.sh")
-            
-             # copy nfs setup for multi jetson
-            command_librray_install=   ["lxc", "file","push" ,user_script_path+"/nfs_setup.sh" ,vm_name+"/root/"]
-            VmManager.run_command(command_librray_install,"copy nfs setup for multi jetson ")
-            time.sleep(10)
             print("Setting script as executable inside LXC VM...")
             subprocess.run(["lxc", "exec", vm_name, "--", "chmod", "+x", script_path], check=True)
+            # copy nfs setup for multi jetson
+            command_librray_install=   ["lxc", "file","push" ,user_script_path+"/nfs_setup.sh" ,vm_name+"/root/"]
+            VmManager.run_command(command_librray_install,"copy nfs setup for multi jetson ")
+            # copy jetson setup script 
+            command_librray_install=   ["lxc", "file","push" ,user_script_path+"/setup_jetson.sh" ,vm_name+"/root/"]
+            VmManager.run_command(command_librray_install,"copy nfs setup for multi jetson ")
+            time.sleep(10)
 
     def add_ssh_key_to_lxd(self, username, lxd_vm_name):
         # Fixed index name
@@ -742,6 +789,7 @@ macvlan_manager = MacVlan(interface_name)
 vm_manager = VmManager()
 vm_name="mehdivm"
 ip_addr = IpAddr()
+#vm_manager.configure_nbd_on_lxc_vm("mehdi","10.111.67.4")
 #vm_manager.setup_nfs_jetson("mehdi",["j20-tribe4"])
 #setup_jetson('data', 'iotuser', 'iotuser', 'iotuser')
 #print(vm_manager.get_vm_ip("debbah"))

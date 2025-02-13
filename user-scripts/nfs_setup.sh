@@ -86,6 +86,15 @@ for DEVICE in "${DEVICE_NAMES[@]}"; do
     # Customize hostname for each device
     echo "$DEVICE" > "$FINAL_ROOT/etc/hostname"
     echo "Customized hostname for $DEVICE."
+    # Add /root/setup_jetson.sh to rc.local for automatic execution
+    RC_LOCAL_FILE="$FINAL_ROOT/etc/rc.local"
+    if ! grep -q "/root/setup_jetson.sh" "$RC_LOCAL_FILE"; then
+        echo "Adding /root/setup_jetson.sh to $RC_LOCAL_FILE"
+        # Add to rc.local to run the setup script on boot
+        sed -i -e "\$i /root/setup_jetson.sh &\n" "$RC_LOCAL_FILE"
+    else
+        echo "/root/setup_jetson.sh is already in rc.local."
+    fi
 
 done
 
