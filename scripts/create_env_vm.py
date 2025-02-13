@@ -81,42 +81,67 @@ class VmManager():
             print("STDOUT:\n", e.stdout)
             print("STDERR:\n", e.stderr)
             return False
-    def start_vm(self, vm_name):  
+    def is_interface_up(self,vm_name, interface_name="enp5s0"):
+        """Check if a specific network interface is present and up."""
+        check_interface_command = ["lxc", "exec", vm_name, "--", "ip", "-c", "a"]
+
+        try:
+            # Run the command to list network interfaces
+            result = subprocess.run(check_interface_command,
+                                    capture_output=True,
+                                    text=True,
+                                    check=True)
+
+            # Check if the interface name is in the output
+            if interface_name in result.stdout:
+                return True  # Interface is up
+            else:
+                return False  # Interface is not up
+
+        except subprocess.CalledProcessError as e:
+            # Return False on any error but don't print error every time
+            return False
+
+    def start_vm(self, vm_name):
+        """Start the VM and wait until the network interface is up."""
         if not self.is_vm_running(vm_name):
-            # Check if the VM is already running
-            command = ['lxc', 'start', vm_name]
-            try:
-                subprocess.run(command, check=True)
-                print(f"VM {vm_name} is starting...")
+            print(f"Starting VM {vm_name}...")
+            subprocess.run(['lxc', 'start', vm_name], check=True)
 
-                # Wait until the VM is running
-                
-                print(f"Waiting for VM {vm_name} to start...")
-                time.sleep(10)  # Check every 2 seconds if the VM is running
-                
-                print(f"VM {vm_name} has successfully started.")
-                #time.sleep(10) 
-                # ip forward for internet
-                #commands = [
-                #    'sysctl -w net.ipv4.ip_forward=1',
-                #    'iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE'
-                #]
-                # Execute commands inside the LXC VM
-                #for cmd in commands:
-                #    subprocess.run(['lxc', 'exec', vm_name, '--', 'sh', '-c', cmd], capture_output=True, text=True, check=True)
-                #    print(f"Command '{cmd}' executed successfully in {vm_name}")
-
-                return 0
+            # Wait for the network interface to be up
+            timeout = 30  # Maximum wait time in seconds
+            interval = 2  # Polling interval in seconds
             
-            except subprocess.CalledProcessError as e:
-                # Print the error details
-                print("Command failed with return code:", e.returncode)
-                print("Command output:", e.output)
-                print("STDOUT:", e.stdout)
-                print("STDERR:", e.stderr)
+            start_time = time.time()  # Track the start time
+
+            # Polling loop until the interface is up or timeout is reached
+            while time.time() - start_time < timeout:
+                if self.is_interface_up(vm_name, "enp6s0"):  # Check if the interface is up
+                    print(f"VM {vm_name} is now running with an active network interface.")
+                    
+                    # Execute ip forwarding commands for internet connectivity
+                    commands = [
+                        'sysctl -w net.ipv4.ip_forward=1',
+                        'iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE'
+                    ]
+                    
+                    for cmd in commands:
+                        subprocess.run(['lxc', 'exec', vm_name, '--', 'sh', '-c', cmd], capture_output=True, text=True, check=True)
+                        print(f"Command '{cmd}' executed successfully in {vm_name}")
+                    
+                    return 0  # Success
+
+                # Print waiting message only while the interface is not up
+                print(f"Waiting for interface {vm_name} to come up...")
+                time.sleep(interval)  # Wait before checking again
+
+            # Timeout reached
+            print(f"Warning: VM {vm_name} started, but the network interface is still down.")
+            return 1  # Timeout occurred
         
         else:
             print(f"VM {vm_name} is already running!")
+            return 0  # VM is already running
 
     def stop_vm(self, vm_name):
         if  not  self.is_vm_stopped(vm_name):
@@ -510,6 +535,13 @@ class VmManager():
                 return   
              # configure Nat 
             vm_manager.configure_vm_nat(vm_name,"install_torch.sh")
+            
+             # copy nfs setup for multi jetson
+            command_librray_install=   ["lxc", "file","push" ,user_script_path+"/nfs_setup.sh" ,vm_name+"/root/"]
+            VmManager.run_command(command_librray_install,"copy nfs setup for multi jetson ")
+            time.sleep(10)
+            print("Setting script as executable inside LXC VM...")
+            subprocess.run(["lxc", "exec", vm_name, "--", "chmod", "+x", script_path], check=True)
 
     def add_ssh_key_to_lxd(self, username, lxd_vm_name):
         # Fixed index name
@@ -600,13 +632,8 @@ class VmManager():
         device_args = " ".join(device_names)  # Convert device list to space-separated string
         vm_manager = VmManager()
         try:
-            vm_manager.start_vm(vm_name=vm_name)
-            # copy nfs setup for multi jetson
-            command_librray_install=   ["lxc", "file","push" ,user_script_path+"/nfs_setup.sh" ,vm_name+"/root/"]
-            VmManager.run_command(command_librray_install,"copy nfs setup for multi jetson ")
-            time.sleep(10)
-            print("Setting script as executable inside LXC VM...")
-            subprocess.run(["lxc", "exec", vm_name, "--", "chmod", "+x", script_path], check=True)
+            #vm_manager.start_vm(vm_name=vm_name)
+
 
             print("Executing script inside LXC VM...")
             subprocess.run(["lxc", "exec", vm_name, "--", "bash", "-c", f"{script_path} {device_args}"], check=True)

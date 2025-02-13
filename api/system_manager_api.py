@@ -306,12 +306,10 @@ def create_user_env_vm(ubuntu_version, vm_name, root_size, user_info ,nodes):
         
         return {"vm_ip_address":"10.0.0.0","status": "User Env Created"}
     else :# vm alrady exist 
-          
+   
             vm_manager.start_vm(vm_name)
-
-
             vm_manager.add_ssh_key_to_lxd(user_name,user_name)
-            
+            vm_manager.setup_nfs_jetson(user_name,nodes)
             return {"vm_name":"10.0.0.0","status": "User Env Created"}
             # prepare the device to use 
             #vm_manager.install_library_for_flashing_jetson(vm_name,nfs_ip_addr)    
