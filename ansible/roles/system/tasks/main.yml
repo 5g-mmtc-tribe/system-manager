@@ -30,8 +30,9 @@
       - python3-uvicorn
       - python3-redis
       - python3-netmiko
+      - bzip2
     state: present
-  become: yespoe_on
+  become: yes
 
 - name: Install remaining Python dependencies with pip
   command: > 
@@ -137,23 +138,16 @@
   args:
     chdir: "{{system_manager_base_path}}/api/jetson/Linux_for_Tegra"
 
-# Step 8: Compress the root filesystem into tarball
-- name: Compress root filesystem into rootfs-noeula-user.tar.gz
-  shell: |
-    sudo tar czvf {{system_manager_base_path}}/api/rootfs-noeula-user.tar.gz rootfs 
-  args:
-    chdir: "{{system_manager_base_path}}/api/jetson/Linux_for_Tegra"
-
-# Step 9: Verify the tarball exists
-- name: Verify rootfs tarball exists
+# Step 5: Check if the file exists before downloading
+- name: Check if rootfs-basic-jp3541-noeula-user.tar.gz exists
   stat:
-    path: "{{system_manager_base_path}}/api/rootfs-noeula-user.tar.gz"
-  register: tarball_stat
+    path: "{{ system_manager_base_path }}/api/rootfs-basic-jp3541-noeula-user.tar.gz"
+  register: rootfs_file
 
-- name: Print success message
-  debug:
-    msg: "Jetson setup completed successfully and rootfs tarball created at api/rootfs-noeula-user.tar.gz"
-  when: tarball_stat.stat.exists
+- name: Download rootfs-basic-jp3541-noeula-user.tar.gz if not exists
+  command: >
+    wget -O {{ system_manager_base_path }}/api/rootfs-basic-jp3541-noeula-user.tar.gz http://localhost:80/rootfs-basic-jp3541-noeula-user.tar.gz
+  when: not rootfs_file.stat.exists
 
 
   # Task 10: Launch get_xavier_instances from jetson_ctl.py

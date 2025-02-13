@@ -149,6 +149,47 @@ sudo cp rootfs-noeula-user.tar.gz /var/www/html/
 sudo ./flash.sh -N <nfsIP> --rcm-boot <jetsonDevice> eth0
 ```
 
+
+## server side basic rootfs 
+1. **Install Necessary Tools:**
+
+   ```bash
+   sudo apt-get install bzip2
+   wget https://developer.nvidia.com/downloads/embedded/l4t/r35_release_v4.1/release/jetson_linux_r35.4.1_aarch64.tbz2
+   ```
+
+2. **Extract and Prepare Files:**
+
+   ```bash
+   sudo tar -xf jetson_linux_r35.4.1_aarch64.tbz2
+   cd Linux_for_Tegra/
+   sudo ./tools/samplefs/nv_build_samplefs.sh --abi aarch64 --distro ubuntu --flavor basic --version focal
+   cd Linux_for_Tegra/rootfs/
+   sudo tar xpf ../tools/samplefs/sample_fs.tbz2
+   cd ..
+   ```
+
+3. **Apply Binaries:**
+
+   ```bash
+   sudo add-apt-repository universe
+   sudo apt-get update
+   sudo apt-get install qemu-user-static
+   sudo ./apply_binaries.sh
+   ```
+
+4. **Create Default User (EULA Acceptance/User Configuration):**
+
+   ```bash
+   sudo apt-get install -y lz4 libxml2-utils
+   sudo ./tools/l4t_create_default_user.sh -u mmtc -p tribe -n mmtc -a --accept-license #autologin
+   ```
+5. **Save Driver Files:**
+
+   ```bash
+   sudo tar czvf rootfs-noeula-user.tar.gz rootfs/
+   sudo cp rootfs-noeula-user.tar.gz /var/www/html/
+   
 ## Jetson Setup
 
 ### 1. Enable NAT and Internet Access
