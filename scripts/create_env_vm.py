@@ -125,16 +125,7 @@ class VmManager():
             while time.time() - start_time < timeout:
                 if self.is_interface_up(vm_name, "enp6s0"):  # Check if the interface is up
                     print(f"VM {vm_name} is now running with an active network interface.")
-                    
-                    # Execute ip forwarding commands for internet connectivity
-                    commands = [
-                        'sysctl -w net.ipv4.ip_forward=1',
-                        'iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE'
-                    ]
-                    
-                    for cmd in commands:
-                        subprocess.run(['lxc', 'exec', vm_name, '--', 'sh', '-c', cmd], capture_output=True, text=True, check=True)
-                        print(f"Command '{cmd}' executed successfully in {vm_name}")
+                    VmManager.configure_vm_nat(vm_name)
                     
                     return 0  # Success
 
@@ -390,28 +381,11 @@ class VmManager():
                 print("STDERR:\n", e.stderr)
 
 
-    def configure_vm_nat(self, vm_name, src_script_path):
+    def add_torch_script(self, vm_name, src_script_path):
         """
-        Configures the LXC VM by enabling IP forwarding, setting up NAT, and copying a script to the VM.
-        
-        :param vm_name: Name of the LXC VM
-        :param src_script_path: Path to the script on the host to be copied to the VM
+        add_torch_script
         """
-        # Commands to be executed inside the LXC VM
-        commands = [
-            'sysctl -w net.ipv4.ip_forward=1',
-            'iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE',
-            
-            
-        ]
-        # 'apt-get install iptables-persistent -y',
-        # 'netfilter-persistent save -y',
-        #   'netfilter-persistent reload -y'
         try:
-            # Execute commands in the LXC VM
-            for cmd in commands:
-                subprocess.run(['lxc', 'exec', vm_name, '--', 'sh', '-c', cmd], check=True)
-                print(f"Command '{cmd}' executed successfully in {vm_name}")
 
             # Copy the script to the LXC VM
             subprocess.run(['lxc', 'file', 'push', src_script_path, f'{vm_name}/root/install_torch'], check=True)
@@ -556,7 +530,75 @@ class VmManager():
             VmManager.run_lxc_command(vm_name, ["systemctl", "restart", "nbd-server"])
 
             print("🚀 NBD setup completed successfully inside the LXC VM!")
+    def configure_vm_nat(self, vm_name):
+        """
+        Configures the LXC VM by enabling IP forwarding, setting up NAT, and copying a script to the VM.
         
+        :param vm_name: Name of the LXC VM
+        """
+        # Commands to be executed inside the LXC VM
+        commands = [
+            'sysctl -w net.ipv4.ip_forward=1',
+            'iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE',
+            
+            
+        ]
+        # 'apt-get install iptables-persistent -y',
+        # 'netfilter-persistent save -y',
+        #   'netfilter-persistent reload -y'
+        try:
+            # Execute commands in the LXC VM
+            for cmd in commands:
+                subprocess.run(['lxc', 'exec', vm_name, '--', 'sh', '-c', cmd], check=True)
+                print(f"Command '{cmd}' executed successfully in {vm_name}")
+
+        
+        except subprocess.CalledProcessError as e:
+            print(f"Error during configuration: {e}")
+    # ---------------------------
+    # Function: create_readme for jeston
+    # ---------------------------
+    def create_readme_in_vm(vm_name, nfs_ip_addr):
+        """
+        Creates a README.md file directly inside the VM with setup instructions.
+
+        - vm_name: Name of the VM/container.
+        - nfs_ip_addr: The NFS server IP address to include in the instructions.
+        """
+        """
+        Creates a README.md file directly inside the VM using a here-document.
+        
+        Args:
+          vm_name (str): Name of the VM/container.
+          nfs_ip_addr (str): The NFS server IP address to include in the file.
+        """
+        nfs_ip_addr= nfs_ip_addr.split('/')[0]
+        # Define the README content
+        content = f"""# Setup Instructions
+
+        - Run  lib_setup.sh
+        - This script installs all necessary libraries.
+
+        - Run jetson_setup.sh  with NFS IP {nfs_ip_addr}
+        - ./jetson_setup.sh -- {nfs_ip_addr}
+
+        """
+         # Step 1: Create an empty README.md file in the VM.
+        touch_command = f'''lxc exec {vm_name} -- bash -c "touch /root/nfsroot/rootfs/home/mmtc/README.md"'''
+        print("Creating empty README.md in VM...")
+        subprocess.run(touch_command, shell=True, check=True)   
+# Step 3: Write the content into the README.md file using a here-document.
+        write_command = (
+            f'''lxc exec {vm_name} -- bash -c "cat > /root/nfsroot/rootfs/home/mmtc/README.md << 'EOF'
+{content}
+EOF"'''
+        )
+        print("Writing content to README.md in VM...")
+        subprocess.run(write_command, shell=True, check=True)
+        print("README.md has been created and populated in the VM.")
+        
+
+            
     def install_library_for_flashing_jetson(_self ,vm_name ,nfs_ip_addr ) :
             #VmManager.download_Jetson_driver()
             vm_manager = VmManager()
@@ -579,15 +621,22 @@ class VmManager():
                 print("STDERR:\n", e.stderr)
                 return   
              # configure Nat 
-            vm_manager.configure_vm_nat(vm_name,"install_torch.sh")
-            print("Setting script as executable inside LXC VM...")
-            subprocess.run(["lxc", "exec", vm_name, "--", "chmod", "+x", script_path], check=True)
+            vm_manager.configure_vm_nat(vm_name)
+            vm_manager.add_torch_script(vm_name,"install_torch.sh")
             # copy nfs setup for multi jetson
             command_librray_install=   ["lxc", "file","push" ,user_script_path+"/nfs_setup.sh" ,vm_name+"/root/"]
             VmManager.run_command(command_librray_install,"copy nfs setup for multi jetson ")
             # copy jetson setup script 
-            command_librray_install=   ["lxc", "file","push" ,user_script_path+"/setup_jetson.sh" ,vm_name+"/root/"]
-            VmManager.run_command(command_librray_install,"copy nfs setup for multi jetson ")
+            command_librray_install=   ["lxc", "file","push" ,user_script_path+"/lib_setup.sh" ,vm_name+"/root/"]
+            VmManager.run_command(command_librray_install,"copy jetson setup")
+            command_librray_install = ["lxc", "file", "push", user_script_path+"/Dockerfile", vm_name+"/root/nfsroot/rootfs/home/mmtc/"]
+            VmManager.run_command(command_librray_install, "copy Dockerfile user home")
+            command_librray_install = ["lxc", "file", "push", user_script_path+"/lib_setup.sh", vm_name+"/root/nfsroot/rootfs/home/mmtc/"]
+            VmManager.run_command(command_librray_install, "copy jetson setup to user home")
+            command_librray_install = ["lxc", "file", "push", user_script_path+"/jetson_setup.sh", vm_name+"/root/nfsroot/rootfs/home/mmtc/"]
+            VmManager.run_command(command_librray_install, "copy jetson setup")
+            ## create a reade me for jetson
+            VmManager.create_readme_in_vm(vm_name, nfs_ip_addr)
             time.sleep(10)
 
     def add_ssh_key_to_lxd(self, username, lxd_vm_name):
@@ -681,7 +730,7 @@ class VmManager():
         try:
             #vm_manager.start_vm(vm_name=vm_name)
 
-
+            subprocess.run(["lxc", "exec", vm_name, "--", "chmod", "+x", script_path], check=True)
             print("Executing script inside LXC VM...")
             subprocess.run(["lxc", "exec", vm_name, "--", "bash", "-c", f"{script_path} {device_args}"], check=True)
 
@@ -784,11 +833,12 @@ user_name = user_info["user_name"]
 nfs_ip_addr = user_info["nfs_ip_addr"]
 
 # interface name on which macvlan is to be created
-interface_name = "enp2s0"
+interface_name = "enp2s0"   
 macvlan_manager = MacVlan(interface_name)
 vm_manager = VmManager()
 vm_name="mehdivm"
 ip_addr = IpAddr()
+
 #vm_manager.configure_nbd_on_lxc_vm("mehdi","10.111.67.4")
 #vm_manager.setup_nfs_jetson("mehdi",["j20-tribe4"])
 #setup_jetson('data', 'iotuser', 'iotuser', 'iotuser')

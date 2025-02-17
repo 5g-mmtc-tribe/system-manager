@@ -347,7 +347,6 @@ def flash_jetson( nfs_ip_addres ,nfspath,usb_instance ,switch_interface ):
 #time.sleep(20)
 
 
-
 #print(get_user_info('cedric', 97))
 # ----------------------
 # Creating user env

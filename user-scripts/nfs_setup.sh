@@ -34,6 +34,8 @@ for DEVICE in "${DEVICE_NAMES[@]}"; do
     FINAL_ROOT="$DEVICE_DIR/rootfs"
     SHARED_ROOT="$FINAL_ROOT/rootfs_shared"
 
+    
+
     # Skip setup if the device directory already exists
     if [ -d "$FINAL_ROOT" ]; then
         echo "Device $DEVICE already set up. Skipping..."
@@ -43,7 +45,7 @@ for DEVICE in "${DEVICE_NAMES[@]}"; do
         else
             echo "Shared root filesystem already mounted for $DEVICE."
         fi
-        continue
+
     fi
 
     echo "Setting up root filesystem for $DEVICE..."
@@ -86,16 +88,27 @@ for DEVICE in "${DEVICE_NAMES[@]}"; do
     # Customize hostname for each device
     echo "$DEVICE" > "$FINAL_ROOT/etc/hostname"
     echo "Customized hostname for $DEVICE."
-    # Add /root/setup_jetson.sh to rc.local for automatic execution
+    # Ensure rc.local exists and is executable
     RC_LOCAL_FILE="$FINAL_ROOT/etc/rc.local"
-    if ! grep -q "/root/setup_jetson.sh" "$RC_LOCAL_FILE"; then
-        echo "Adding /root/setup_jetson.sh to $RC_LOCAL_FILE"
-        # Add to rc.local to run the setup script on boot
-        sed -i -e "\$i /root/setup_jetson.sh &\n" "$RC_LOCAL_FILE"
-    else
-        echo "/root/setup_jetson.sh is already in rc.local."
+    
+    if [ ! -f "$RC_LOCAL_FILE" ]; then
+        
+        touch $RC_LOCAL_FILE
+        echo "Creating $RC_LOCAL_FILE"
+        sleep 1
+        chmod +x "$RC_LOCAL_FILE"
     fi
 
+     # Add /root/lib_setup.sh to rc.local for automatic execution
+    RC_LOCAL_FILE="$FINAL_ROOT/etc/rc.local"
+    if ! grep -q "/root/lib_setup.sh" "$RC_LOCAL_FILE"; then
+        echo "#!/bin/bash" > "$RC_LOCAL_FILE"
+        echo "Adding /root/lib_setup.sh to $RC_LOCAL_FILE"
+        # Add to rc.local to run the setup script on boot
+        sed -i -e "\$i /root/lib_setup.sh &\n" "$RC_LOCAL_FILE"
+    else
+        echo "/root/lib_setup.sh is already in rc.local."
+    fi
 done
 
 # Configure NFS exports
