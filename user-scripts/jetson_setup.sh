@@ -55,6 +55,28 @@ create_dir_if_not_exists "$workspace_dir"
 echo "Setting ownership for Workspace at $workspace_dir..."
 sudo chown -R "$(whoami)":"$(whoami)" "$workspace_dir"
 
+sudo systemctl daemon-reload
+sleep 2
+echo "=== Installing and Configuring NBD-Client ==="
+sudo apt update -qq
+sudo apt install -y nbd-client
+
+# Remove and reinstall to ensure a proper service file is in place
+sudo rm -f /lib/systemd/system/nbd-client.service
+sleep 2
+#sudo apt-get install --reinstall -y nbd-client
+sudo systemctl restart nbd-client
+sudo systemctl enable nbd-client
+# Connect to NBD server using the command-line supplied IP
+echo "Connecting to NBD server at ${nbd_server_ip}..."
+sudo nbd-client "${nbd_server_ip}" 10809 /dev/nbd0 -name nbd_jetson
+
+# Format and mount the NBD device to the workspace
+echo "Formatting /dev/nbd0 with ext4..."
+sudo mkfs.ext4 /dev/nbd0
+echo "Mounting /dev/nbd0 to ${workspace_dir}..."
+sudo mount /dev/nbd0 "$workspace_dir"
+
 # Create tmp directory and set permissions inside the workspace folder
 create_dir_if_not_exists "${workspace_dir}/tmp"
 echo "Setting permissions for ${workspace_dir}/tmp..."
@@ -77,26 +99,6 @@ echo "=== Restarting Docker service ==="
 sudo systemctl restart docker
 sudo systemctl enable docker
 
-echo "=== Installing and Configuring NBD-Client ==="
-sudo apt update -qq
-sudo apt install -y nbd-client
-
-# Remove and reinstall to ensure a proper service file is in place
-sudo rm -f /lib/systemd/system/nbd-client.service
-sudo apt-get install --reinstall -y nbd-client
-sudo systemctl daemon-reload
-sudo systemctl restart nbd-client
-sudo systemctl enable nbd-client
-
-# Connect to NBD server using the command-line supplied IP
-echo "Connecting to NBD server at ${nbd_server_ip}..."
-sudo nbd-client "${nbd_server_ip}" 10809 /dev/nbd0 -name nbd_jetson
-
-# Format and mount the NBD device to the workspace
-echo "Formatting /dev/nbd0 with ext4..."
-sudo mkfs.ext4 /dev/nbd0
-echo "Mounting /dev/nbd0 to ${workspace_dir}..."
-sudo mount /dev/nbd0 "$workspace_dir"
 
 echo "=== Building and Running Docker Container (Optional) ==="
 # If a Dockerfile exists in the current directory, build and run the container.
@@ -104,7 +106,7 @@ if [ -f Dockerfile ]; then
   echo "Dockerfile found. Building Docker image 'mmtc-docker'..."
   sudo docker build -t mmtc-docker .
   echo "Running Docker container 'mmtc-docker'..."
-  sudo docker run -it --rm --privileged -v "$(pwd)":/"$workspace_dir" --net host mmtc-docker
+  sudo docker run -it --rm --privileged -v "$(pwd)":" --net host mmtc-docker
 else
   echo "No Dockerfile found. Skipping Docker image build and run."
 fi

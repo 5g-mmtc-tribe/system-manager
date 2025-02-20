@@ -6,8 +6,8 @@ NFS_ROOT="/root/nfsroot"             # Base NFS directory for device-specific ro
 EXPORTS_FILE="/etc/exports"
 
 # Directories that should NOT be shared (unique to each device)
-UNIQUE_DIRS=("etc" "var" "dev" "proc" "run" "tmp" "root")
-
+UNIQUE_DIRS=("etc" "var" "dev" "proc" "run" "tmp" "root" "mnt" "sys")
+# add sys mnt as unique for dycos porpuse 
 # Function to check if a directory is unique
 is_unique_dir() {
     local dir=$1

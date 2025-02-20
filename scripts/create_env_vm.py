@@ -125,7 +125,7 @@ class VmManager():
             while time.time() - start_time < timeout:
                 if self.is_interface_up(vm_name, "enp6s0"):  # Check if the interface is up
                     print(f"VM {vm_name} is now running with an active network interface.")
-                    VmManager.configure_vm_nat(vm_name)
+                    self.configure_vm_nat(vm_name)
                     
                     return 0  # Success
 
@@ -523,7 +523,7 @@ class VmManager():
             VmManager.run_lxc_command(vm_name, ["sh", "-c", f"echo '{config_content}' > /etc/nbd-server/config"])
 
             # Create the NBD image and format it
-            VmManager.run_lxc_command(vm_name, ["dd", "if=/dev/zero", "of=/root/nbd_jetson/nbd_jetson.img", "bs=1M", "count=16384"])
+            VmManager.run_lxc_command(vm_name, ["dd", "if=/dev/zero", "of=/root/nbd_jetson/nbd_jetson.img", "bs=1M", "count=25384"])
             VmManager.run_lxc_command(vm_name, ["mkfs.ext4", "/root/nbd_jetson/nbd_jetson.img"])
 
             # Restart NBD service
@@ -580,7 +580,7 @@ class VmManager():
         - This script installs all necessary libraries.
 
         - Run jetson_setup.sh  with NFS IP {nfs_ip_addr}
-        - ./jetson_setup.sh -- {nfs_ip_addr}
+        - ./jetson_setup.sh  {nfs_ip_addr}
 
         """
          # Step 1: Create an empty README.md file in the VM.
