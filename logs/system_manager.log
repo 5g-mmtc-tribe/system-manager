@@ -1,0 +1,946 @@
+2025-02-21 15:59:02,658 - INFO - Logging is configured and file is in the logs folder.
+2025-02-21 15:59:13,316 - INFO - Get user info request: user_name='mehdi' user_network_id=67
+2025-02-21 15:59:13,320 - INFO - Flash jetson request: nfs_ip_addr='10.111.67.4/24' nfs_path='/root/nfsroot/j20-tribe2/rootfs' usb_instance='1-4.2.2' switch_interface='GigabitEthernet1/0/20'
+2025-02-21 15:59:22,771 - INFO - Interface 'GigabitEthernet1/0/20' is down
+2025-02-21 15:59:32,193 - INFO - Interface 'GigabitEthernet1/0/20' is up
+2025-02-21 15:59:32,194 - INFO - Flashing Jetson with NFS IP: 10.111.67.4/24, NFS Path: /root/nfsroot/j20-tribe2/rootfs, USB Instance: 1-4.2.2
+2025-02-21 16:04:43,201 - INFO - Logging is configured and file is in the logs folder.
+2025-02-21 16:05:23,980 - INFO - Create user request: user_name='merco' user_network_id=50
+2025-02-21 16:05:23,981 - ERROR - User number 50 is already allocated.
+2025-02-21 16:05:23,992 - INFO - Get user info request: user_name='merco' user_network_id=50
+2025-02-21 16:05:24,007 - INFO - Create VM request: ubuntu_version='24.04' vm_name='merco' root_size='55GiB' user_info=UserNetworkInfo(user_name='merco', user_network_id=50, user_subnet='10.111.50.0/24', nfs_ip_addr='10.111.50.4/24', macvlan_interface='macvlan_merco') nodes=['j20-tribe4']
+2025-02-21 16:05:24,034 - INFO - Executing command: lxc launch ubuntu:24.04 merco --vm --device root,size=55GiB -c limits.cpu=4 -c limits.memory=4GiB
+2025-02-21 16:05:34,248 - INFO - STDOUT: Creating merco
+
+Retrieving image: Unpack: 100% (915.56MB/s)
+                                            
+Retrieving image: Unpack: 100% (915.56MB/s)
+                                            
+Starting merco
+
+2025-02-21 16:05:54,248 - INFO - Running: Adding eth2 NIC to VM 'merco' with MACVLAN (VLAN 50)
+2025-02-21 16:05:54,249 - INFO - Command: lxc config device add merco eth2 nic nictype=macvlan parent=eno1 vlan=50
+2025-02-21 16:05:54,502 - INFO - Device eth2 added to merco
+2025-02-21 16:05:54,503 - INFO - Command executed successfully
+2025-02-21 16:05:57,149 - INFO - Interface enp6s0 is present in VM merco.
+2025-02-21 16:06:07,149 - INFO - Interface check result: True
+2025-02-21 16:06:07,276 - INFO - Interface enp6s0 is present in VM merco.
+2025-02-21 16:06:07,384 - INFO - Running: Copy NFS IP config
+2025-02-21 16:06:07,384 - INFO - Command: lxc file push ipconfig.txt merco/root/
+2025-02-21 16:06:07,448 - INFO - 
+2025-02-21 16:06:07,456 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/ipconfig.txt to /root/ipconfig.txt: 100% (1.86GB/s)
+2025-02-21 16:06:07,457 - INFO - 
+2025-02-21 16:06:07,457 - INFO - Command executed successfully
+2025-02-21 16:06:14,626 - INFO - Updated netplan: 
+2025-02-21 16:06:14,805 - INFO - Disabled cloud-init network configuration.
+2025-02-21 16:06:14,805 - INFO - Applying netplan configuration: lxc exec merco -- sudo netplan apply
+2025-02-21 16:06:22,558 - INFO - Netplan applied successfully.
+2025-02-21 16:06:22,559 - INFO - Running: Update apt
+2025-02-21 16:06:22,559 - INFO - Command: lxc exec merco -- sudo apt update
+2025-02-21 16:06:22,979 - INFO - Hit:1 http://archive.ubuntu.com/ubuntu noble InRelease
+2025-02-21 16:06:23,044 - INFO - Get:2 http://archive.ubuntu.com/ubuntu noble-updates InRelease [126 kB]
+2025-02-21 16:06:23,078 - INFO - Get:3 http://security.ubuntu.com/ubuntu noble-security InRelease [126 kB]
+2025-02-21 16:06:23,366 - INFO - Get:4 http://archive.ubuntu.com/ubuntu noble-backports InRelease [126 kB]
+2025-02-21 16:06:23,495 - INFO - Get:5 http://archive.ubuntu.com/ubuntu noble/universe amd64 Packages [15.0 MB]
+2025-02-21 16:06:23,723 - INFO - Get:6 http://security.ubuntu.com/ubuntu noble-security/main amd64 Packages [618 kB]
+2025-02-21 16:06:24,082 - INFO - Get:7 http://archive.ubuntu.com/ubuntu noble/universe Translation-en [5982 kB]
+2025-02-21 16:06:24,183 - INFO - Get:8 http://archive.ubuntu.com/ubuntu noble/universe amd64 Components [3871 kB]
+2025-02-21 16:06:24,205 - INFO - Get:9 http://security.ubuntu.com/ubuntu noble-security/main Translation-en [118 kB]
+2025-02-21 16:06:24,220 - INFO - Get:10 http://security.ubuntu.com/ubuntu noble-security/main amd64 Components [8984 B]
+2025-02-21 16:06:24,221 - INFO - Get:11 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Packages [804 kB]
+2025-02-21 16:06:24,252 - INFO - Get:12 http://archive.ubuntu.com/ubuntu noble/universe amd64 c-n-f Metadata [301 kB]
+2025-02-21 16:06:24,259 - INFO - Get:13 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Packages [269 kB]
+2025-02-21 16:06:24,264 - INFO - Get:14 http://archive.ubuntu.com/ubuntu noble/multiverse Translation-en [118 kB]
+2025-02-21 16:06:24,267 - INFO - Get:15 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 Components [35.0 kB]
+2025-02-21 16:06:24,268 - INFO - Get:16 http://archive.ubuntu.com/ubuntu noble/multiverse amd64 c-n-f Metadata [8328 B]
+2025-02-21 16:06:24,269 - INFO - Get:17 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Packages [866 kB]
+2025-02-21 16:06:24,286 - INFO - Get:18 http://archive.ubuntu.com/ubuntu noble-updates/main Translation-en [196 kB]
+2025-02-21 16:06:24,289 - INFO - Get:19 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 Components [150 kB]
+2025-02-21 16:06:24,292 - INFO - Get:20 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Packages [1015 kB]
+2025-02-21 16:06:24,335 - INFO - Get:21 http://archive.ubuntu.com/ubuntu noble-updates/universe Translation-en [254 kB]
+2025-02-21 16:06:24,360 - INFO - Get:22 http://security.ubuntu.com/ubuntu noble-security/universe Translation-en [172 kB]
+2025-02-21 16:06:24,361 - INFO - Get:23 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 Components [363 kB]
+2025-02-21 16:06:24,369 - INFO - Get:24 http://archive.ubuntu.com/ubuntu noble-updates/universe amd64 c-n-f Metadata [19.9 kB]
+2025-02-21 16:06:24,369 - INFO - Get:25 http://archive.ubuntu.com/ubuntu noble-updates/restricted amd64 Components [212 B]
+2025-02-21 16:06:24,369 - INFO - Get:26 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Packages [16.3 kB]
+2025-02-21 16:06:24,369 - INFO - Get:27 http://archive.ubuntu.com/ubuntu noble-updates/multiverse Translation-en [3944 B]
+2025-02-21 16:06:24,383 - INFO - Get:28 http://security.ubuntu.com/ubuntu noble-security/universe amd64 Components [51.9 kB]
+2025-02-21 16:06:24,389 - INFO - Get:29 http://security.ubuntu.com/ubuntu noble-security/universe amd64 c-n-f Metadata [13.5 kB]
+2025-02-21 16:06:24,391 - INFO - Get:30 http://security.ubuntu.com/ubuntu noble-security/restricted amd64 Components [212 B]
+2025-02-21 16:06:24,391 - INFO - Get:31 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Packages [12.4 kB]
+2025-02-21 16:06:24,392 - INFO - Get:32 http://security.ubuntu.com/ubuntu noble-security/multiverse Translation-en [2940 B]
+2025-02-21 16:06:24,393 - INFO - Get:33 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 Components [212 B]
+2025-02-21 16:06:24,393 - INFO - Get:34 http://security.ubuntu.com/ubuntu noble-security/multiverse amd64 c-n-f Metadata [356 B]
+2025-02-21 16:06:24,409 - INFO - Get:35 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 Components [940 B]
+2025-02-21 16:06:24,410 - INFO - Get:36 http://archive.ubuntu.com/ubuntu noble-updates/multiverse amd64 c-n-f Metadata [552 B]
+2025-02-21 16:06:24,410 - INFO - Get:37 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 Components [208 B]
+2025-02-21 16:06:24,410 - INFO - Get:38 http://archive.ubuntu.com/ubuntu noble-backports/main amd64 c-n-f Metadata [112 B]
+2025-02-21 16:06:24,445 - INFO - Get:39 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Packages [13.4 kB]
+2025-02-21 16:06:24,446 - INFO - Get:40 http://archive.ubuntu.com/ubuntu noble-backports/universe Translation-en [11.4 kB]
+2025-02-21 16:06:24,446 - INFO - Get:41 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 Components [17.7 kB]
+2025-02-21 16:06:24,447 - INFO - Get:42 http://archive.ubuntu.com/ubuntu noble-backports/universe amd64 c-n-f Metadata [1104 B]
+2025-02-21 16:06:24,447 - INFO - Get:43 http://archive.ubuntu.com/ubuntu noble-backports/restricted amd64 Components [216 B]
+2025-02-21 16:06:24,483 - INFO - Get:44 http://archive.ubuntu.com/ubuntu noble-backports/restricted amd64 c-n-f Metadata [116 B]
+2025-02-21 16:06:24,558 - INFO - Get:45 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 Components [212 B]
+2025-02-21 16:06:24,558 - INFO - Get:46 http://archive.ubuntu.com/ubuntu noble-backports/multiverse amd64 c-n-f Metadata [116 B]
+2025-02-21 16:06:33,346 - INFO - Fetched 30.7 MB in 5s (6284 kB/s)
+2025-02-21 16:06:34,162 - INFO - Reading package lists...
+2025-02-21 16:06:34,385 - INFO - Building dependency tree...
+2025-02-21 16:06:34,386 - INFO - Reading state information...
+2025-02-21 16:06:34,414 - INFO - 12 packages can be upgraded. Run 'apt list --upgradable' to see them.
+2025-02-21 16:06:34,422 - ERROR - 
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+
+2025-02-21 16:06:34,422 - INFO - Command executed successfully
+2025-02-21 16:06:34,422 - INFO - Running: Push 5gmmtctool
+2025-02-21 16:06:34,422 - INFO - Command: lxc file push /home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/user-scripts/5gmmtctool merco/root/
+2025-02-21 16:06:34,505 - INFO - 
+2025-02-21 16:06:34,514 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/user-scripts/5gmmtctool to /root/5gmmtctool: 100% (17.81GB/s)
+2025-02-21 16:06:34,515 - INFO - 
+2025-02-21 16:06:34,516 - INFO - Command executed successfully
+2025-02-21 16:06:34,516 - INFO - Running: Create folder /root/nfsroot in VM merco
+2025-02-21 16:06:34,516 - INFO - Command: lxc exec merco -- sudo mkdir /root/nfsroot
+2025-02-21 16:06:34,711 - INFO - Command executed successfully
+2025-02-21 16:06:34,711 - INFO - Running: Create folder /root/nfsroot/rootfs in VM merco
+2025-02-21 16:06:34,711 - INFO - Command: lxc exec merco -- sudo mkdir /root/nfsroot/rootfs
+2025-02-21 16:06:34,829 - INFO - Command executed successfully
+2025-02-21 16:06:34,829 - INFO - Running: Change ownership of NFS folder
+2025-02-21 16:06:34,829 - INFO - Command: lxc exec merco -- chown -R nobody:nogroup /root/nfsroot
+2025-02-21 16:06:34,934 - INFO - Command executed successfully
+2025-02-21 16:06:34,934 - INFO - Running: Set permissions for NFS folder
+2025-02-21 16:06:34,934 - INFO - Command: lxc exec merco -- sudo chmod 755 /root/nfsroot
+2025-02-21 16:06:35,101 - INFO - Command executed successfully
+2025-02-21 16:06:35,101 - INFO - Running: Push rootfs tarball
+2025-02-21 16:06:35,101 - INFO - Command: lxc file push rootfs-basic-jp3541-noeula-user.tar.gz merco/root/
+2025-02-21 16:06:35,267 - INFO - 
+2025-02-21 16:06:35,352 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 1% (128.77MB/s)
+2025-02-21 16:06:35,352 - INFO - 
+2025-02-21 16:06:35,430 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 2% (132.73MB/s)
+2025-02-21 16:06:35,430 - INFO - 
+2025-02-21 16:06:35,513 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 3% (138.05MB/s)
+2025-02-21 16:06:35,513 - INFO - 
+2025-02-21 16:06:35,595 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 4% (138.47MB/s)
+2025-02-21 16:06:35,596 - INFO - 
+2025-02-21 16:06:35,678 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 5% (139.08MB/s)
+2025-02-21 16:06:35,678 - INFO - 
+2025-02-21 16:06:35,770 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 6% (139.32MB/s)
+2025-02-21 16:06:35,770 - INFO - 
+2025-02-21 16:06:35,871 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 7% (137.49MB/s)
+2025-02-21 16:06:35,872 - INFO - 
+2025-02-21 16:06:35,980 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 8% (134.19MB/s)
+2025-02-21 16:06:35,980 - INFO - 
+2025-02-21 16:06:36,111 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 9% (130.54MB/s)
+2025-02-21 16:06:36,309 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 10% (124.74MB/s)
+2025-02-21 16:06:36,310 - INFO - 
+2025-02-21 16:06:36,419 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 10% (113.23MB/s)
+2025-02-21 16:06:36,419 - INFO - 
+2025-02-21 16:06:36,522 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 11% (112.63MB/s)
+2025-02-21 16:06:36,522 - INFO - 
+2025-02-21 16:06:36,629 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 12% (112.65MB/s)
+2025-02-21 16:06:36,629 - INFO - 
+2025-02-21 16:06:36,755 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 13% (112.43MB/s)
+2025-02-21 16:06:36,756 - INFO - 
+2025-02-21 16:06:37,073 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 14% (110.79MB/s)
+2025-02-21 16:06:37,073 - INFO - 
+2025-02-21 16:06:37,254 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 15% (98.38MB/s)
+2025-02-21 16:06:37,254 - INFO - 
+2025-02-21 16:06:37,377 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 16% (95.46MB/s)
+2025-02-21 16:06:37,378 - INFO - 
+2025-02-21 16:06:37,487 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 17% (95.38MB/s)
+2025-02-21 16:06:37,487 - INFO - 
+2025-02-21 16:06:37,588 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 18% (95.90MB/s)
+2025-02-21 16:06:37,589 - INFO - 
+2025-02-21 16:06:37,690 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 19% (96.71MB/s)
+2025-02-21 16:06:37,690 - INFO - 
+2025-02-21 16:06:37,801 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 19% (97.45MB/s)
+2025-02-21 16:06:37,802 - INFO - 
+2025-02-21 16:06:37,939 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 20% (97.75MB/s)
+2025-02-21 16:06:37,939 - INFO - 
+2025-02-21 16:06:38,040 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 21% (97.09MB/s)
+2025-02-21 16:06:38,040 - INFO - 
+2025-02-21 16:06:38,138 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 22% (97.77MB/s)
+2025-02-21 16:06:38,138 - INFO - 
+2025-02-21 16:06:38,662 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 23% (98.46MB/s)
+2025-02-21 16:06:38,663 - INFO - 
+2025-02-21 16:06:38,994 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 24% (87.00MB/s)
+2025-02-21 16:06:38,994 - INFO - 
+2025-02-21 16:06:39,219 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 25% (82.50MB/s)
+2025-02-21 16:06:39,219 - INFO - 
+2025-02-21 16:06:39,388 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 26% (80.79MB/s)
+2025-02-21 16:06:39,388 - INFO - 
+2025-02-21 16:06:39,486 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 27% (80.31MB/s)
+2025-02-21 16:06:39,486 - INFO - 
+2025-02-21 16:06:39,582 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 28% (81.19MB/s)
+2025-02-21 16:06:39,582 - INFO - 
+2025-02-21 16:06:39,687 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 28% (82.08MB/s)
+2025-02-21 16:06:39,687 - INFO - 
+2025-02-21 16:06:39,787 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 29% (82.76MB/s)
+2025-02-21 16:06:39,787 - INFO - 
+2025-02-21 16:06:39,888 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 30% (83.49MB/s)
+2025-02-21 16:06:39,888 - INFO - 
+2025-02-21 16:06:39,991 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 31% (84.18MB/s)
+2025-02-21 16:06:39,991 - INFO - 
+2025-02-21 16:06:40,088 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 32% (84.80MB/s)
+2025-02-21 16:06:40,088 - INFO - 
+2025-02-21 16:06:40,192 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 33% (85.50MB/s)
+2025-02-21 16:06:40,192 - INFO - 
+2025-02-21 16:06:40,287 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 34% (86.05MB/s)
+2025-02-21 16:06:40,287 - INFO - 
+2025-02-21 16:06:40,391 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 35% (86.73MB/s)
+2025-02-21 16:06:40,391 - INFO - 
+2025-02-21 16:06:40,501 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 36% (87.23MB/s)
+2025-02-21 16:06:40,501 - INFO - 
+2025-02-21 16:06:40,601 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 37% (87.63MB/s)
+2025-02-21 16:06:40,602 - INFO - 
+2025-02-21 16:06:40,703 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 37% (88.16MB/s)
+2025-02-21 16:06:40,703 - INFO - 
+2025-02-21 16:06:40,801 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 38% (88.65MB/s)
+2025-02-21 16:06:40,801 - INFO - 
+2025-02-21 16:06:40,905 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 39% (89.17MB/s)
+2025-02-21 16:06:40,905 - INFO - 
+2025-02-21 16:06:41,008 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 40% (89.60MB/s)
+2025-02-21 16:06:41,008 - INFO - 
+2025-02-21 16:06:41,102 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 41% (90.01MB/s)
+2025-02-21 16:06:41,102 - INFO - 
+2025-02-21 16:06:41,205 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 42% (90.55MB/s)
+2025-02-21 16:06:41,205 - INFO - 
+2025-02-21 16:06:41,309 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 43% (90.94MB/s)
+2025-02-21 16:06:41,309 - INFO - 
+2025-02-21 16:06:41,417 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 44% (91.29MB/s)
+2025-02-21 16:06:41,417 - INFO - 
+2025-02-21 16:06:41,513 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 45% (91.59MB/s)
+2025-02-21 16:06:41,513 - INFO - 
+2025-02-21 16:06:41,606 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 46% (92.04MB/s)
+2025-02-21 16:06:41,606 - INFO - 
+2025-02-21 16:06:41,707 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 46% (92.52MB/s)
+2025-02-21 16:06:41,708 - INFO - 
+2025-02-21 16:06:41,805 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 47% (92.87MB/s)
+2025-02-21 16:06:41,805 - INFO - 
+2025-02-21 16:06:41,905 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 48% (93.26MB/s)
+2025-02-21 16:06:41,906 - INFO - 
+2025-02-21 16:06:42,008 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 49% (93.61MB/s)
+2025-02-21 16:06:42,008 - INFO - 
+2025-02-21 16:06:42,109 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 50% (93.91MB/s)
+2025-02-21 16:06:42,109 - INFO - 
+2025-02-21 16:06:42,264 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 51% (94.23MB/s)
+2025-02-21 16:06:42,264 - INFO - 
+2025-02-21 16:06:42,378 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 52% (93.81MB/s)
+2025-02-21 16:06:42,378 - INFO - 
+2025-02-21 16:06:42,477 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 53% (93.94MB/s)
+2025-02-21 16:06:42,477 - INFO - 
+2025-02-21 16:06:42,636 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 54% (94.27MB/s)
+2025-02-21 16:06:42,637 - INFO - 
+2025-02-21 16:06:42,800 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 55% (93.82MB/s)
+2025-02-21 16:06:42,800 - INFO - 
+2025-02-21 16:06:42,953 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 55% (93.33MB/s)
+2025-02-21 16:06:42,953 - INFO - 
+2025-02-21 16:06:43,162 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 56% (93.00MB/s)
+2025-02-21 16:06:43,162 - INFO - 
+2025-02-21 16:06:43,307 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 57% (92.03MB/s)
+2025-02-21 16:06:43,307 - INFO - 
+2025-02-21 16:06:43,412 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 58% (91.82MB/s)
+2025-02-21 16:06:43,413 - INFO - 
+2025-02-21 16:06:43,671 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 59% (92.06MB/s)
+2025-02-21 16:06:43,671 - INFO - 
+2025-02-21 16:06:44,172 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 60% (90.63MB/s)
+2025-02-21 16:06:44,173 - INFO - 
+2025-02-21 16:06:44,360 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 61% (86.89MB/s)
+2025-02-21 16:06:44,361 - INFO - 
+2025-02-21 16:06:44,522 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 62% (86.37MB/s)
+2025-02-21 16:06:44,523 - INFO - 
+2025-02-21 16:06:44,650 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 63% (86.12MB/s)
+2025-02-21 16:06:44,650 - INFO - 
+2025-02-21 16:06:44,750 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 64% (86.19MB/s)
+2025-02-21 16:06:44,750 - INFO - 
+2025-02-21 16:06:44,849 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 64% (86.51MB/s)
+2025-02-21 16:06:44,849 - INFO - 
+2025-02-21 16:06:44,947 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 65% (86.83MB/s)
+2025-02-21 16:06:44,947 - INFO - 
+2025-02-21 16:06:45,050 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 66% (87.15MB/s)
+2025-02-21 16:06:45,050 - INFO - 
+2025-02-21 16:06:45,155 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 67% (87.43MB/s)
+2025-02-21 16:06:45,155 - INFO - 
+2025-02-21 16:06:45,255 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 68% (87.68MB/s)
+2025-02-21 16:06:45,255 - INFO - 
+2025-02-21 16:06:45,362 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 69% (87.96MB/s)
+2025-02-21 16:06:45,362 - INFO - 
+2025-02-21 16:06:45,467 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 70% (88.18MB/s)
+2025-02-21 16:06:45,467 - INFO - 
+2025-02-21 16:06:45,565 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 71% (88.42MB/s)
+2025-02-21 16:06:45,565 - INFO - 
+2025-02-21 16:06:45,659 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 72% (88.71MB/s)
+2025-02-21 16:06:45,660 - INFO - 
+2025-02-21 16:06:45,756 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 73% (89.02MB/s)
+2025-02-21 16:06:45,756 - INFO - 
+2025-02-21 16:06:45,851 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 73% (89.31MB/s)
+2025-02-21 16:06:45,851 - INFO - 
+2025-02-21 16:06:45,949 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 74% (89.61MB/s)
+2025-02-21 16:06:45,949 - INFO - 
+2025-02-21 16:06:46,051 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 75% (89.87MB/s)
+2025-02-21 16:06:46,051 - INFO - 
+2025-02-21 16:06:46,160 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 76% (90.11MB/s)
+2025-02-21 16:06:46,160 - INFO - 
+2025-02-21 16:06:46,255 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 77% (90.28MB/s)
+2025-02-21 16:06:46,255 - INFO - 
+2025-02-21 16:06:46,354 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 78% (90.55MB/s)
+2025-02-21 16:06:46,355 - INFO - 
+2025-02-21 16:06:46,455 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 79% (90.79MB/s)
+2025-02-21 16:06:46,455 - INFO - 
+2025-02-21 16:06:46,551 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 80% (91.02MB/s)
+2025-02-21 16:06:46,551 - INFO - 
+2025-02-21 16:06:46,650 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 81% (91.27MB/s)
+2025-02-21 16:06:46,650 - INFO - 
+2025-02-21 16:06:46,736 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 82% (91.50MB/s)
+2025-02-21 16:06:46,736 - INFO - 
+2025-02-21 16:06:46,825 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 83% (91.83MB/s)
+2025-02-21 16:06:46,825 - INFO - 
+2025-02-21 16:06:46,910 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 83% (92.17MB/s)
+2025-02-21 16:06:46,910 - INFO - 
+2025-02-21 16:06:47,013 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 84% (92.46MB/s)
+2025-02-21 16:06:47,013 - INFO - 
+2025-02-21 16:06:47,106 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 85% (92.64MB/s)
+2025-02-21 16:06:47,106 - INFO - 
+2025-02-21 16:06:47,204 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 86% (92.90MB/s)
+2025-02-21 16:06:47,204 - INFO - 
+2025-02-21 16:06:47,300 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 87% (93.11MB/s)
+2025-02-21 16:06:47,300 - INFO - 
+2025-02-21 16:06:47,479 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 88% (93.33MB/s)
+2025-02-21 16:06:47,479 - INFO - 
+2025-02-21 16:06:47,678 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 89% (92.92MB/s)
+2025-02-21 16:06:47,678 - INFO - 
+2025-02-21 16:06:47,867 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 90% (92.37MB/s)
+2025-02-21 16:06:47,867 - INFO - 
+2025-02-21 16:06:48,032 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 91% (91.92MB/s)
+2025-02-21 16:06:48,033 - INFO - 
+2025-02-21 16:06:48,251 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 92% (91.64MB/s)
+2025-02-21 16:06:48,251 - INFO - 
+2025-02-21 16:06:48,416 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 92% (91.01MB/s)
+2025-02-21 16:06:48,416 - INFO - 
+2025-02-21 16:06:48,560 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 93% (90.75MB/s)
+2025-02-21 16:06:48,561 - INFO - 
+2025-02-21 16:06:48,664 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 94% (90.64MB/s)
+2025-02-21 16:06:48,664 - INFO - 
+2025-02-21 16:06:48,999 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 95% (90.81MB/s)
+2025-02-21 16:06:48,999 - INFO - 
+2025-02-21 16:06:49,405 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 96% (89.45MB/s)
+2025-02-21 16:06:49,405 - INFO - 
+2025-02-21 16:06:49,588 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 97% (87.72MB/s)
+2025-02-21 16:06:49,588 - INFO - 
+2025-02-21 16:06:49,734 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 98% (87.42MB/s)
+2025-02-21 16:06:49,735 - INFO - 
+2025-02-21 16:06:49,878 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 99% (87.35MB/s)
+2025-02-21 16:06:49,878 - INFO - 
+2025-02-21 16:06:50,023 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/rootfs-basic-jp3541-noeula-user.tar.gz to /root/rootfs-basic-jp3541-noeula-user.tar.gz: 100% (87.28MB/s)
+2025-02-21 16:06:50,024 - INFO - 
+2025-02-21 16:06:50,024 - INFO - Command executed successfully
+2025-02-21 16:06:50,025 - INFO - Running: Extract rootfs tarball
+2025-02-21 16:06:50,025 - INFO - Command: lxc exec merco -- tar xpzf /root/rootfs-basic-jp3541-noeula-user.tar.gz -C /root/nfsroot/rootfs
+2025-02-21 16:07:06,787 - INFO - Command executed successfully
+2025-02-21 16:07:06,787 - INFO - Running: Install NFS server
+2025-02-21 16:07:06,787 - INFO - Command: lxc exec merco -- sudo apt install -y nfs-kernel-server
+2025-02-21 16:07:07,133 - INFO - Reading package lists...
+2025-02-21 16:07:07,355 - INFO - Building dependency tree...
+2025-02-21 16:07:07,357 - INFO - Reading state information...
+2025-02-21 16:07:07,646 - INFO - The following additional packages will be installed:
+2025-02-21 16:07:07,647 - INFO - keyutils libnfsidmap1 nfs-common rpcbind
+2025-02-21 16:07:07,649 - INFO - Suggested packages:
+2025-02-21 16:07:07,649 - INFO - watchdog
+2025-02-21 16:07:07,713 - INFO - The following NEW packages will be installed:
+2025-02-21 16:07:07,714 - INFO - keyutils libnfsidmap1 nfs-common nfs-kernel-server rpcbind
+2025-02-21 16:07:07,747 - INFO - 0 upgraded, 5 newly installed, 0 to remove and 12 not upgraded.
+2025-02-21 16:07:08,036 - INFO - Need to get 569 kB of archives.
+2025-02-21 16:07:08,037 - INFO - After this operation, 2022 kB of additional disk space will be used.
+2025-02-21 16:07:08,037 - INFO - Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libnfsidmap1 amd64 1:2.6.4-3ubuntu5.1 [48.3 kB]
+2025-02-21 16:07:08,425 - INFO - Get:2 http://archive.ubuntu.com/ubuntu noble/main amd64 rpcbind amd64 1.2.6-7ubuntu2 [46.5 kB]
+2025-02-21 16:07:08,489 - INFO - Get:3 http://archive.ubuntu.com/ubuntu noble/main amd64 keyutils amd64 1.6.3-3build1 [56.8 kB]
+2025-02-21 16:07:08,608 - INFO - Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 nfs-common amd64 1:2.6.4-3ubuntu5.1 [248 kB]
+2025-02-21 16:07:08,810 - INFO - Get:5 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 nfs-kernel-server amd64 1:2.6.4-3ubuntu5.1 [169 kB]
+2025-02-21 16:07:09,218 - INFO - Fetched 569 kB in 1s (513 kB/s)
+2025-02-21 16:07:09,295 - INFO - Selecting previously unselected package libnfsidmap1:amd64.
+2025-02-21 16:07:09,312 - INFO - (Reading database ...
+2025-02-21 16:07:09,313 - INFO - (Reading database ... 5%
+2025-02-21 16:07:09,313 - INFO - (Reading database ... 10%
+2025-02-21 16:07:09,313 - INFO - (Reading database ... 15%
+2025-02-21 16:07:09,313 - INFO - (Reading database ... 20%
+2025-02-21 16:07:09,313 - INFO - (Reading database ... 25%
+2025-02-21 16:07:09,313 - INFO - (Reading database ... 30%
+2025-02-21 16:07:09,313 - INFO - (Reading database ... 35%
+2025-02-21 16:07:09,313 - INFO - (Reading database ... 40%
+2025-02-21 16:07:09,313 - INFO - (Reading database ... 45%
+2025-02-21 16:07:09,313 - INFO - (Reading database ... 50%
+2025-02-21 16:07:09,324 - INFO - (Reading database ... 55%
+2025-02-21 16:07:09,347 - INFO - (Reading database ... 60%
+2025-02-21 16:07:09,373 - INFO - (Reading database ... 65%
+2025-02-21 16:07:09,399 - INFO - (Reading database ... 70%
+2025-02-21 16:07:09,434 - INFO - (Reading database ... 75%
+2025-02-21 16:07:09,469 - INFO - (Reading database ... 80%
+2025-02-21 16:07:09,492 - INFO - (Reading database ... 85%
+2025-02-21 16:07:09,525 - INFO - (Reading database ... 90%
+2025-02-21 16:07:09,546 - INFO - (Reading database ... 95%
+2025-02-21 16:07:09,546 - INFO - (Reading database ... 100%
+2025-02-21 16:07:09,546 - INFO - (Reading database ... 74681 files and directories currently installed.)
+2025-02-21 16:07:09,550 - INFO - Preparing to unpack .../libnfsidmap1_1%3a2.6.4-3ubuntu5.1_amd64.deb ...
+2025-02-21 16:07:09,561 - INFO - Unpacking libnfsidmap1:amd64 (1:2.6.4-3ubuntu5.1) ...
+2025-02-21 16:07:09,624 - INFO - Selecting previously unselected package rpcbind.
+2025-02-21 16:07:09,633 - INFO - Preparing to unpack .../rpcbind_1.2.6-7ubuntu2_amd64.deb ...
+2025-02-21 16:07:09,639 - INFO - Unpacking rpcbind (1.2.6-7ubuntu2) ...
+2025-02-21 16:07:09,687 - INFO - Selecting previously unselected package keyutils.
+2025-02-21 16:07:09,696 - INFO - Preparing to unpack .../keyutils_1.6.3-3build1_amd64.deb ...
+2025-02-21 16:07:09,700 - INFO - Unpacking keyutils (1.6.3-3build1) ...
+2025-02-21 16:07:09,762 - INFO - Selecting previously unselected package nfs-common.
+2025-02-21 16:07:09,770 - INFO - Preparing to unpack .../nfs-common_1%3a2.6.4-3ubuntu5.1_amd64.deb ...
+2025-02-21 16:07:09,777 - INFO - Unpacking nfs-common (1:2.6.4-3ubuntu5.1) ...
+2025-02-21 16:07:09,848 - INFO - Selecting previously unselected package nfs-kernel-server.
+2025-02-21 16:07:09,857 - INFO - Preparing to unpack .../nfs-kernel-server_1%3a2.6.4-3ubuntu5.1_amd64.deb ...
+2025-02-21 16:07:09,862 - INFO - Unpacking nfs-kernel-server (1:2.6.4-3ubuntu5.1) ...
+2025-02-21 16:07:09,924 - INFO - Setting up libnfsidmap1:amd64 (1:2.6.4-3ubuntu5.1) ...
+2025-02-21 16:07:10,020 - INFO - Setting up rpcbind (1.2.6-7ubuntu2) ...
+2025-02-21 16:07:10,612 - INFO - Created symlink /etc/systemd/system/multi-user.target.wants/rpcbind.service → /usr/lib/systemd/system/rpcbind.service.
+2025-02-21 16:07:10,612 - INFO - 
+2025-02-21 16:07:10,612 - INFO - Created symlink /etc/systemd/system/sockets.target.wants/rpcbind.socket → /usr/lib/systemd/system/rpcbind.socket.
+2025-02-21 16:07:10,612 - INFO - 
+2025-02-21 16:07:11,092 - INFO - Setting up keyutils (1.6.3-3build1) ...
+2025-02-21 16:07:11,110 - INFO - Setting up nfs-common (1:2.6.4-3ubuntu5.1) ...
+2025-02-21 16:07:11,321 - INFO - 
+2025-02-21 16:07:11,321 - INFO - Creating config file /etc/idmapd.conf with new version
+2025-02-21 16:07:11,840 - INFO - 
+2025-02-21 16:07:11,840 - INFO - Creating config file /etc/nfs.conf with new version
+2025-02-21 16:07:12,117 - INFO - info: Selecting UID from range 100 to 999 ...
+2025-02-21 16:07:12,117 - INFO - 
+2025-02-21 16:07:12,120 - INFO - info: Adding system user `statd' (UID 110) ...
+2025-02-21 16:07:12,123 - INFO - info: Adding new user `statd' (UID 110) with group `nogroup' ...
+2025-02-21 16:07:12,157 - INFO - info: Not creating home directory `/var/lib/nfs'.
+2025-02-21 16:07:12,581 - INFO - Created symlink /etc/systemd/system/multi-user.target.wants/nfs-client.target → /usr/lib/systemd/system/nfs-client.target.
+2025-02-21 16:07:12,582 - INFO - 
+2025-02-21 16:07:12,582 - INFO - Created symlink /etc/systemd/system/remote-fs.target.wants/nfs-client.target → /usr/lib/systemd/system/nfs-client.target.
+2025-02-21 16:07:12,582 - INFO - 
+2025-02-21 16:07:12,900 - INFO - auth-rpcgss-module.service is a disabled or a static unit, not starting it.
+2025-02-21 16:07:12,926 - INFO - nfs-idmapd.service is a disabled or a static unit, not starting it.
+2025-02-21 16:07:12,939 - INFO - nfs-utils.service is a disabled or a static unit, not starting it.
+2025-02-21 16:07:12,954 - INFO - proc-fs-nfsd.mount is a disabled or a static unit, not starting it.
+2025-02-21 16:07:12,968 - INFO - rpc-gssd.service is a disabled or a static unit, not starting it.
+2025-02-21 16:07:12,984 - INFO - rpc-statd-notify.service is a disabled or a static unit, not starting it.
+2025-02-21 16:07:12,999 - INFO - rpc-statd.service is a disabled or a static unit, not starting it.
+2025-02-21 16:07:13,015 - INFO - rpc-svcgssd.service is a disabled or a static unit, not starting it.
+2025-02-21 16:07:13,094 - INFO - Setting up nfs-kernel-server (1:2.6.4-3ubuntu5.1) ...
+2025-02-21 16:07:13,226 - INFO - Created symlink /etc/systemd/system/nfs-mountd.service.requires/fsidd.service → /usr/lib/systemd/system/fsidd.service.
+2025-02-21 16:07:13,227 - INFO - 
+2025-02-21 16:07:13,227 - INFO - Created symlink /etc/systemd/system/nfs-server.service.requires/fsidd.service → /usr/lib/systemd/system/fsidd.service.
+2025-02-21 16:07:13,227 - INFO - 
+2025-02-21 16:07:13,343 - INFO - Created symlink /etc/systemd/system/nfs-client.target.wants/nfs-blkmap.service → /usr/lib/systemd/system/nfs-blkmap.service.
+2025-02-21 16:07:13,343 - INFO - 
+2025-02-21 16:07:13,458 - INFO - Created symlink /etc/systemd/system/multi-user.target.wants/nfs-server.service → /usr/lib/systemd/system/nfs-server.service.
+2025-02-21 16:07:13,458 - INFO - 
+2025-02-21 16:07:13,784 - INFO - nfs-mountd.service is a disabled or a static unit, not starting it.
+2025-02-21 16:07:13,811 - INFO - nfsdcld.service is a disabled or a static unit, not starting it.
+2025-02-21 16:07:14,254 - INFO - 
+2025-02-21 16:07:14,254 - INFO - Creating config file /etc/exports with new version
+2025-02-21 16:07:14,480 - INFO - 
+2025-02-21 16:07:14,481 - INFO - Creating config file /etc/default/nfs-kernel-server with new version
+2025-02-21 16:07:14,861 - INFO - Processing triggers for man-db (2.12.0-4build2) ...
+2025-02-21 16:07:17,149 - INFO - Processing triggers for libc-bin (2.39-0ubuntu8.4) ...
+2025-02-21 16:07:19,160 - ERROR - 
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+dpkg-preconfigure: unable to re-open stdin: No such file or directory
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+
+2025-02-21 16:07:19,160 - INFO - Command executed successfully
+2025-02-21 16:07:19,275 - INFO - Updated /etc/exports in VM merco
+2025-02-21 16:07:19,275 - INFO - Running: Refresh NFS exports
+2025-02-21 16:07:19,275 - INFO - Command: lxc exec merco -- sudo exportfs -a
+2025-02-21 16:07:19,394 - INFO - Command executed successfully
+2025-02-21 16:07:19,394 - INFO - Running: Restart NFS server
+2025-02-21 16:07:19,394 - INFO - Command: lxc exec merco -- sudo systemctl restart nfs-kernel-server
+2025-02-21 16:07:19,768 - INFO - Command executed successfully
+2025-02-21 16:07:19,768 - INFO - Running: Enable NFS server
+2025-02-21 16:07:19,768 - INFO - Command: lxc exec merco -- sudo systemctl enable nfs-kernel-server
+2025-02-21 16:07:20,747 - ERROR - Synchronizing state of nfs-kernel-server.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
+Executing: /usr/lib/systemd/systemd-sysv-install enable nfs-kernel-server
+
+2025-02-21 16:07:20,748 - INFO - Command executed successfully
+2025-02-21 16:07:20,748 - INFO - Running: Install DHCP server
+2025-02-21 16:07:20,748 - INFO - Command: lxc exec merco -- sudo apt install -y isc-dhcp-server
+2025-02-21 16:07:20,906 - INFO - Reading package lists...
+2025-02-21 16:07:21,112 - INFO - Building dependency tree...
+2025-02-21 16:07:21,113 - INFO - Reading state information...
+2025-02-21 16:07:21,411 - INFO - The following additional packages will be installed:
+2025-02-21 16:07:21,413 - INFO - isc-dhcp-common
+2025-02-21 16:07:21,414 - INFO - Suggested packages:
+2025-02-21 16:07:21,414 - INFO - isc-dhcp-server-ldap policycoreutils
+2025-02-21 16:07:21,463 - INFO - The following NEW packages will be installed:
+2025-02-21 16:07:21,465 - INFO - isc-dhcp-common isc-dhcp-server
+2025-02-21 16:07:21,496 - INFO - 0 upgraded, 2 newly installed, 0 to remove and 12 not upgraded.
+2025-02-21 16:07:21,682 - INFO - Need to get 1281 kB of archives.
+2025-02-21 16:07:21,682 - INFO - After this operation, 4281 kB of additional disk space will be used.
+2025-02-21 16:07:21,682 - INFO - Get:1 http://archive.ubuntu.com/ubuntu noble/universe amd64 isc-dhcp-server amd64 4.4.3-P1-4ubuntu2 [1236 kB]
+2025-02-21 16:07:22,254 - INFO - Get:2 http://archive.ubuntu.com/ubuntu noble/universe amd64 isc-dhcp-common amd64 4.4.3-P1-4ubuntu2 [45.8 kB]
+2025-02-21 16:07:22,542 - INFO - Fetched 1281 kB in 1s (1732 kB/s)
+2025-02-21 16:07:22,590 - INFO - Selecting previously unselected package isc-dhcp-server.
+2025-02-21 16:07:22,594 - INFO - (Reading database ...
+2025-02-21 16:07:22,594 - INFO - (Reading database ... 5%
+2025-02-21 16:07:22,595 - INFO - (Reading database ... 10%
+2025-02-21 16:07:22,595 - INFO - (Reading database ... 15%
+2025-02-21 16:07:22,595 - INFO - (Reading database ... 20%
+2025-02-21 16:07:22,595 - INFO - (Reading database ... 25%
+2025-02-21 16:07:22,595 - INFO - (Reading database ... 30%
+2025-02-21 16:07:22,595 - INFO - (Reading database ... 35%
+2025-02-21 16:07:22,595 - INFO - (Reading database ... 40%
+2025-02-21 16:07:22,595 - INFO - (Reading database ... 45%
+2025-02-21 16:07:22,595 - INFO - (Reading database ... 50%
+2025-02-21 16:07:22,597 - INFO - (Reading database ... 55%
+2025-02-21 16:07:22,599 - INFO - (Reading database ... 60%
+2025-02-21 16:07:22,600 - INFO - (Reading database ... 65%
+2025-02-21 16:07:22,602 - INFO - (Reading database ... 70%
+2025-02-21 16:07:22,609 - INFO - (Reading database ... 75%
+2025-02-21 16:07:22,620 - INFO - (Reading database ... 80%
+2025-02-21 16:07:22,621 - INFO - (Reading database ... 85%
+2025-02-21 16:07:22,625 - INFO - (Reading database ... 90%
+2025-02-21 16:07:22,627 - INFO - (Reading database ... 95%
+2025-02-21 16:07:22,627 - INFO - (Reading database ... 100%
+2025-02-21 16:07:22,627 - INFO - (Reading database ... 74857 files and directories currently installed.)
+2025-02-21 16:07:22,630 - INFO - Preparing to unpack .../isc-dhcp-server_4.4.3-P1-4ubuntu2_amd64.deb ...
+2025-02-21 16:07:22,637 - INFO - Unpacking isc-dhcp-server (4.4.3-P1-4ubuntu2) ...
+2025-02-21 16:07:22,713 - INFO - Selecting previously unselected package isc-dhcp-common.
+2025-02-21 16:07:22,721 - INFO - Preparing to unpack .../isc-dhcp-common_4.4.3-P1-4ubuntu2_amd64.deb ...
+2025-02-21 16:07:22,724 - INFO - Unpacking isc-dhcp-common (4.4.3-P1-4ubuntu2) ...
+2025-02-21 16:07:22,774 - INFO - Setting up isc-dhcp-server (4.4.3-P1-4ubuntu2) ...
+2025-02-21 16:07:23,056 - INFO - Generating /etc/default/isc-dhcp-server...
+2025-02-21 16:07:23,527 - INFO - Created symlink /etc/systemd/system/multi-user.target.wants/isc-dhcp-server.service → /usr/lib/systemd/system/isc-dhcp-server.service.
+2025-02-21 16:07:23,527 - INFO - 
+2025-02-21 16:07:23,967 - INFO - Created symlink /etc/systemd/system/multi-user.target.wants/isc-dhcp-server6.service → /usr/lib/systemd/system/isc-dhcp-server6.service.
+2025-02-21 16:07:23,967 - INFO - 
+2025-02-21 16:07:24,314 - INFO - Setting up isc-dhcp-common (4.4.3-P1-4ubuntu2) ...
+2025-02-21 16:07:24,328 - INFO - Processing triggers for man-db (2.12.0-4build2) ...
+2025-02-21 16:07:26,700 - ERROR - 
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+dpkg-preconfigure: unable to re-open stdin: No such file or directory
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+
+2025-02-21 16:07:26,701 - INFO - Command executed successfully
+2025-02-21 16:07:26,701 - INFO - Running: Copy DHCP config
+2025-02-21 16:07:26,701 - INFO - Command: lxc file push dhcpConfig.txt merco/root/
+2025-02-21 16:07:26,769 - INFO - 
+2025-02-21 16:07:26,776 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/dhcpConfig.txt to /root/dhcpConfig.txt: 100% (804.08MB/s)
+2025-02-21 16:07:26,777 - INFO - 
+2025-02-21 16:07:26,777 - INFO - Command executed successfully
+2025-02-21 16:07:26,890 - INFO - DHCP config appended.
+2025-02-21 16:07:26,890 - INFO - Running: Restart DHCP server
+2025-02-21 16:07:26,890 - INFO - Command: lxc exec merco -- sudo systemctl restart isc-dhcp-server
+2025-02-21 16:07:27,025 - INFO - Command executed successfully
+2025-02-21 16:07:27,026 - INFO - Running: Enable DHCP server
+2025-02-21 16:07:27,026 - INFO - Command: lxc exec merco -- sudo systemctl enable isc-dhcp-server
+2025-02-21 16:07:28,025 - ERROR - Synchronizing state of isc-dhcp-server.service with SysV service script with /usr/lib/systemd/systemd-sysv-install.
+Executing: /usr/lib/systemd/systemd-sysv-install enable isc-dhcp-server
+
+2025-02-21 16:07:28,025 - INFO - Command executed successfully
+2025-02-21 16:07:28,025 - INFO - Running: Install binutils
+2025-02-21 16:07:28,025 - INFO - Command: lxc exec merco -- apt install -y binutils
+2025-02-21 16:07:28,193 - INFO - Reading package lists...
+2025-02-21 16:07:28,398 - INFO - Building dependency tree...
+2025-02-21 16:07:28,399 - INFO - Reading state information...
+2025-02-21 16:07:28,687 - INFO - The following additional packages will be installed:
+2025-02-21 16:07:28,688 - INFO - binutils-common binutils-x86-64-linux-gnu libbinutils libctf-nobfd0 libctf0
+2025-02-21 16:07:28,689 - INFO - libgprofng0 libsframe1
+2025-02-21 16:07:28,691 - INFO - Suggested packages:
+2025-02-21 16:07:28,691 - INFO - binutils-doc gprofng-gui
+2025-02-21 16:07:28,756 - INFO - The following NEW packages will be installed:
+2025-02-21 16:07:28,756 - INFO - binutils binutils-common binutils-x86-64-linux-gnu libbinutils libctf-nobfd0
+2025-02-21 16:07:28,758 - INFO - libctf0 libgprofng0 libsframe1
+2025-02-21 16:07:28,789 - INFO - 0 upgraded, 8 newly installed, 0 to remove and 12 not upgraded.
+2025-02-21 16:07:28,974 - INFO - Need to get 4351 kB of archives.
+2025-02-21 16:07:28,974 - INFO - After this operation, 19.6 MB of additional disk space will be used.
+2025-02-21 16:07:28,974 - INFO - Get:1 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 binutils-common amd64 2.42-4ubuntu2.3 [239 kB]
+2025-02-21 16:07:29,377 - INFO - Get:2 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libsframe1 amd64 2.42-4ubuntu2.3 [14.9 kB]
+2025-02-21 16:07:29,380 - INFO - Get:3 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libbinutils amd64 2.42-4ubuntu2.3 [575 kB]
+2025-02-21 16:07:29,521 - INFO - Get:4 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libctf-nobfd0 amd64 2.42-4ubuntu2.3 [97.1 kB]
+2025-02-21 16:07:29,533 - INFO - Get:5 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libctf0 amd64 2.42-4ubuntu2.3 [94.5 kB]
+2025-02-21 16:07:29,542 - INFO - Get:6 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 libgprofng0 amd64 2.42-4ubuntu2.3 [849 kB]
+2025-02-21 16:07:29,630 - INFO - Get:7 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 binutils-x86-64-linux-gnu amd64 2.42-4ubuntu2.3 [2463 kB]
+2025-02-21 16:07:29,724 - INFO - Get:8 http://archive.ubuntu.com/ubuntu noble-updates/main amd64 binutils amd64 2.42-4ubuntu2.3 [18.1 kB]
+2025-02-21 16:07:29,989 - INFO - Fetched 4351 kB in 1s (4755 kB/s)
+2025-02-21 16:07:30,159 - INFO - Selecting previously unselected package binutils-common:amd64.
+2025-02-21 16:07:30,174 - INFO - (Reading database ...
+2025-02-21 16:07:30,175 - INFO - (Reading database ... 5%
+2025-02-21 16:07:30,175 - INFO - (Reading database ... 10%
+2025-02-21 16:07:30,175 - INFO - (Reading database ... 15%
+2025-02-21 16:07:30,175 - INFO - (Reading database ... 20%
+2025-02-21 16:07:30,175 - INFO - (Reading database ... 25%
+2025-02-21 16:07:30,176 - INFO - (Reading database ... 30%
+2025-02-21 16:07:30,176 - INFO - (Reading database ... 35%
+2025-02-21 16:07:30,176 - INFO - (Reading database ... 40%
+2025-02-21 16:07:30,176 - INFO - (Reading database ... 45%
+2025-02-21 16:07:30,176 - INFO - (Reading database ... 50%
+2025-02-21 16:07:30,186 - INFO - (Reading database ... 55%
+2025-02-21 16:07:30,189 - INFO - (Reading database ... 60%
+2025-02-21 16:07:30,191 - INFO - (Reading database ... 65%
+2025-02-21 16:07:30,195 - INFO - (Reading database ... 70%
+2025-02-21 16:07:30,204 - INFO - (Reading database ... 75%
+2025-02-21 16:07:30,215 - INFO - (Reading database ... 80%
+2025-02-21 16:07:30,217 - INFO - (Reading database ... 85%
+2025-02-21 16:07:30,220 - INFO - (Reading database ... 90%
+2025-02-21 16:07:30,223 - INFO - (Reading database ... 95%
+2025-02-21 16:07:30,223 - INFO - (Reading database ... 100%
+2025-02-21 16:07:30,223 - INFO - (Reading database ... 74891 files and directories currently installed.)
+2025-02-21 16:07:30,226 - INFO - Preparing to unpack .../0-binutils-common_2.42-4ubuntu2.3_amd64.deb ...
+2025-02-21 16:07:30,244 - INFO - Unpacking binutils-common:amd64 (2.42-4ubuntu2.3) ...
+2025-02-21 16:07:30,310 - INFO - Selecting previously unselected package libsframe1:amd64.
+2025-02-21 16:07:30,318 - INFO - Preparing to unpack .../1-libsframe1_2.42-4ubuntu2.3_amd64.deb ...
+2025-02-21 16:07:30,327 - INFO - Unpacking libsframe1:amd64 (2.42-4ubuntu2.3) ...
+2025-02-21 16:07:30,370 - INFO - Selecting previously unselected package libbinutils:amd64.
+2025-02-21 16:07:30,379 - INFO - Preparing to unpack .../2-libbinutils_2.42-4ubuntu2.3_amd64.deb ...
+2025-02-21 16:07:30,384 - INFO - Unpacking libbinutils:amd64 (2.42-4ubuntu2.3) ...
+2025-02-21 16:07:30,443 - INFO - Selecting previously unselected package libctf-nobfd0:amd64.
+2025-02-21 16:07:30,452 - INFO - Preparing to unpack .../3-libctf-nobfd0_2.42-4ubuntu2.3_amd64.deb ...
+2025-02-21 16:07:30,456 - INFO - Unpacking libctf-nobfd0:amd64 (2.42-4ubuntu2.3) ...
+2025-02-21 16:07:30,505 - INFO - Selecting previously unselected package libctf0:amd64.
+2025-02-21 16:07:30,513 - INFO - Preparing to unpack .../4-libctf0_2.42-4ubuntu2.3_amd64.deb ...
+2025-02-21 16:07:30,518 - INFO - Unpacking libctf0:amd64 (2.42-4ubuntu2.3) ...
+2025-02-21 16:07:30,567 - INFO - Selecting previously unselected package libgprofng0:amd64.
+2025-02-21 16:07:30,575 - INFO - Preparing to unpack .../5-libgprofng0_2.42-4ubuntu2.3_amd64.deb ...
+2025-02-21 16:07:30,580 - INFO - Unpacking libgprofng0:amd64 (2.42-4ubuntu2.3) ...
+2025-02-21 16:07:30,639 - INFO - Selecting previously unselected package binutils-x86-64-linux-gnu.
+2025-02-21 16:07:30,648 - INFO - Preparing to unpack .../6-binutils-x86-64-linux-gnu_2.42-4ubuntu2.3_amd64.deb ...
+2025-02-21 16:07:30,652 - INFO - Unpacking binutils-x86-64-linux-gnu (2.42-4ubuntu2.3) ...
+2025-02-21 16:07:30,769 - INFO - Selecting previously unselected package binutils.
+2025-02-21 16:07:30,778 - INFO - Preparing to unpack .../7-binutils_2.42-4ubuntu2.3_amd64.deb ...
+2025-02-21 16:07:30,782 - INFO - Unpacking binutils (2.42-4ubuntu2.3) ...
+2025-02-21 16:07:30,838 - INFO - Setting up binutils-common:amd64 (2.42-4ubuntu2.3) ...
+2025-02-21 16:07:30,979 - INFO - Setting up libctf-nobfd0:amd64 (2.42-4ubuntu2.3) ...
+2025-02-21 16:07:30,999 - INFO - Setting up libsframe1:amd64 (2.42-4ubuntu2.3) ...
+2025-02-21 16:07:31,013 - INFO - Setting up libbinutils:amd64 (2.42-4ubuntu2.3) ...
+2025-02-21 16:07:31,025 - INFO - Setting up libctf0:amd64 (2.42-4ubuntu2.3) ...
+2025-02-21 16:07:31,039 - INFO - Setting up libgprofng0:amd64 (2.42-4ubuntu2.3) ...
+2025-02-21 16:07:31,052 - INFO - Setting up binutils-x86-64-linux-gnu (2.42-4ubuntu2.3) ...
+2025-02-21 16:07:31,066 - INFO - Setting up binutils (2.42-4ubuntu2.3) ...
+2025-02-21 16:07:31,080 - INFO - Processing triggers for libc-bin (2.39-0ubuntu8.4) ...
+2025-02-21 16:07:31,104 - INFO - Processing triggers for man-db (2.12.0-4build2) ...
+2025-02-21 16:07:33,457 - ERROR - 
+WARNING: apt does not have a stable CLI interface. Use with caution in scripts.
+
+dpkg-preconfigure: unable to re-open stdin: No such file or directory
+
+Running kernel seems to be up-to-date.
+
+No services need to be restarted.
+
+No containers need to be restarted.
+
+No user sessions are running outdated binaries.
+
+No VM guests are running outdated hypervisor (qemu) binaries on this host.
+
+2025-02-21 16:07:33,458 - INFO - Command executed successfully
+2025-02-21 16:07:33,578 - INFO - Executed in merco: sysctl -w net.ipv4.ip_forward=1
+2025-02-21 16:07:33,735 - INFO - Executed in merco: iptables -t nat -A POSTROUTING -o enp5s0 -j MASQUERADE
+2025-02-21 16:07:33,809 - INFO - Torch script copied to VM merco
+2025-02-21 16:07:33,809 - INFO - Running: Push NFS setup script
+2025-02-21 16:07:33,809 - INFO - Command: lxc file push /home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/user-scripts/nfs_setup.sh merco/root/
+2025-02-21 16:07:33,880 - INFO - 
+2025-02-21 16:07:33,888 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/user-scripts/nfs_setup.sh to /root/nfs_setup.sh: 100% (16.72GB/s)
+2025-02-21 16:07:33,889 - INFO - 
+2025-02-21 16:07:33,889 - INFO - Command executed successfully
+2025-02-21 16:07:33,889 - INFO - Running: Push Jetson setup script
+2025-02-21 16:07:33,889 - INFO - Command: lxc file push /home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/user-scripts/lib_setup.sh merco/root/
+2025-02-21 16:07:33,954 - INFO - 
+2025-02-21 16:07:33,961 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/user-scripts/lib_setup.sh to /root/lib_setup.sh: 100% (2.42GB/s)
+2025-02-21 16:07:33,962 - INFO - 
+2025-02-21 16:07:33,962 - INFO - Command executed successfully
+2025-02-21 16:07:33,962 - INFO - Running: Push Dockerfile to user home
+2025-02-21 16:07:33,963 - INFO - Command: lxc file push /home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/user-scripts/Dockerfile merco/root/nfsroot/rootfs/home/mmtc/
+2025-02-21 16:07:34,028 - INFO - 
+2025-02-21 16:07:34,037 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/user-scripts/Dockerfile to /root/nfsroot/rootfs/home/mmtc/Dockerfile: 100% (15.73GB/s)
+2025-02-21 16:07:34,038 - INFO - 
+2025-02-21 16:07:34,038 - INFO - Command executed successfully
+2025-02-21 16:07:34,038 - INFO - Running: Push Jetson setup script to user home
+2025-02-21 16:07:34,038 - INFO - Command: lxc file push /home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/user-scripts/lib_setup.sh merco/root/nfsroot/rootfs/home/mmtc/
+2025-02-21 16:07:34,105 - INFO - 
+2025-02-21 16:07:34,113 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/user-scripts/lib_setup.sh to /root/nfsroot/rootfs/home/mmtc/lib_setup.sh: 100% (1.63GB/s)
+2025-02-21 16:07:34,114 - INFO - 
+2025-02-21 16:07:34,114 - INFO - Command executed successfully
+2025-02-21 16:07:34,114 - INFO - Running: Push jetson setup script
+2025-02-21 16:07:34,114 - INFO - Command: lxc file push /home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/user-scripts/jetson_setup.sh merco/root/nfsroot/rootfs/home/mmtc/
+2025-02-21 16:07:34,183 - INFO - 
+2025-02-21 16:07:34,191 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/user-scripts/jetson_setup.sh to /root/nfsroot/rootfs/home/mmtc/jetson_setup.sh: 100% (16.71GB/s)
+2025-02-21 16:07:34,192 - INFO - 
+2025-02-21 16:07:34,192 - INFO - Command executed successfully
+2025-02-21 16:07:34,301 - INFO - Created README.md in VM merco
+2025-02-21 16:07:34,410 - INFO - Populated README.md in VM merco
+2025-02-21 16:07:34,410 - INFO - Running: Push Docker images
+2025-02-21 16:07:34,410 - INFO - Command: lxc file push mmtc-docker.tar merco/root/nfsroot/rootfs/home/mmtc/
+2025-02-21 16:07:35,183 - INFO - 
+2025-02-21 16:07:36,071 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 1% (140.73MB/s)
+2025-02-21 16:07:36,071 - INFO - 
+2025-02-21 16:07:36,846 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 2% (123.78MB/s)
+2025-02-21 16:07:36,846 - INFO - 
+2025-02-21 16:07:37,731 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 3% (124.69MB/s)
+2025-02-21 16:07:37,731 - INFO - 
+2025-02-21 16:07:39,092 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 4% (120.88MB/s)
+2025-02-21 16:07:39,093 - INFO - 
+2025-02-21 16:07:39,759 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 5% (106.43MB/s)
+2025-02-21 16:07:39,759 - INFO - 
+2025-02-21 16:07:40,426 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 6% (111.57MB/s)
+2025-02-21 16:07:40,426 - INFO - 
+2025-02-21 16:07:41,112 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 7% (115.56MB/s)
+2025-02-21 16:07:41,112 - INFO - 
+2025-02-21 16:07:42,012 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 8% (118.38MB/s)
+2025-02-21 16:07:42,012 - INFO - 
+2025-02-21 16:07:42,946 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 9% (117.26MB/s)
+2025-02-21 16:07:44,250 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 10% (115.89MB/s)
+2025-02-21 16:07:44,250 - INFO - 
+2025-02-21 16:07:44,905 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 10% (110.47MB/s)
+2025-02-21 16:07:44,905 - INFO - 
+2025-02-21 16:07:45,576 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 11% (112.93MB/s)
+2025-02-21 16:07:45,576 - INFO - 
+2025-02-21 16:07:46,311 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 12% (114.94MB/s)
+2025-02-21 16:07:46,311 - INFO - 
+2025-02-21 16:07:47,169 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 13% (116.08MB/s)
+2025-02-21 16:07:47,170 - INFO - 
+2025-02-21 16:07:48,436 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 14% (115.96MB/s)
+2025-02-21 16:07:48,436 - INFO - 
+2025-02-21 16:07:49,424 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 15% (112.46MB/s)
+2025-02-21 16:07:49,424 - INFO - 
+2025-02-21 16:07:50,073 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 16% (111.58MB/s)
+2025-02-21 16:07:50,073 - INFO - 
+2025-02-21 16:07:50,731 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 17% (113.23MB/s)
+2025-02-21 16:07:50,731 - INFO - 
+2025-02-21 16:07:51,497 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 18% (114.68MB/s)
+2025-02-21 16:07:51,498 - INFO - 
+2025-02-21 16:07:52,642 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 19% (115.27MB/s)
+2025-02-21 16:07:52,643 - INFO - 
+2025-02-21 16:07:53,979 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 19% (113.40MB/s)
+2025-02-21 16:07:53,979 - INFO - 
+2025-02-21 16:07:54,637 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 20% (110.66MB/s)
+2025-02-21 16:07:54,638 - INFO - 
+2025-02-21 16:07:55,287 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 21% (111.91MB/s)
+2025-02-21 16:07:55,288 - INFO - 
+2025-02-21 16:07:55,978 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 22% (113.12MB/s)
+2025-02-21 16:07:55,978 - INFO - 
+2025-02-21 16:07:56,896 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 23% (114.05MB/s)
+2025-02-21 16:07:56,896 - INFO - 
+2025-02-21 16:07:57,781 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 24% (113.75MB/s)
+2025-02-21 16:07:57,781 - INFO - 
+2025-02-21 16:07:59,067 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 25% (113.64MB/s)
+2025-02-21 16:07:59,067 - INFO - 
+2025-02-21 16:07:59,715 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 26% (111.68MB/s)
+2025-02-21 16:07:59,715 - INFO - 
+2025-02-21 16:08:00,384 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 27% (112.70MB/s)
+2025-02-21 16:08:00,384 - INFO - 
+2025-02-21 16:08:01,070 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 28% (113.58MB/s)
+2025-02-21 16:08:01,070 - INFO - 
+2025-02-21 16:08:01,872 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 28% (114.33MB/s)
+2025-02-21 16:08:01,872 - INFO - 
+2025-02-21 16:08:03,094 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 29% (114.56MB/s)
+2025-02-21 16:08:03,094 - INFO - 
+2025-02-21 16:08:04,588 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 30% (113.10MB/s)
+2025-02-21 16:08:04,588 - INFO - 
+2025-02-21 16:08:05,260 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 31% (110.74MB/s)
+2025-02-21 16:08:05,260 - INFO - 
+2025-02-21 16:08:05,943 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 32% (111.51MB/s)
+2025-02-21 16:08:05,943 - INFO - 
+2025-02-21 16:08:06,601 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 33% (112.20MB/s)
+2025-02-21 16:08:06,602 - INFO - 
+2025-02-21 16:08:07,401 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 34% (112.96MB/s)
+2025-02-21 16:08:07,401 - INFO - 
+2025-02-21 16:08:08,393 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 35% (113.19MB/s)
+2025-02-21 16:08:08,393 - INFO - 
+2025-02-21 16:08:09,552 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 36% (112.77MB/s)
+2025-02-21 16:08:09,552 - INFO - 
+2025-02-21 16:08:10,982 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 37% (111.84MB/s)
+2025-02-21 16:08:10,983 - INFO - 
+2025-02-21 16:08:11,665 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 37% (110.14MB/s)
+2025-02-21 16:08:11,665 - INFO - 
+2025-02-21 16:08:12,326 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 38% (110.76MB/s)
+2025-02-21 16:08:12,326 - INFO - 
+2025-02-21 16:08:13,164 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 39% (111.41MB/s)
+2025-02-21 16:08:13,165 - INFO - 
+2025-02-21 16:08:14,240 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 40% (111.53MB/s)
+2025-02-21 16:08:14,240 - INFO - 
+2025-02-21 16:08:15,545 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 41% (110.98MB/s)
+2025-02-21 16:08:15,545 - INFO - 
+2025-02-21 16:08:16,192 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 42% (109.84MB/s)
+2025-02-21 16:08:16,192 - INFO - 
+2025-02-21 16:08:16,844 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 43% (110.49MB/s)
+2025-02-21 16:08:16,844 - INFO - 
+2025-02-21 16:08:17,495 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 44% (111.10MB/s)
+2025-02-21 16:08:17,495 - INFO - 
+2025-02-21 16:08:18,214 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 45% (111.70MB/s)
+2025-02-21 16:08:18,214 - INFO - 
+2025-02-21 16:08:18,884 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 46% (112.11MB/s)
+2025-02-21 16:08:18,884 - INFO - 
+2025-02-21 16:08:19,561 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 46% (112.62MB/s)
+2025-02-21 16:08:19,561 - INFO - 
+2025-02-21 16:08:20,223 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 47% (113.11MB/s)
+2025-02-21 16:08:20,223 - INFO - 
+2025-02-21 16:08:20,921 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 48% (113.61MB/s)
+2025-02-21 16:08:20,921 - INFO - 
+2025-02-21 16:08:21,606 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 49% (114.02MB/s)
+2025-02-21 16:08:21,606 - INFO - 
+2025-02-21 16:08:22,250 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 50% (114.44MB/s)
+2025-02-21 16:08:22,250 - INFO - 
+2025-02-21 16:08:22,898 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 51% (114.95MB/s)
+2025-02-21 16:08:22,898 - INFO - 
+2025-02-21 16:08:23,545 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 52% (115.44MB/s)
+2025-02-21 16:08:23,545 - INFO - 
+2025-02-21 16:08:24,183 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 53% (115.91MB/s)
+2025-02-21 16:08:24,183 - INFO - 
+2025-02-21 16:08:24,843 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 54% (116.40MB/s)
+2025-02-21 16:08:24,843 - INFO - 
+2025-02-21 16:08:25,502 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 55% (116.82MB/s)
+2025-02-21 16:08:25,502 - INFO - 
+2025-02-21 16:08:26,184 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 55% (117.23MB/s)
+2025-02-21 16:08:26,184 - INFO - 
+2025-02-21 16:08:26,846 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 56% (117.58MB/s)
+2025-02-21 16:08:26,846 - INFO - 
+2025-02-21 16:08:27,486 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 57% (117.97MB/s)
+2025-02-21 16:08:27,486 - INFO - 
+2025-02-21 16:08:28,127 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 58% (118.39MB/s)
+2025-02-21 16:08:28,128 - INFO - 
+2025-02-21 16:08:28,782 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 59% (118.80MB/s)
+2025-02-21 16:08:28,782 - INFO - 
+2025-02-21 16:08:29,434 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 60% (119.18MB/s)
+2025-02-21 16:08:29,434 - INFO - 
+2025-02-21 16:08:30,090 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 61% (119.55MB/s)
+2025-02-21 16:08:30,090 - INFO - 
+2025-02-21 16:08:30,746 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 62% (119.90MB/s)
+2025-02-21 16:08:30,746 - INFO - 
+2025-02-21 16:08:31,421 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 63% (120.24MB/s)
+2025-02-21 16:08:31,421 - INFO - 
+2025-02-21 16:08:32,108 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 64% (120.54MB/s)
+2025-02-21 16:08:32,108 - INFO - 
+2025-02-21 16:08:32,747 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 64% (120.81MB/s)
+2025-02-21 16:08:32,747 - INFO - 
+2025-02-21 16:08:33,394 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 65% (121.16MB/s)
+2025-02-21 16:08:33,394 - INFO - 
+2025-02-21 16:08:34,034 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 66% (121.50MB/s)
+2025-02-21 16:08:34,035 - INFO - 
+2025-02-21 16:08:34,693 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 67% (121.84MB/s)
+2025-02-21 16:08:34,693 - INFO - 
+2025-02-21 16:08:35,367 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 68% (122.13MB/s)
+2025-02-21 16:08:35,367 - INFO - 
+2025-02-21 16:08:36,022 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 69% (122.39MB/s)
+2025-02-21 16:08:36,022 - INFO - 
+2025-02-21 16:08:36,661 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 70% (122.68MB/s)
+2025-02-21 16:08:36,661 - INFO - 
+2025-02-21 16:08:37,327 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 71% (123.00MB/s)
+2025-02-21 16:08:37,413 - INFO - 
+2025-02-21 16:08:37,992 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 72% (123.25MB/s)
+2025-02-21 16:08:37,992 - INFO - 
+2025-02-21 16:08:38,651 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 73% (123.51MB/s)
+2025-02-21 16:08:38,651 - INFO - 
+2025-02-21 16:08:39,310 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 73% (123.77MB/s)
+2025-02-21 16:08:39,310 - INFO - 
+2025-02-21 16:08:39,990 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 74% (124.02MB/s)
+2025-02-21 16:08:39,990 - INFO - 
+2025-02-21 16:08:40,657 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 75% (124.23MB/s)
+2025-02-21 16:08:40,658 - INFO - 
+2025-02-21 16:08:41,304 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 76% (124.46MB/s)
+2025-02-21 16:08:41,305 - INFO - 
+2025-02-21 16:08:41,962 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 77% (124.72MB/s)
+2025-02-21 16:08:41,962 - INFO - 
+2025-02-21 16:08:42,637 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 78% (124.96MB/s)
+2025-02-21 16:08:42,638 - INFO - 
+2025-02-21 16:08:43,286 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 79% (125.16MB/s)
+2025-02-21 16:08:43,286 - INFO - 
+2025-02-21 16:08:43,924 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 80% (125.40MB/s)
+2025-02-21 16:08:43,924 - INFO - 
+2025-02-21 16:08:44,561 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 81% (125.66MB/s)
+2025-02-21 16:08:44,562 - INFO - 
+2025-02-21 16:08:45,232 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 82% (125.92MB/s)
+2025-02-21 16:08:45,239 - INFO - 
+2025-02-21 16:08:45,882 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 82% (126.11MB/s)
+2025-02-21 16:08:45,883 - INFO - 
+2025-02-21 16:08:46,530 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 83% (126.34MB/s)
+2025-02-21 16:08:46,530 - INFO - 
+2025-02-21 16:08:47,198 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 84% (126.56MB/s)
+2025-02-21 16:08:47,198 - INFO - 
+2025-02-21 16:08:47,881 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 85% (126.75MB/s)
+2025-02-21 16:08:47,881 - INFO - 
+2025-02-21 16:08:48,542 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 86% (126.90MB/s)
+2025-02-21 16:08:48,542 - INFO - 
+2025-02-21 16:08:49,182 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 87% (127.09MB/s)
+2025-02-21 16:08:49,182 - INFO - 
+2025-02-21 16:08:49,821 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 88% (127.32MB/s)
+2025-02-21 16:08:49,821 - INFO - 
+2025-02-21 16:08:50,496 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 89% (127.54MB/s)
+2025-02-21 16:08:50,496 - INFO - 
+2025-02-21 16:08:51,153 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 90% (127.70MB/s)
+2025-02-21 16:08:51,153 - INFO - 
+2025-02-21 16:08:51,813 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 91% (127.88MB/s)
+2025-02-21 16:08:51,813 - INFO - 
+2025-02-21 16:08:52,455 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 91% (128.06MB/s)
+2025-02-21 16:08:52,604 - INFO - 
+2025-02-21 16:08:53,124 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 92% (128.26MB/s)
+2025-02-21 16:08:53,124 - INFO - 
+2025-02-21 16:08:53,765 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 93% (128.42MB/s)
+2025-02-21 16:08:53,765 - INFO - 
+2025-02-21 16:08:54,407 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 94% (128.61MB/s)
+2025-02-21 16:08:54,408 - INFO - 
+2025-02-21 16:08:55,064 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 95% (128.81MB/s)
+2025-02-21 16:08:55,064 - INFO - 
+2025-02-21 16:08:55,730 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 96% (128.97MB/s)
+2025-02-21 16:08:55,730 - INFO - 
+2025-02-21 16:08:56,389 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 97% (129.12MB/s)
+2025-02-21 16:08:56,389 - INFO - 
+2025-02-21 16:08:57,030 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 98% (129.28MB/s)
+2025-02-21 16:08:57,030 - INFO - 
+2025-02-21 16:08:57,683 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 99% (129.47MB/s)
+2025-02-21 16:08:58,327 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 100% (129.63MB/s)
+2025-02-21 16:08:58,327 - INFO - 
+2025-02-21 16:08:58,381 - INFO - Pushing /var/lib/snapd/hostfs/home/fs-5gmmtclab/test-deployment/5gmmtclab-dev/repo/system-manager/api/mmtc-docker.tar to /root/nfsroot/rootfs/home/mmtc/mmtc-docker.tar: 100% (129.80MB/s)
+2025-02-21 16:08:58,382 - INFO - 
+2025-02-21 16:08:58,382 - INFO - Command executed successfully
+2025-02-21 16:09:10,941 - INFO - Added new SSH keys to /root/.ssh/authorized_keys in VM merco
+2025-02-21 16:09:11,456 - INFO - SSH key verification and update complete for VM merco
+2025-02-21 16:09:11,611 - INFO - Executing NFS setup script in VM merco
+2025-02-21 16:09:13,412 - INFO - NFS setup script executed successfully in VM merco
+2025-02-21 16:09:13,412 - INFO - Setting up NBD inside VM merco
+2025-02-21 16:09:15,592 - INFO - Command succeeded: apt update
+2025-02-21 16:09:20,556 - INFO - Command succeeded: apt install -y nbd-server
+2025-02-21 16:09:20,670 - INFO - Command succeeded: modprobe nbd
+2025-02-21 16:09:20,806 - INFO - Command succeeded: sh -c echo 'nbd' >> /etc/modules
+2025-02-21 16:09:20,907 - INFO - Command succeeded: mkdir -p /root/nbd_jetson
+2025-02-21 16:09:21,008 - INFO - Command succeeded: chmod 755 /root/nbd_jetson
+2025-02-21 16:09:21,104 - INFO - Command succeeded: sh -c echo '[generic]
+allowlist = true
+
+[nbd_jetson]
+exportname = /root/nbd_jetson/nbd_jetson.img
+readonly = false
+listenaddr = 10.111.50.4
+' > /etc/nbd-server/config
+2025-02-21 16:16:10,000 - INFO - Command succeeded: dd if=/dev/zero of=/root/nbd_jetson/nbd_jetson.img bs=1M count=30384
+2025-02-21 16:16:22,759 - INFO - Command succeeded: mkfs.ext4 /root/nbd_jetson/nbd_jetson.img
+2025-02-21 16:16:22,942 - INFO - Command succeeded: systemctl restart nbd-server
+2025-02-21 16:16:22,942 - INFO - NBD setup completed in VM merco
+2025-02-21 16:16:24,945 - INFO - Get user info request: user_name='mehdi' user_network_id=67
+2025-02-21 16:16:24,956 - INFO - Flash jetson request: nfs_ip_addr='10.111.67.4/24' nfs_path='/root/nfsroot/j20-tribe2/rootfs' usb_instance='1-4.2.2' switch_interface='GigabitEthernet1/0/20'
+2025-02-21 16:16:24,956 - INFO - Add VLAN request: node_name='j20-tribe4' vlan_id=50
+2025-02-21 16:16:34,399 - INFO - Interface 'GigabitEthernet1/0/20' is down
+2025-02-21 16:16:37,511 - INFO - Interface 'GigabitEthernet1/0/22' set to VLAN 50
+2025-02-21 16:16:43,823 - INFO - Interface 'GigabitEthernet1/0/20' is up
+2025-02-21 16:16:43,824 - INFO - Flashing Jetson with NFS IP: 10.111.67.4/24, NFS Path: /root/nfsroot/j20-tribe2/rootfs, USB Instance: 1-4.2.2
+2025-02-21 16:17:24,585 - INFO - Turn on node request: node_name='j20-tribe4'
+2025-02-21 16:17:34,035 - INFO - Interface 'GigabitEthernet1/0/22' is up
+2025-02-21 16:20:57,457 - INFO - Get user info request: user_name='merco' user_network_id=50
+2025-02-21 16:20:57,466 - INFO - Flash jetson request: nfs_ip_addr='10.111.50.4/24' nfs_path='/root/nfsroot/j20-tribe4/rootfs' usb_instance='1-4.2.3' switch_interface='GigabitEthernet1/0/22'

@@ -15,8 +15,15 @@ from models import (
 )
 
 # Configure logging
-logging.basicConfig(filename="system_manager.log",level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(filename='../logs/system_manager.log', force=True,level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.info("Logging is configured and file is in the logs folder.")
 
+# Add a stream handler to also display logs in the console
+console_handler = logging.StreamHandler()
+console_handler.setLevel(logging.INFO)
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+console_handler.setFormatter(formatter)
+logging.getLogger().addHandler(console_handler)
 # Initialize FastAPI app
 app = FastAPI(title="System Manager API", description="REST API for managing testbed environments", version="1.0")
 
@@ -63,7 +70,6 @@ async def call_create_user_env_vm(request: CreateUserEnvVMRequest):
             request.user_info.dict(),  # Convert Pydantic model to dict
             request.nodes
         )
-        # A short delay to ensure all processes settle (adjust or remove if needed)
         time.sleep(2)
         return response
     except Exception as e:
