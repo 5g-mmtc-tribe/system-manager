@@ -55,25 +55,26 @@ create_dir_if_not_exists "$workspace_dir"
 echo "Setting ownership for Workspace at $workspace_dir..."
 sudo chown -R "$(whoami)":"$(whoami)" "$workspace_dir"
 
-sudo systemctl daemon-reload
-sleep 2
 echo "=== Installing and Configuring NBD-Client ==="
 sudo apt update -qq
 sudo apt install -y nbd-client
 
 # Remove and reinstall to ensure a proper service file is in place
 sudo rm -f /lib/systemd/system/nbd-client.service
-sleep 2
+
 #sudo apt-get install --reinstall -y nbd-client
+sudo systemctl daemon-reload
+sleep 2
 sudo systemctl restart nbd-client
 sudo systemctl enable nbd-client
 # Connect to NBD server using the command-line supplied IP
 echo "Connecting to NBD server at ${nbd_server_ip}..."
+sudo nbd-client -d /dev/nbd0
 sudo nbd-client "${nbd_server_ip}" 10809 /dev/nbd0 -name nbd_jetson
 
 # Format and mount the NBD device to the workspace
 echo "Formatting /dev/nbd0 with ext4..."
-sudo mkfs.ext4 /dev/nbd0
+sudo mkfs.ext4  -F /dev/nbd0
 echo "Mounting /dev/nbd0 to ${workspace_dir}..."
 sudo mount /dev/nbd0 "$workspace_dir"
 
@@ -100,16 +101,22 @@ sudo systemctl restart docker
 sudo systemctl enable docker
 
 
-echo "=== Building and Running Docker Container (Optional) ==="
-# If a Dockerfile exists in the current directory, build and run the container.
-if [ -f Dockerfile ]; then
-  echo "Dockerfile found. Building Docker image 'mmtc-docker'..."
+echo "=== Handling Docker Image ==="
+
+if [ -f mmtc-docker.tar ]; then
+  # Load image from tar file if it exists.
+  echo "Docker tar file found. Loading Docker image..."
+  sudo docker load -i mmtc-docker.tar
+elif [ -f Dockerfile ]; then
+  # Build image from Dockerfile if tar file is missing.
+  echo "No Docker tar file found. Dockerfile detected. Building Docker image 'mmtc-docker'..."
   sudo docker build -t mmtc-docker .
-  echo "Running Docker container 'mmtc-docker'..."
-  sudo docker run -it --rm --privileged -v "$(pwd)":" --net host mmtc-docker
 else
-  echo "No Dockerfile found. Skipping Docker image build and run."
+  echo "No Docker image tar file or Dockerfile found. Skipping Docker container run."
+  exit 1
 fi
 
-echo "Jetson setup completed successfully!"
+echo "Running Docker container..."
+sudo docker run -it --rm --privileged -v "$(pwd):/workspace" --net host mmtc-docker
 
+echo "Jetson setup completed successfully!"

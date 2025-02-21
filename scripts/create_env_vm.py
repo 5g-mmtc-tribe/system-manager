@@ -22,6 +22,7 @@ class VmManager():
     jetson_path =  os.path.join(data_dir, 'jetson')
     bsp_path = os.path.join(data_dir, 'jetson_linux_r35.4.1_aarch64.tbz2')
     rootfs_path = os.path.join(data_dir, 'tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2')
+    nbd_size= 30384
     ###  helper #####
     def run_lxc_command(vm_name, command):
         """Runs a command inside an LXC VM."""
@@ -523,7 +524,7 @@ class VmManager():
             VmManager.run_lxc_command(vm_name, ["sh", "-c", f"echo '{config_content}' > /etc/nbd-server/config"])
 
             # Create the NBD image and format it
-            VmManager.run_lxc_command(vm_name, ["dd", "if=/dev/zero", "of=/root/nbd_jetson/nbd_jetson.img", "bs=1M", "count=25384"])
+            VmManager.run_lxc_command(vm_name, ["dd", "if=/dev/zero", "of=/root/nbd_jetson/nbd_jetson.img", "bs=1M", "count="f"{VmManager().nbd_size}"])
             VmManager.run_lxc_command(vm_name, ["mkfs.ext4", "/root/nbd_jetson/nbd_jetson.img"])
 
             # Restart NBD service
@@ -576,12 +577,16 @@ class VmManager():
         # Define the README content
         content = f"""# Setup Instructions
 
-        - Run  lib_setup.sh
-        - This script installs all necessary libraries.
+        Follow these steps to prepare your project:
 
-        - Run jetson_setup.sh  with NFS IP {nfs_ip_addr}
-        - ./jetson_setup.sh  {nfs_ip_addr}
+        - Step 1: Run lib_setup.sh
+        - This script installs all the necessary libraries.
 
+        - Step 2: Run jetson_setup.sh with your NFS IP address
+        - Command:
+            ./jetson_setup.sh {nfs_ip_addr}
+            
+        - Replace {nfs_ip_addr} with your actual NFS IP address.
         """
          # Step 1: Create an empty README.md file in the VM.
         touch_command = f'''lxc exec {vm_name} -- bash -c "touch /root/nfsroot/rootfs/home/mmtc/README.md"'''
@@ -637,6 +642,9 @@ EOF"'''
             VmManager.run_command(command_librray_install, "copy jetson setup")
             ## create a reade me for jetson
             VmManager.create_readme_in_vm(vm_name, nfs_ip_addr)
+            # docker images 
+            command = [  'lxc'  ,"file" ,"push","mmtc-docker.tar",vm_name+"/root/nfsroot/rootfs/home/mmtc/"]
+            VmManager.run_command(command,"get docker images ")
             time.sleep(10)
 
     def add_ssh_key_to_lxd(self, username, lxd_vm_name):
@@ -838,7 +846,7 @@ macvlan_manager = MacVlan(interface_name)
 vm_manager = VmManager()
 vm_name="mehdivm"
 ip_addr = IpAddr()
-
+#VmManager.create_readme_in_vm("mehdi","10.111.67.4")
 #vm_manager.configure_nbd_on_lxc_vm("mehdi","10.111.67.4")
 #vm_manager.setup_nfs_jetson("mehdi",["j20-tribe4"])
 #setup_jetson('data', 'iotuser', 'iotuser', 'iotuser')
