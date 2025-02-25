@@ -3,6 +3,7 @@ import system_manager_api
 import logging
 import uvicorn
 import time
+import os
 from pydantic import BaseModel
 from models import (
     DestroyEnvVMRequest,
@@ -13,7 +14,7 @@ from models import (
     jetsonInfo,
     sshInfo
 )
-
+os.makedirs('../logs', exist_ok=True)
 # Configure logging
 logging.basicConfig(filename='../logs/system_manager.log', force=True,level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logging.info("Logging is configured and file is in the logs folder.")
@@ -147,7 +148,7 @@ def call_turn_on_node(request: TurnNode):
         logging.info("Turn on node request: %s", request)
         interface = system_manager_api.get_switch_interface(request.node_name)
         system_manager_api.turn_on_node(interface)
-        return {"status": f"Node '{request.node_name}' turned on"}
+        return {"success": True}
     except Exception as e:
         logging.error("Error turning on node: %s", e)
         raise HTTPException(status_code=500, detail="Failed to turn on node")
@@ -161,7 +162,7 @@ def call_turn_off_node(request: TurnNode):
         logging.info("Turn off node request: %s", request)
         interface = system_manager_api.get_switch_interface(request.node_name)
         system_manager_api.turn_off_node(interface)
-        return {"status": f"Node '{request.node_name}' turned off"}
+        return {"success": True}
     except Exception as e:
         logging.error("Error turning off node: %s", e)
         raise HTTPException(status_code=500, detail="Failed to turn off node")

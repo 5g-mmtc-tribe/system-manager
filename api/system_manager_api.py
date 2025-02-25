@@ -344,3 +344,4 @@ if __name__ == "__main__":
     }
     # Example call:
     # create_user_env_vm(ubuntu_version, vm_name, root_size, user_info, nodes=None)
+    #testbed_reset()
