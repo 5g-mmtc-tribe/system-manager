@@ -8,7 +8,11 @@ class Jetson:
         self.xavier_id = "ID 0955:7e19 NVIDIA Corp. APX"
         self.xavier_id_product = "7e19"
         self.number_xavier = 0
-
+        self.orin_id = "ID 0955-7323 NVIDIA Corp. APX"
+        self.xavier_kit ="jetson-xavier-nx-devkit-emmc"
+        self.orin_kit ="jetson-orin-nano-devkit-nvme"
+        self.nano_kit ="jetson-nano-devkit-emmc"
+         
 
     def get_xavier_instances(self):
         # List to store detected Xavier USB instances
@@ -126,20 +130,7 @@ class Jetson:
 
             return number_devices
 
-    def flash_jetson_v1 (self, vm_name , nfs_ip_addres ):
-         # Flash the Jetson
-        nfs_ip_addres= nfs_ip_addres.split('/')[0]
-        print(nfs_ip_addres)        
-        command_librray_install=   ["lxc", "exec", vm_name, "--", "/root/Linux_for_Tegra/flash.sh" ,"-N",F"{nfs_ip_addres }:/root/nfsroot","--rcm-boot","jetson-xavier-nx-devkit-emmc" ,"eth0"]
-        print("command",command_librray_install)
-        try:
-            result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-            print("STDOUT:", result.stdout)
-        except subprocess.CalledProcessError as e:
-            print("Failed to execute command:", e)
-            print("STDOUT:\n", e.stdout)
-            print("STDERR:\n", e.stderr)
-            return
+
         
     def flash_jetson_v1 (self, nfs_ip_addres ,nfspath,parentpath):
             # Flash the Jetson
@@ -155,90 +146,92 @@ class Jetson:
             print("STDOUT:\n", e.stdout)
             print("STDERR:\n", e.stderr)
             return
-    def flash_jetson(self,nfs_ip_address, nfspath, usb_instance ):
-            # Get the directory of the current script
-            script_dir = os.path.dirname(os.path.abspath(__file__))
+    def flash_jetson(self, nfs_ip_address, nfspath, usb_instance, model, nvidia_id):
+        # Get the directory of the current script
+        script_dir = os.path.dirname(os.path.abspath(__file__))
 
-            # Define the parent directory
-            parentpath = os.path.join(script_dir, '../api', 'jetson')
+        # Define the parent directory
+        parentpath = os.path.join(script_dir, '../api', 'jetson')
+        
+        # Define the working directory based on the parentpath
+        working_directory = os.path.join(parentpath, 'Linux_for_Tegra')
+
+        # Extract the NFS IP address
+        net = nfs_ip_address.split('/')[0]
+        
+        # Construct the NFS target
+        nfs_target = f"{net}:/{nfspath}"
+        
+        # Select the correct kit based on the model
+        if model == "Jetson-Xavier-NX":
+            kit = self.xavier_kit
+        elif model == "Jetson-Orin-NX":
+            kit = self.orin_kit
+        elif model == "Jetson-Nano":
+            kit = self.nano_kit
+        else:
+            print("Unknown model provided")
+            return {
+                "flashSucess": False,
+                "ip_address": None,
+                "wait_status": "Error: Unknown model"
+            }
+
+        # Define the command using the selected kit
+        command = [
+            'sudo', './flash.sh', '--usb-instance', usb_instance, '-N', nfs_target,
+            '--rcm-boot', kit, 'eth0'
+        ]
+
+        try:
+            # Run the flash command
+            process = subprocess.Popen(command, cwd=working_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
+
+            # Print the stdout in real-time
+            stdout_lines = []
+            stderr_lines = []
             
-            # Define the working directory based on the parentpath
-            working_directory = os.path.join(parentpath, 'Linux_for_Tegra')
-
-            # Extract the NFS IP address
-            net = nfs_ip_address.split('/')[0]
-            ips = net.split(".")
-            base_ip = '.'.join(ips[:3])
-            subnet_low = str(int(ips[3]) + 2)
-            subnet_up = str(int(ips[3]) + 5)
-
-            # Construct the NFS target
-            nfs_target = f"{net}:/{nfspath}"
+            while True:
+                output = process.stdout.readline()
+                if output == '' and process.poll() is not None:
+                    break
+                if output:
+                    stdout_lines.append(output.strip())
+                    print(output.strip())
             
-            # Define the command
-            command = [
-                'sudo', './flash.sh', '--usb-instance', usb_instance, '-N', nfs_target, '--rcm-boot', 'jetson-xavier-nx-devkit-emmc', 'eth0'
-            ]
-
-            try:
-                # Run the flash command
-                process = subprocess.Popen(command, cwd=working_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
-
-                # Print the stdout and stderr in real-time
-                stdout_lines = []
-                stderr_lines = []
-                
-                while True:
-                    output = process.stdout.readline()
-                    if output == '' and process.poll() is not None:
-                        break
-                    if output:
-                        stdout_lines.append(output.strip())
-                        print(output.strip())
-                
-                # Capture any remaining output
-                stdout, stderr = process.communicate()
-                stdout_lines.extend(stdout.splitlines())
-                stderr_lines.extend(stderr.splitlines())
-                
-                # Check if the command was successful
-                if process.returncode == 0:
-                    print("Command executed successfully")
-                    flash_success = True
-                    # Wait for a specific period after a successful flash
-                    time.sleep(2)  # Sleep for 2 seconds (adjust as needed)
-                else:
-                    print(f"Command execution failed with return code {process.returncode}")
-                    flash_success = False
-                    return {
-                        "flashSucess": False,
-                        "ip_address": None,
-                        "wait_status": "Failed"
-                    }
-                
-                # Generate IP addresses to test based on the provided range
-                """tested_ips = [f"{base_ip}.{i}" for i in range(int(subnet_low), int(subnet_up) + 1)]
-
-                # Test the IP addresses and return the first reachable one
-                ip_address = None
-                for ip in tested_ips:
-                    if Jetson.ping(ip):
-                        ip_address = ip
-                        break
-                """
-                return {
-                    "flashSucess": flash_success,
-                    "ip_address": "ip_address",
-                    "wait_status": "Completed"
-                }
+            # Capture any remaining output
+            stdout, stderr = process.communicate()
+            stdout_lines.extend(stdout.splitlines())
+            stderr_lines.extend(stderr.splitlines())
             
-            except Exception as e:
-                print(f"An error occurred: {e}")
+            # Check if the command was successful
+            if process.returncode == 0:
+                print("Command executed successfully")
+                flash_success = True
+                time.sleep(2)  # Sleep for 2 seconds (adjust as needed)
+            else:
+                print(f"Command execution failed with return code {process.returncode}")
+                flash_success = False
                 return {
                     "flashSucess": False,
                     "ip_address": None,
-                    "wait_status": "Error"
+                    "wait_status": "Failed"
                 }
+            
+            return {
+                "flashSucess": flash_success,
+                "ip_address": "ip_address",
+                "wait_status": "Completed"
+            }
+        
+        except Exception as e:
+            print(f"An error occurred: {e}")
+            return {
+                "flashSucess": False,
+                "ip_address": None,
+                "wait_status": "Error"
+            }
+
         
     
     def ping(ip):

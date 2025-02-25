@@ -217,7 +217,9 @@ async def call_flash_jetson(request: jetsonInfo):
             request.nfs_ip_addr,
             request.nfs_path,
             request.usb_instance,
-            request.switch_interface
+            request.switch_interface,
+            request.model ,
+            request.nvidia_id
         )
         return flash_info
     except Exception as e:

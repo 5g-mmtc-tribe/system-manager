@@ -308,7 +308,7 @@ def stop_user_vm(vm_name: str):
     vm_manager = VmManager()
     vm_manager.stop_vm(vm_name)
 
-def flash_jetson(nfs_ip_address: str, nfspath: str, usb_instance: str, switch_interface: str):
+def flash_jetson(nfs_ip_address: str, nfspath: str, usb_instance: str, switch_interface: str ,model:str ,nvidia_id:str):
     """
     Flash a Jetson device using the provided parameters.
     
@@ -318,9 +318,9 @@ def flash_jetson(nfs_ip_address: str, nfspath: str, usb_instance: str, switch_in
     try:
         turn_off_node(switch_interface)
         turn_on_node(switch_interface)
-        logging.info("Flashing Jetson with NFS IP: %s, NFS Path: %s, USB Instance: %s", nfs_ip_address, nfspath, usb_instance)
+        logging.info("Flashing Jetson with NFS IP: %s, NFS Path: %s, USB Instance: %s", nfs_ip_address, nfspath, usb_instance ,model ,nvidia_id)
         jetson = Jetson()
-        result = jetson.flash_jetson(nfs_ip_address, nfspath, usb_instance)
+        result = jetson.flash_jetson(nfs_ip_address, nfspath, usb_instance,model ,nvidia_id)
         return result
     except Exception as e:
         logging.error("Error flashing Jetson: %s", e)
