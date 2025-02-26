@@ -5,8 +5,8 @@
     "switch_interface": "GigabitEthernet1/0/19",
     "model":"Jetson-Xavier-NX",
     "nvidia_id": "0955-7e19",
-    "usb_instance": "1-4.2.1"
-
+    "usb_instance": "1-4.2.1",
+    "state":"Alive"
   },
   {
     "name": "j20-tribe2",
@@ -14,7 +14,8 @@
     "switch_interface": "GigabitEthernet1/0/20",
     "model":"Jetson-Xavier-NX",
     "nvidia_id": "0955-7e19",
-    "usb_instance": "1-4.2.2"
+    "usb_instance": "1-4.2.2",
+    "state":"Alive"
 
   },
 
@@ -24,7 +25,8 @@
     "switch_interface": "GigabitEthernet1/0/22",
     "model":"Jetson-Xavier-NX",
     "nvidia_id": "0955-7e19",
-    "usb_instance": "1-4.2.3"
+    "usb_instance": "1-4.2.3",
+    "state":"Alive"
 
   },
   {
@@ -33,7 +35,8 @@
     "switch_interface": "GigabitEthernet1/0/25",
     "model":"Jetson-Orin-NX",
     "nvidia_id": "0955-7323",
-    "usb_instance": "1-4.3"
+    "usb_instance": "1-4.3",
+    "state":"Alive"
 
   },
   {
@@ -42,7 +45,8 @@
     "switch_interface": "GigabitEthernet1/0/26",
     "model":"Jetson-Orin-NX",
     "nvidia_id": "0955-7323",
-    "usb_instance": "1-4.4"
+    "usb_instance": "1-4.4" ,
+    "state":"Offline"
 
   },
   {
@@ -51,7 +55,9 @@
     "switch_interface": "GigabitEthernet1/0/13",
     "model":"Jetson-Nano",
     "nvidia_id": "0955-7f21",
-    "usb_instance": "1-4.1.1"
+    "usb_instance": "1-4.1.1",
+    "state":"Dead"
+    
 
   },
   {
@@ -60,7 +66,8 @@
     "switch_interface": "GigabitEthernet1/0/14",
     "model":"Jetson-Nano",
     "nvidia_id": "0955-7f21",
-    "usb_instance": "1-4.1.3"
+    "usb_instance": "1-4.1.3",
+    "state":"Dead"
 
   },
   {
@@ -69,7 +76,8 @@
     "switch_interface": "GigabitEthernet1/0/15",
     "model":"Jetson-Nano",
     "nvidia_id": "0955-7f21",
-    "usb_instance": "1-4.1.2"
+    "usb_instance": "1-4.1.2",
+    "state":"Dead"
 
   },
   {
@@ -78,7 +86,8 @@
     "switch_interface": "GigabitEthernet1/0/16",
     "model":"Jetson-Nano",
     "nvidia_id": "0955-7f21",
-    "usb_instance": "1-4.1.4"
+    "usb_instance": "1-4.1.4",
+    "state":"Dead"
 
   }
     

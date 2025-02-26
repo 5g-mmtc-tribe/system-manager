@@ -2,6 +2,7 @@ import subprocess
 import os 
 import time 
 import json 
+import logging
 class Jetson:
 
     def __init__(self):
@@ -10,7 +11,8 @@ class Jetson:
         self.number_xavier = 0
         self.orin_id = "ID 0955-7323 NVIDIA Corp. APX"
         self.xavier_kit ="jetson-xavier-nx-devkit-emmc"
-        self.orin_kit ="jetson-orin-nano-devkit-nvme"
+        self.orin_kit ="jetson-orin-nano-devkit"
+        # self.orin_kit ="jetson-orin-nano-devkit-nvme"
         self.nano_kit ="jetson-nano-devkit-emmc"
          
 
@@ -182,7 +184,7 @@ class Jetson:
             'sudo', './flash.sh', '--usb-instance', usb_instance, '-N', nfs_target,
             '--rcm-boot', kit, 'eth0'
         ]
-
+        logging.info("Flash jetson command: %s", command)
         try:
             # Run the flash command
             process = subprocess.Popen(command, cwd=working_directory, stdout=subprocess.PIPE, stderr=subprocess.PIPE, text=True)
@@ -248,7 +250,7 @@ class Jetson:
             print(f"An error occurred during ping test: {e}")
             return False
 jetson = Jetson()
-#jetson.flash_jetson("10.111.138.4/24","/root/nfsroot/jetson1/rootfs",'1-2.3')
+#jetson.flash_jetson("10.111.67.4/24","/root/nfsroot/rootfs",'1-4.3',"Jetson-Orin-NX","")
 #number = jetson.number_of_jetsons_xavier_connected()
 
 #print(jetson.get_xavier_instances())
