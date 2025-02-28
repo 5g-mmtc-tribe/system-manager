@@ -36,7 +36,7 @@ class VmManager:
     jetson_path: str = os.path.join(data_dir, 'jetson')
     bsp_path: str = os.path.join(data_dir, 'jetson_linux_r35.4.1_aarch64.tbz2')
     rootfs_path: str = os.path.join(data_dir, 'tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2')
-    nbd_size: int = 20384
+    nbd_size: int = 22384
 
     # --------------------------------------------------------------------------
     # 1. Utility Functions
