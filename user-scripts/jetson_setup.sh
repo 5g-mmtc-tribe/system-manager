@@ -68,9 +68,9 @@ sleep 2
 sudo systemctl restart nbd-client
 sudo systemctl enable nbd-client
 # Connect to NBD server using the command-line supplied IP
-echo "Connecting to NBD server at ${nbd_server_ip}..."
+echo "Connecting to NBD server at ${nbd_server_ip}   nbd_jetson_"${HOSTNAME}"  ... "
 sudo nbd-client -d /dev/nbd0
-sudo nbd-client "${nbd_server_ip}" 10809 /dev/nbd0 -name nbd_jetson
+sudo nbd-client "${nbd_server_ip}" 10809 /dev/nbd0 -name nbd_jetson_"${HOSTNAME}"
 
 # Format and mount the NBD device to the workspace
 echo "Formatting /dev/nbd0 with ext4..."

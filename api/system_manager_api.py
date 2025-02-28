@@ -293,7 +293,7 @@ def create_user_env_vm(ubuntu_version: str, vm_name: str, root_size: str, user_i
         time.sleep(2)
         vm_manager.add_ssh_key_to_lxd(user_name, user_name)
         vm_manager.setup_nfs_jetson(user_name, nodes)
-        vm_manager.configure_nbd_on_lxc_vm(vm_name, nfs_ip_addr.split('/')[0])
+        vm_manager.configure_nbd_on_lxc_vm(vm_name, nfs_ip_addr.split('/')[0],nodes)
         return {"vm_ip_address": "10.0.0.0", "status": "User Env Created"}
     else:
         vm_manager.start_vm(vm_name)
@@ -346,3 +346,4 @@ if __name__ == "__main__":
     # create_user_env_vm(ubuntu_version, vm_name, root_size, user_info, nodes=None)
     #testbed_reset()
     #turn_off_node("GigabitEthernet1/0/25")
+    #turn_on_node("GigabitEthernet1/0/25")

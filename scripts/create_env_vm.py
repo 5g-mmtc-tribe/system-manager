@@ -36,7 +36,7 @@ class VmManager:
     jetson_path: str = os.path.join(data_dir, 'jetson')
     bsp_path: str = os.path.join(data_dir, 'jetson_linux_r35.4.1_aarch64.tbz2')
     rootfs_path: str = os.path.join(data_dir, 'tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2')
-    nbd_size: int = 30384
+    nbd_size: int = 20384
 
     # --------------------------------------------------------------------------
     # 1. Utility Functions
@@ -369,6 +369,8 @@ class VmManager:
         """
         Configures the NFS server inside the VM.
         """
+        driver = 'rootfs-basic-jp3541-noeula-user.tar.gz'
+        #driver = 'rootfs-basic-jp3541-with-docker-noeula-user.tar.gz'
         vmcmd = ["lxc", "exec", vm_name, "--", "sudo"]
         for folder in ["/root/nfsroot", "/root/nfsroot/rootfs"]:
             self.run_command(vmcmd + ["mkdir", folder], f"Create folder {folder} in VM {vm_name}")
@@ -377,9 +379,9 @@ class VmManager:
                          "Change ownership of NFS folder")
         self.run_command(vmcmd_no_sudo + ["sudo", "chmod", "755", "/root/nfsroot"],
                          "Set permissions for NFS folder")
-        tarball_cmd = ['lxc', 'file', 'push', 'rootfs-basic-jp3541-noeula-user.tar.gz', f'{vm_name}/root/']
+        tarball_cmd = ['lxc', 'file', 'push', driver, f'{vm_name}/root/']
         self.run_command(tarball_cmd, "Push rootfs tarball")
-        extract_cmd = ['lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/rootfs-basic-jp3541-noeula-user.tar.gz',
+        extract_cmd = ['lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
                        '-C', '/root/nfsroot/rootfs']
         self.run_command(extract_cmd, "Extract rootfs tarball")
         install_nfs = ["lxc", "exec", vm_name, "--", "sudo", "apt", "install", "-y", "nfs-kernel-server"]
@@ -400,7 +402,7 @@ class VmManager:
     # --------------------------------------------------------------------------
     # 7. Additional Configuration
     # --------------------------------------------------------------------------
-    def configure_nbd_on_lxc_vm(self, vm_name: str, nfs_server_ip: str) -> None:
+    def configure_nbd_on_lxc_vm_1(self, vm_name: str, nfs_server_ip: str) -> None:
         """
         Configures NBD inside the LXC VM.
         """
@@ -428,6 +430,8 @@ listenaddr = {nfs_server_ip}
         self.run_lxc_command(vm_name, ["mkfs.ext4", "/root/nbd_jetson/nbd_jetson.img"])
         self.run_lxc_command(vm_name, ["systemctl", "restart", "nbd-server"])
         logging.info("NBD setup completed in VM %s", vm_name)
+
+
 
     def add_torch_script(self, vm_name: str, src_script_path: str) -> None:
         """

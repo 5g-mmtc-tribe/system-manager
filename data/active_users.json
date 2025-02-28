@@ -12,5 +12,12 @@
         "user_subnet": "10.111.50.0/24",
         "nfs_ip_addr": "10.111.50.4/24",
         "macvlan_interface": "macvlan_merco"
+    },
+    {
+        "user_name": "fmolano",
+        "user_network_id": 212,
+        "user_subnet": "10.111.212.0/24",
+        "nfs_ip_addr": "10.111.212.4/24",
+        "macvlan_interface": "macvlan_fmolano"
     }
 ]
