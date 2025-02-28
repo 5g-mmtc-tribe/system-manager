@@ -430,7 +430,48 @@ listenaddr = {nfs_server_ip}
         self.run_lxc_command(vm_name, ["mkfs.ext4", "/root/nbd_jetson/nbd_jetson.img"])
         self.run_lxc_command(vm_name, ["systemctl", "restart", "nbd-server"])
         logging.info("NBD setup completed in VM %s", vm_name)
-
+    def configure_nbd_on_lxc_vm(self, vm_name: str,nfs_server_ip:str , nodes: list) -> None:
+        """
+        Configures nbprofile inside the LXC VM based on the provided nodes.
+        Each node gets its own configuration section and image file.
+        """
+        logging.info("Setting up nbprofile inside VM %s for nodes: %s", vm_name, nodes)
+        
+        # Install required packages and prepare the environment
+        for cmd in [
+            ["apt", "update"],
+            ["apt", "install", "-y", "nbd-server"],
+            ["modprobe", "nbd"],
+            ["sh", "-c", "echo 'nbd' >> /etc/modules"],
+            ["mkdir", "-p", "/root/nbd_jetson"],
+            ["chmod", "755", "/root/nbd_jetson"]
+        ]:
+            self.run_lxc_command(vm_name, cmd)
+        
+        # Build the configuration file content dynamically based on nodes
+        config_content = "[generic]\nallowlist = true\n\n"
+        for node in nodes:
+            config_content += f"[nbd_jetson_{node}]\n"
+            config_content += f"exportname = /root/nbd_jetson/nbd_jetson_{node}.img\n"
+            config_content += "readonly = false\n"
+            config_content += f"listenaddr = {nfs_server_ip}\n\n"
+        
+        # Write the configuration file
+        self.run_lxc_command(vm_name, ["sh", "-c", f"echo '{config_content}' > /etc/nbd-server/config"])
+        
+        # Create a disk image and format it for each node
+        for node in nodes:
+            dd_cmd = [
+                "dd", "if=/dev/zero",
+                f"of=/root/nbd_jetson/nbd_jetson_{node}.img",
+                "bs=1M", f"count={self.nbd_size}"
+            ]
+            self.run_lxc_command(vm_name, dd_cmd)
+            self.run_lxc_command(vm_name, ["mkfs.ext4", f"/root/nbd_jetson/nbd_jetson_{node}.img"])
+        
+        # Restart the nbd-server to apply the changes
+        self.run_lxc_command(vm_name, ["systemctl", "restart", "nbd-server"])
+        logging.info("nbprofile setup completed in VM %s", vm_name)
 
 
     def add_torch_script(self, vm_name: str, src_script_path: str) -> None:
