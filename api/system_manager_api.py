@@ -299,6 +299,7 @@ def create_user_env_vm(ubuntu_version: str, vm_name: str, root_size: str, user_i
         vm_manager.start_vm(vm_name)
         vm_manager.add_ssh_key_to_lxd(user_name, user_name)
         vm_manager.setup_nfs_jetson(user_name, nodes)
+        vm_manager.update_nbd_config(vm_name, nfs_ip_addr.split('/')[0],nodes)
         return {"vm_ip_address": "10.0.0.0", "status": "User Env Created"}
 
 def stop_user_vm(vm_name: str):

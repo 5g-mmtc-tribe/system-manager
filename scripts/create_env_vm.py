@@ -48,8 +48,9 @@ class VmManager:
         """
         full_command = ["lxc", "exec", vm_name, "--"] + command
         try:
-            subprocess.run(full_command, check=True, text=True)
+            result =subprocess.run(full_command, capture_output=True,check=True, text=True)
             logging.info("Command succeeded: %s", " ".join(command))
+            return result
         except subprocess.CalledProcessError as e:
             logging.error("Command failed: %s. Error: %s", " ".join(command), e)
             raise
@@ -402,35 +403,126 @@ class VmManager:
     # --------------------------------------------------------------------------
     # 7. Additional Configuration
     # --------------------------------------------------------------------------
-    def configure_nbd_on_lxc_vm_1(self, vm_name: str, nfs_server_ip: str) -> None:
+
+
+    def _install_nbd_packages(self, vm_name: str) -> None:
         """
-        Configures NBD inside the LXC VM.
+        Installs required packages and prepares the environment inside the VM.
         """
-        logging.info("Setting up NBD inside VM %s", vm_name)
-        for cmd in [
+        commands = [
             ["apt", "update"],
             ["apt", "install", "-y", "nbd-server"],
             ["modprobe", "nbd"],
-            ["sh", "-c", "echo 'nbd' >> /etc/modules"],
-            ["mkdir", "-p", "/root/nbd_jetson"],
-            ["chmod", "755", "/root/nbd_jetson"]
-        ]:
+            ["sh", "-c", "echo 'nbd' >> /etc/modules"]
+        ]
+        for cmd in commands:
             self.run_lxc_command(vm_name, cmd)
-        config_content = f"""[generic]
-allowlist = true
+        
+        self.run_lxc_command(vm_name, ["mkdir", "-p", "/root/nbd_jetson"])
+        logging.info("Created /root/nbd_jetson directory in VM %s", vm_name)
+        self.run_lxc_command(vm_name, ["chmod", "755", "/root/nbd_jetson"])
+ 
 
-[nbd_jetson]
-exportname = /root/nbd_jetson/nbd_jetson.img
-readonly = false
-listenaddr = {nfs_server_ip}
-"""
-        self.run_lxc_command(vm_name, ["sh", "-c", f"echo '{config_content}' > /etc/nbd-server/config"])
-        dd_cmd = ["dd", "if=/dev/zero", f"of=/root/nbd_jetson/nbd_jetson.img", "bs=1M", f"count={self.nbd_size}"]
+
+    def _update_config_file(self, vm_name: str, nfs_server_ip: str, nodes: list) -> None:
+        """
+        Updates /etc/nbd-server/config with configuration sections for nodes
+        that are missing. Checks if f"[nbd_jetson_<node>]\n" exists before appending.
+        """
+     
+        result = self.run_lxc_command(
+                vm_name, ["cat", "/etc/nbd-server/config"]
+            )
+        current_config = result.stdout
+   
+        new_sections = ""
+        for node in nodes:
+            header = f"[nbd_jetson_{node}]\n"
+            if header not in current_config:
+                section = (
+                    header +
+                    f"exportname = /root/nbd_jetson/nbd_jetson_{node}.img\n" +
+                    "readonly = false\n" +
+                    f"listenaddr = {nfs_server_ip}\n\n"
+                )
+                new_sections += section
+            else:
+                logging.info("Configuration for node %s already exists.", node)
+        
+        if new_sections:
+            cmd = ["sh", "-c", f"echo '{new_sections}' >> /etc/nbd-server/config"]
+            self.run_lxc_command(vm_name, cmd)
+            logging.info("Updated config file with new sections:\n%s", new_sections)
+        else:
+            logging.info("No new config sections needed in /etc/nbd-server/config.")
+
+    def _create_and_format_disk_image(self, vm_name: str, node: str) -> None:
+        """
+        Creates a disk image for the node and formats it as ext4 if it does not already exist.
+        """
+        image_path = f"/root/nbd_jetson/nbd_jetson_{node}.img"
+
+        # Check if the image file already exists
+        if os.path.exists(image_path):
+            print(f"Disk image already exists: {image_path}, skipping creation.")
+            return
+
+        print(f"Creating disk image: {image_path}")
+        
+        # Create disk image
+        dd_cmd = ["dd", "if=/dev/zero", f"of={image_path}", "bs=1M", f"count={self.nbd_size}"]
         self.run_lxc_command(vm_name, dd_cmd)
-        self.run_lxc_command(vm_name, ["mkfs.ext4", "/root/nbd_jetson/nbd_jetson.img"])
+
+        # Format as ext4
+        self.run_lxc_command(vm_name, ["mkfs.ext4", image_path])
+
+    def _restart_nbd_server(self, vm_name: str) -> None:
+        """
+        Restarts the nbd-server service to apply the new configuration.
+        """
         self.run_lxc_command(vm_name, ["systemctl", "restart", "nbd-server"])
-        logging.info("NBD setup completed in VM %s", vm_name)
-    def configure_nbd_on_lxc_vm(self, vm_name: str,nfs_server_ip:str , nodes: list) -> None:
+
+    def configure_nbd_on_lxc_vm(self, vm_name: str, nfs_server_ip: str, nodes: list) -> None:
+            """
+            Configures nbprofile inside the LXC VM based on the provided nodes.
+            Each node gets its own configuration section and disk image.
+            """
+            logging.info("Setting up nbprofile inside VM %s for nodes: %s", vm_name, nodes)
+            
+            # Install required packages and prepare the environment.
+            self._install_nbd_packages(vm_name)
+            current_config = "[generic]\nallowlist = true\n\n"
+            self.run_lxc_command(
+                vm_name, ["sh", "-c", f"echo '{current_config}' > /etc/nbd-server/config"]
+            )
+            
+            # Update the configuration file with sections for nodes that are missing.
+            self._update_config_file(vm_name, nfs_server_ip, nodes)
+            
+            # Create and format disk image for each node.
+            for node in nodes:
+                self._create_and_format_disk_image(vm_name, node)
+            
+            # Restart nbd-server to apply changes.
+            self._restart_nbd_server(vm_name)
+            
+            logging.info("nbprofile setup completed in VM %s", vm_name)
+    
+    def update_nbd_config(self, vm_name: str, nfs_server_ip: str, nodes: list) -> None:
+                    # Update the configuration file with sections for nodes that are missing.
+            logging.info("Setting up nbprofile inside VM %s for new nodes: %s", vm_name, nodes)
+            self._update_config_file(vm_name, nfs_server_ip, nodes)
+            
+            # Create and format disk image for each node.
+            for node in nodes:
+                self._create_and_format_disk_image(vm_name, node)
+            
+            # Restart nbd-server to apply changes.
+            self._restart_nbd_server(vm_name)
+            
+            logging.info("nbprofile setup completed in VM %s", vm_name)
+
+    def configure_nbd_on_lxc_vm_1(self, vm_name: str,nfs_server_ip:str , nodes: list) -> None:
         """
         Configures nbprofile inside the LXC VM based on the provided nodes.
         Each node gets its own configuration section and image file.
@@ -561,6 +653,10 @@ listenaddr = {nfs_server_ip}
         push_jetson_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "jetson_setup.sh"),
                              f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
         self.run_command(push_jetson_setup, "Push jetson setup script")
+        self.run_command(push_lib_setup_home, "Push  restart Jetson setup script to user home")
+        restart_jetson_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "restart_jetson.sh"),
+                             f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
+        self.run_command(restart_jetson_setup, "Push  restart jetson setup script")
         VmManager.create_readme_in_vm(vm_name, nfs_ip_addr)
         push_docker_images = ["lxc", "file", "push", "mmtc-docker.tar", f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
         self.run_command(push_docker_images, "Push Docker images")
@@ -676,7 +772,8 @@ def setup_jetson(base_dir: str, username: str, password: str, hostname: str) -> 
 
 # Example usage 
 # ubuntu_version = "24.04"
-# vm_name = "testvm"
+#
+#  vm_name = "testvm"
 # root_size = "4GiB"
 # user_info = {
 #     "user_name": "testvm",
@@ -685,6 +782,12 @@ def setup_jetson(base_dir: str, username: str, password: str, hostname: str) -> 
 #     "nfs_ip_addr": "192.168.75.1/24",
 #     "macvlan_interface": "macvlan_testvm",
 # }
-# vm_manager = VmManager()
+#vm_manager = VmManager()
 # vm_manager.create_user_vm(ubuntu_version, vm_name, root_size)
 # vm_manager.set_nfs_ip_addr(vm_name, user_info["nfs_ip_addr"])
+
+
+#current_config = "[generic]\nallowlist = true\n\n"
+#vm_manager.run_lxc_command(
+#    "mehdi", ["sh", "-c", f"echo '{current_config}' > /etc/nbd-server/config"]
+#)
