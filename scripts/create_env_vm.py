@@ -462,8 +462,13 @@ class VmManager:
         """
         image_path = f"/root/nbd_jetson/nbd_jetson_{node}.img"
 
-        # Check if the image file already exists
-        if os.path.exists(image_path):
+        # Check if the image file already exists inside the LXC container
+        # Using the 'test -f' command to check for a file.
+        check_cmd = ["test", "-f", image_path]
+        result = self.run_lxc_command(vm_name, check_cmd)
+
+        # If the command returns exit code 0, the file exists.
+        if result.returncode == 0:
             print(f"Disk image already exists: {image_path}, skipping creation.")
             return
 
@@ -782,7 +787,7 @@ def setup_jetson(base_dir: str, username: str, password: str, hostname: str) -> 
 #     "nfs_ip_addr": "192.168.75.1/24",
 #     "macvlan_interface": "macvlan_testvm",
 # }
-#vm_manager = VmManager()
+vm_manager = VmManager()
 # vm_manager.create_user_vm(ubuntu_version, vm_name, root_size)
 # vm_manager.set_nfs_ip_addr(vm_name, user_info["nfs_ip_addr"])
 
