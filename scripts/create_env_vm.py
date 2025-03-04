@@ -462,23 +462,20 @@ class VmManager:
         """
         image_path = f"/root/nbd_jetson/nbd_jetson_{node}.img"
 
-        # Check if the image file already exists inside the LXC container
-        # Using the 'test -f' command to check for a file.
-        check_cmd = ["test", "-f", image_path]
-        result = self.run_lxc_command(vm_name, check_cmd)
-
-        # If the command returns exit code 0, the file exists.
-        if result.returncode == 0:
+        # Check if the disk image exists by trying to execute the test command.
+        try:
+            self.run_lxc_command(vm_name, ["test", "-f", image_path])
             print(f"Disk image already exists: {image_path}, skipping creation.")
             return
+        except Exception:
+            # The test command fails (expected when file does not exist).
+            print(f"Disk image not found, creating new disk image: {image_path}")
 
-        print(f"Creating disk image: {image_path}")
-        
-        # Create disk image
+        # Create disk image using the dd command.
         dd_cmd = ["dd", "if=/dev/zero", f"of={image_path}", "bs=1M", f"count={self.nbd_size}"]
         self.run_lxc_command(vm_name, dd_cmd)
 
-        # Format as ext4
+        # Format the disk image as ext4.
         self.run_lxc_command(vm_name, ["mkfs.ext4", image_path])
 
     def _restart_nbd_server(self, vm_name: str) -> None:
@@ -644,7 +641,7 @@ class VmManager:
         install_binutils = ["lxc", "exec", vm_name, "--", "apt", "install", "-y", "binutils"]
         self.run_command(install_binutils, "Install binutils")
         self.configure_vm_nat(vm_name)
-        self.add_torch_script(vm_name, "install_torch.sh")
+        #self.add_torch_script(vm_name, "install_torch.sh")
         push_nfs_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "nfs_setup.sh"), f"{vm_name}/root/"]
         self.run_command(push_nfs_setup, "Push NFS setup script")
         push_lib_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "lib_setup.sh"), f"{vm_name}/root/"]
@@ -662,9 +659,17 @@ class VmManager:
         restart_jetson_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "restart_jetson.sh"),
                              f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
         self.run_command(restart_jetson_setup, "Push  restart jetson setup script")
+                
+        configure_PPP_script = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "configure_PPP.sh"),
+                             f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
+        self.run_command(configure_PPP_script, "Push  configure PPP script ")
+        push_fan_control_script = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "fan_control.py"),
+                               f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
+        self.run_command(push_fan_control_script , "Push fan control script ")
         VmManager.create_readme_in_vm(vm_name, nfs_ip_addr)
-        push_docker_images = ["lxc", "file", "push", "mmtc-docker.tar", f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
-        self.run_command(push_docker_images, "Push Docker images")
+
+        #push_docker_images = ["lxc", "file", "push", "mmtc-docker.tar", f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
+        #self.run_command(push_docker_images, "Push Docker images")
         time.sleep(10)
 
     def install_5gmmtctool(self, vm_name: str, nfs_ip_addr: str) -> None:

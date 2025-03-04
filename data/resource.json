@@ -6,17 +6,7 @@
     "model":"Jetson-Xavier-NX",
     "nvidia_id": "0955-7e19",
     "usb_instance": "1-4.2.1",
-    "state":"Alive"
-  },
-  {
-    "name": "j20-tribe2",
-    "cable_id": "2.23",
-    "switch_interface": "GigabitEthernet1/0/20",
-    "model":"Jetson-Xavier-NX",
-    "nvidia_id": "0955-7e19",
-    "usb_instance": "1-4.2.2",
-    "state":"Alive"
-
+    "state":"Dead"
   },
 
   {
@@ -30,10 +20,10 @@
 
   },
   {
-    "name": "j40-tribe1",
+    "name": "j20-tribe2",
     "cable_id": "2.16",
     "switch_interface": "GigabitEthernet1/0/25",
-    "model":"Jetson-Orin-NX",
+    "model":"Jetson-Xavier-NX",
     "nvidia_id": "0955-7323",
     "usb_instance": "1-4.3",
     "state":"Alive"

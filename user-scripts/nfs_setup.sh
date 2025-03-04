@@ -89,26 +89,29 @@ for DEVICE in "${DEVICE_NAMES[@]}"; do
     echo "$DEVICE" > "$FINAL_ROOT/etc/hostname"
     echo "Customized hostname for $DEVICE."
     # Ensure rc.local exists and is executable
-    #RC_LOCAL_FILE="$FINAL_ROOT/etc/rc.local"
+    RC_LOCAL_FILE="$FINAL_ROOT/etc/rc.local"
     
-    #if [ ! -f "$RC_LOCAL_FILE" ]; then
-    #    
-    #    touch $RC_LOCAL_FILE
-    #    echo "Creating $RC_LOCAL_FILE"
-    #    sleep 1
-    #    chmod +x "$RC_LOCAL_FILE"
-    #fi
+    if [ ! -f "$RC_LOCAL_FILE" ]; then
+        
+        touch $RC_LOCAL_FILE
+        echo "Creating $RC_LOCAL_FILE"
+        sleep 1
+       chmod +x "$RC_LOCAL_FILE"
+    fi
 
-     # Add /root/lib_setup.sh to rc.local for automatic execution
-    #RC_LOCAL_FILE="$FINAL_ROOT/etc/rc.local"
-    #if ! grep -q "/root/lib_setup.sh" "$RC_LOCAL_FILE"; then
-    #    echo "#!/bin/bash" > "$RC_LOCAL_FILE"
-    #    echo "Adding /root/lib_setup.sh to $RC_LOCAL_FILE"
-    #    # Add to rc.local to run the setup script on boot
-    #    sed -i -e "\$i /root/lib_setup.sh &\n" "$RC_LOCAL_FILE"
-    #else
-    #    echo "/root/lib_setup.sh is already in rc.local."
-    #fi
+    # Ensure the shebang line is present at the top of rc.local
+    if ! grep -q "^#!/bin/bash" "$RC_LOCAL_FILE"; then
+        sed -i '1i #!/bin/bash' "$RC_LOCAL_FILE"
+    fi
+
+    # Check if the fan control script is already in rc.local
+    if ! grep -q "/usr/bin/python3 /home/mmtc/fan_control.py" "$RC_LOCAL_FILE"; then
+        echo "Adding fan control script to $RC_LOCAL_FILE"
+        # Insert the command to run the Python script in the background
+        sed -i -e "\$i /usr/bin/python3 /home/mmtc/fan_control.py &\n" "$RC_LOCAL_FILE"
+    else
+        echo "Fan control script is already in rc.local."
+    fi
 done
 
 # Configure NFS exports
