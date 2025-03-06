@@ -141,6 +141,7 @@ sudo ./tools/l4t_create_default_user.sh -u <username> -p <password> -n <hostname
 ```bash
 sudo tar czvf rootfs-noeula-user.tar.gz rootfs/
 sudo cp rootfs-noeula-user.tar.gz /var/www/html/
+wget http://localhost:80/mmtc-docker.tar
 ```
 
 ### 6. Flash the Device

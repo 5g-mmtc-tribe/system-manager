@@ -36,7 +36,7 @@ class VmManager:
     jetson_path: str = os.path.join(data_dir, 'jetson')
     bsp_path: str = os.path.join(data_dir, 'jetson_linux_r35.4.1_aarch64.tbz2')
     rootfs_path: str = os.path.join(data_dir, 'tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2')
-    nbd_size: int = 22384
+    nbd_size: int = 23384
 
     # --------------------------------------------------------------------------
     # 1. Utility Functions
@@ -668,8 +668,8 @@ class VmManager:
         self.run_command(push_fan_control_script , "Push fan control script ")
         VmManager.create_readme_in_vm(vm_name, nfs_ip_addr)
 
-        #push_docker_images = ["lxc", "file", "push", "mmtc-docker.tar", f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
-        #self.run_command(push_docker_images, "Push Docker images")
+        push_docker_images = ["lxc", "file", "push", "mmtc-docker.tar", f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
+        self.run_command(push_docker_images, "Push Docker images")
         time.sleep(10)
 
     def install_5gmmtctool(self, vm_name: str, nfs_ip_addr: str) -> None:
@@ -801,3 +801,8 @@ vm_manager = VmManager()
 #vm_manager.run_lxc_command(
 #    "mehdi", ["sh", "-c", f"echo '{current_config}' > /etc/nbd-server/config"]
 #)
+#push_docker_images = ["lxc", "file", "push", "mmtc-docker.tar", f"{"mehdi"}/root/nfsroot/rootfs/home/mmtc/"]
+#vm_manager.run_command(push_docker_images, "Push Docker images")
+#push_nfs_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "nfs_setup.sh"), f"{"mehdi"}/root/"]
+#vm_manager.run_command(push_nfs_setup, "Push NFS setup script")
+#vm_manager.setup_nfs_jetson("mehdi",["j20-tribe2"])

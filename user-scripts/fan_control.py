@@ -46,7 +46,7 @@ def main():
             continue
 
         mode, pwm = determine_fan_settings(temperature)
-        print(f"Current temp: {temperature:.2f}°C, Fan mode: {mode}, PWM: {pwm}")
+        #print(f"Current temp: {temperature:.2f}°C, Fan mode: {mode}, PWM: {pwm}")
 
         set_fan_speed(pwm)
         time.sleep(10)  # Adjust the interval as needed
