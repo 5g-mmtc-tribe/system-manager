@@ -35,7 +35,10 @@ SWITCH_CONFIG_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data'))
 ACTIVE_USERS_PATH = os.path.join(DATA_DIR, 'active_users.json')
 RESOURCE_JSON_PATH = os.path.join(DATA_DIR, 'resource.json')
-
+ROOT_FS_3276 ="/root/nfsroot-jp-3276"
+ROOT_FS_3541 = "/root/nfsroot-jp-3541"
+DRIVER_3541 = 'rootfs-basic-jp3541-noeula-user.tar.gz'
+DRIVER_3276 ='rootfs-jp3276.tar.gz'
 def load_switch_config():
     """
     Load and return the switch configuration from the JSON file.
@@ -290,15 +293,57 @@ def create_user_env_vm(ubuntu_version: str, vm_name: str, root_size: str, user_i
         logging.info("Interface check result: %s", res)
         vm_manager.set_nfs_ip_addr(vm_name, nfs_ip_addr)
         vm_manager.install_library_for_flashing_jetson(vm_name, nfs_ip_addr)
+        for node in nodes:
+            # Example node name: 'j20-tribe4' will match "j20"
+            if "j20" in node or "j40" in node:
+                rootfs = ROOT_FS_3541
+                driver = DRIVER_3541
+            elif "j10" in node:
+                rootfs = ROOT_FS_3276
+                driver = DRIVER_3276
+            else:
+                continue  # Skip unrecognized node types
+            vm_manager.configure_nfs_jetson(vm_name, nfs_ip_addr, rootfs,driver)
+       
+        vm_manager.create_dhcp_server(vm_name, nfs_ip_addr)
+        vm_manager.configure_vm_nat(vm_name)
+        
         time.sleep(2)
         vm_manager.add_ssh_key_to_lxd(user_name, user_name)
-        vm_manager.setup_nfs_jetson(user_name, nodes)
+        for node in nodes:
+            if "j20" in node or "j40" in node:
+                rootfs = ROOT_FS_3541.split("/")[2]
+            elif "j10" in node:
+                rootfs = ROOT_FS_3276.split("/")[2]
+                
+            else:
+                continue
+            vm_manager.setup_nfs_jetson(user_name, rootfs,nodes)
         vm_manager.configure_nbd_on_lxc_vm(vm_name, nfs_ip_addr.split('/')[0],nodes)
         return {"vm_ip_address": "10.0.0.0", "status": "User Env Created"}
     else:
         vm_manager.start_vm(vm_name)
+        for node in nodes:
+            # Example node name: 'j20-tribe4' will match "j20"
+            if "j20" in node or "j40" in node:
+                rootfs = ROOT_FS_3541
+                driver = DRIVER_3541
+            elif "j10" in node:
+                rootfs = ROOT_FS_3276
+                driver = DRIVER_3276
+            else:
+                continue  # Skip unrecognized node types
+            vm_manager.configure_nfs_jetson(vm_name, nfs_ip_addr, rootfs,driver)
         vm_manager.add_ssh_key_to_lxd(user_name, user_name)
-        vm_manager.setup_nfs_jetson(user_name, nodes)
+        for node in nodes:
+            if "j20" in node or "j40" in node:
+                rootfs = ROOT_FS_3541.split("/")[2]
+            elif "j10" in node:
+                rootfs = ROOT_FS_3276.split("/")[2]
+                
+            else:
+                continue
+            vm_manager.setup_nfs_jetson(user_name, rootfs,nodes)
         vm_manager.update_nbd_config(vm_name, nfs_ip_addr.split('/')[0],nodes)
         return {"vm_ip_address": "10.0.0.0", "status": "User Env Created"}
 

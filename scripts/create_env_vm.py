@@ -36,7 +36,7 @@ class VmManager:
     jetson_path: str = os.path.join(data_dir, 'jetson')
     bsp_path: str = os.path.join(data_dir, 'jetson_linux_r35.4.1_aarch64.tbz2')
     rootfs_path: str = os.path.join(data_dir, 'tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2')
-    nbd_size: int = 23384
+    nbd_size: int = 16384
 
     # --------------------------------------------------------------------------
     # 1. Utility Functions
@@ -366,28 +366,35 @@ class VmManager:
             cmd = ["lxc", "exec", vm_name, "--", "sudo", "systemctl", action[0], "isc-dhcp-server"]
             self.run_command(cmd, action[1])
 
-    def create_nfs_server(self, vm_name: str, nfs_ip_addr: str) -> None:
+    def create_nfs_server(self, vm_name: str, nfs_root: str ,driver:str) -> None:
         """
         Configures the NFS server inside the VM.
         """
-        driver = 'rootfs-basic-jp3541-noeula-user.tar.gz'
+         
+        #nfs_root = "/root/nfsroot-jp-3541"
+        #driver = 'rootfs-basic-jp3541-noeula-user.tar.gz'
         #driver = 'rootfs-basic-jp3541-with-docker-noeula-user.tar.gz'
         vmcmd = ["lxc", "exec", vm_name, "--", "sudo"]
-        for folder in ["/root/nfsroot", "/root/nfsroot/rootfs"]:
-            self.run_command(vmcmd + ["mkdir", folder], f"Create folder {folder} in VM {vm_name}")
+        for folder in [nfs_root, f"{nfs_root}/rootfs"]:
+            self.run_command(vmcmd + ["mkdir", folder],
+                         f"Create folder {folder} in VM {vm_name}")
+            
         vmcmd_no_sudo = ["lxc", "exec", vm_name, "--"]
-        self.run_command(vmcmd_no_sudo + ["chown", "-R", "nobody:nogroup", "/root/nfsroot"],
+        self.run_command(vmcmd_no_sudo + ["chown", "-R", "nobody:nogroup", f"{nfs_root}"],
                          "Change ownership of NFS folder")
-        self.run_command(vmcmd_no_sudo + ["sudo", "chmod", "755", "/root/nfsroot"],
+        self.run_command(vmcmd_no_sudo + ["sudo", "chmod", "755", f"{nfs_root}"],
                          "Set permissions for NFS folder")
         tarball_cmd = ['lxc', 'file', 'push', driver, f'{vm_name}/root/']
         self.run_command(tarball_cmd, "Push rootfs tarball")
         extract_cmd = ['lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
-                       '-C', '/root/nfsroot/rootfs']
+                       '-C', f'{nfs_root}/rootfs']
         self.run_command(extract_cmd, "Extract rootfs tarball")
-        install_nfs = ["lxc", "exec", vm_name, "--", "sudo", "apt", "install", "-y", "nfs-kernel-server"]
-        self.run_command(install_nfs, "Install NFS server")
-        exports_cmd = f"echo '/root/nfsroot/rootfs *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000)' > /etc/exports"
+
+        # Delete the driver tarball from the VM after extraction
+        delete_cmd = ['lxc', 'exec', vm_name, '--', 'rm', '-f', f'/root/{driver}']
+        self.run_command(delete_cmd, "Delete driver tarball after extraction")
+
+        exports_cmd = f"echo '{nfs_root}/rootfs *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000)' > /etc/exports"
         lxc_exports = f"lxc exec {vm_name} -- sh -c \"{exports_cmd}\""
         try:
             subprocess.run(lxc_exports, shell=True, capture_output=True, text=True, check=True)
@@ -625,52 +632,100 @@ class VmManager:
         ]:
             subprocess.run(['lxc', 'exec', lxd_vm_name, '--'] + cmd, check=True)
         logging.info("SSH key verification and update complete for VM %s", lxd_vm_name)
+    import os
+
+    def push_files_to_vm(self, vm_name, nfs_root, user_script_path, nfs_ip_addr):
+        """
+        Push multiple files to the VM in a single function.
+
+        Parameters:
+        - vm_name: Name of the virtual machine.
+        - nfs_root: The NFS root directory path.
+        - user_script_path: The local folder path where the scripts are stored.
+        - nfs_ip_addr: IP address for network file system operations.
+        """
+
+        # Define the target directory in the VM
+        target_dir = f"{vm_name}{nfs_root}/rootfs/home/mmtc/"
+
+        # List of files with their corresponding descriptions.
+        # For files that are part of the user_script_path, we join the path.
+        # The Docker images file is assumed to be in the current directory.
+        files_to_push = [
+            ("Dockerfile", "Push Dockerfile to user home"),
+            ("lib_setup.sh", "Push Jetson setup script to user home"),
+            ("jetson_setup.sh", "Push jetson setup script"),
+            ("restart_jetson.sh", "Push restart jetson setup script"),
+            ("configure_PPP.sh", "Push configure PPP script"),
+            ("fan_control.py", "Push fan control script"),
+            ("mmtc-docker.tar", "Push Docker images")  # Assumed to be in the current working directory
+        ]
+
+        # Loop through each file and push it to the target directory
+        for file_name, description in files_to_push:
+            if file_name == "mmtc-docker.tar":
+                # For the docker image tar file, the file is in the current folder.
+                file_path = file_name
+            else:
+                # For all other files, use the user_script_path
+                file_path = os.path.join(user_script_path, file_name)
+
+            # Build the command list for pushing the file
+            push_command = ["lxc", "file", "push", file_path, target_dir]
+            self.run_command(push_command, description)
+
+        # Create a readme in the VM after pushing all files
+        VmManager.create_readme_in_vm(vm_name, nfs_ip_addr,nfs_root)
 
     # --------------------------------------------------------------------------
     # 9. Tool Installation
     # --------------------------------------------------------------------------
-    def install_library_for_flashing_jetson(self, vm_name: str, nfs_ip_addr: str) -> None:
+    def install_library_for_flashing_jetson(self, vm_name: str, nfs_ip_addr: str ) -> None:
         """
         Installs necessary libraries and scripts in the VM for flashing Jetson devices.
         """
+        #nfs_root ="/root/nfsroot-jp-3541"
         self.run_command(["lxc", "exec", vm_name, "--", "sudo", "apt", "update"], "Update apt")
-        push_5gmmtctool = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "5gmmtctool"), f"{vm_name}/root/"]
-        self.run_command(push_5gmmtctool, "Push 5gmmtctool")
-        self.create_nfs_server(vm_name, nfs_ip_addr)
-        self.create_dhcp_server(vm_name, nfs_ip_addr)
         install_binutils = ["lxc", "exec", vm_name, "--", "apt", "install", "-y", "binutils"]
         self.run_command(install_binutils, "Install binutils")
-        self.configure_vm_nat(vm_name)
+        install_nfs = ["lxc", "exec", vm_name, "--", "sudo", "apt", "install", "-y", "nfs-kernel-server"]
+        self.run_command(install_nfs, "Install NFS server")
+        push_5gmmtctool = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "5gmmtctool"), f"{vm_name}/root/"]
+        self.run_command(push_5gmmtctool, "Push 5gmmtctool")
+
         #self.add_torch_script(vm_name, "install_torch.sh")
+        
+    
+    def folder_exists(self, vm_name: str, folder: str) -> bool:
+        """
+        Checks if the folder specified by nfs_root exists in the LXC container.
+        
+        For example, if nfs_root is "/mnt/nfs", this function runs:
+            lxc file list <vm_name>/mnt/nfs
+        and returns True if the folder exists.
+        """
+        # Construct the command using the container name and the folder path.
+        check_command = ["lxc", "file", "list", f"{vm_name}{folder}"]
+        try:
+            # Attempt to list the folder contents.
+            self.run_command(check_command, f"Check for folder {folder}", capture_output=True)
+            return True
+        except Exception:
+            # If an error occurs (folder not found), return False.
+            return False
+            
+    def configure_nfs_jetson(self ,vm_name: str, nfs_ip_addr: str ,nfs_root:str ,driver :str):
+        if self.folder_exists(vm_name, nfs_root):
+            print(f"Folder {nfs_root} already exists in container {vm_name}. Skipping configuration steps.")
+            return
+        self.create_nfs_server(vm_name, nfs_root,driver)
         push_nfs_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "nfs_setup.sh"), f"{vm_name}/root/"]
         self.run_command(push_nfs_setup, "Push NFS setup script")
-        push_lib_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "lib_setup.sh"), f"{vm_name}/root/"]
-        self.run_command(push_lib_setup, "Push Jetson setup script")
-        push_dockerfile = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "Dockerfile"),
-                           f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
-        self.run_command(push_dockerfile, "Push Dockerfile to user home")
-        push_lib_setup_home = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "lib_setup.sh"),
-                               f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
-        self.run_command(push_lib_setup_home, "Push Jetson setup script to user home")
-        push_jetson_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "jetson_setup.sh"),
-                             f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
-        self.run_command(push_jetson_setup, "Push jetson setup script")
-        self.run_command(push_lib_setup_home, "Push  restart Jetson setup script to user home")
-        restart_jetson_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "restart_jetson.sh"),
-                             f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
-        self.run_command(restart_jetson_setup, "Push  restart jetson setup script")
-                
-        configure_PPP_script = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "configure_PPP.sh"),
-                             f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
-        self.run_command(configure_PPP_script, "Push  configure PPP script ")
-        push_fan_control_script = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "fan_control.py"),
-                               f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
-        self.run_command(push_fan_control_script , "Push fan control script ")
-        VmManager.create_readme_in_vm(vm_name, nfs_ip_addr)
-
-        push_docker_images = ["lxc", "file", "push", "mmtc-docker.tar", f"{vm_name}/root/nfsroot/rootfs/home/mmtc/"]
-        self.run_command(push_docker_images, "Push Docker images")
+        self.push_files_to_vm(vm_name,nfs_root,USER_SCRIPT_PATH,nfs_ip_addr)
         time.sleep(10)
+
+
+    
 
     def install_5gmmtctool(self, vm_name: str, nfs_ip_addr: str) -> None:
         """
@@ -686,42 +741,48 @@ class VmManager:
     # --------------------------------------------------------------------------
     # 10. NFS Jetson Setup
     # --------------------------------------------------------------------------
-    def setup_nfs_jetson(self, vm_name: str, device_names: list[str]) -> None:
+    def setup_nfs_jetson(self, vm_name: str, nfsroot_v: str, device_names: list[str]) -> None:
         """
-        Executes the NFS setup script inside the VM with provided device names.
+        Executes the NFS setup script inside the VM with provided nfsroot_v and device names.
+        
+        Usage:
+        setup_nfs_jetson("<VM_NAME>", "<nfsroot-v>", ["device1", "device2", ...])
         """
-        if not vm_name or not device_names:
-            logging.error("Usage: setup_nfs_jetson('<VM_NAME>', ['device1', 'device2', ...])")
+        if not vm_name or not nfsroot_v or not device_names:
+            logging.error("Usage: setup_nfs_jetson('<VM_NAME>', '<nfsroot-v>', ['device1', 'device2', ...])")
             return
+
         script_path = "/root/nfs_setup.sh"
-        device_args = " ".join(device_names)
+        # First argument is now the nfsroot_v, followed by the device names
+        args = " ".join([nfsroot_v] + device_names)
+        
         try:
             subprocess.run(["lxc", "exec", vm_name, "--", "chmod", "+x", script_path], check=True)
             logging.info("Executing NFS setup script in VM %s", vm_name)
-            subprocess.run(["lxc", "exec", vm_name, "--", "bash", "-c", f"{script_path} {device_args}"], check=True)
+            subprocess.run(["lxc", "exec", vm_name, "--", "bash", "-c", f"{script_path} {args}"], check=True)
             logging.info("NFS setup script executed successfully in VM %s", vm_name)
         except subprocess.CalledProcessError as e:
             logging.error("Error executing NFS setup in VM %s: %s", vm_name, e)
             raise
-
     # --------------------------------------------------------------------------
     # 11. Utility: README Creation
     # --------------------------------------------------------------------------
     @staticmethod
-    def create_readme_in_vm(vm_name: str, nfs_ip_addr: str) -> None:
+    def create_readme_in_vm(vm_name: str, nfs_ip_addr: str, rootfs:str)  -> None:
         """
         Creates a README.md file inside the VM with setup instructions.
         """
+    
         nfs_ip = nfs_ip_addr.split('/')[0]
         content = f"""# Setup Instructions
-
+        
 - Run lib_setup.sh to install required libraries.
 - Run jetson_setup.sh with your NFS IP address:
     ./jetson_setup.sh {nfs_ip}
 
 Replace {nfs_ip} with your actual NFS IP address.
-"""
-        touch_cmd = f'lxc exec {vm_name} -- bash -c "touch /root/nfsroot/rootfs/home/mmtc/README.md"'
+"""    
+        touch_cmd = f'lxc exec {vm_name} -- bash -c "touch {rootfs}/rootfs/home/mmtc/README.md"'
         try:
             subprocess.run(touch_cmd, shell=True, check=True)
             logging.info("Created README.md in VM %s", vm_name)
@@ -729,7 +790,7 @@ Replace {nfs_ip} with your actual NFS IP address.
             logging.error("Failed to create README.md: %s", e)
             raise
         write_cmd = (
-            f'lxc exec {vm_name} -- bash -c "cat > /root/nfsroot/rootfs/home/mmtc/README.md << \'EOF\'\n'
+            f'lxc exec {vm_name} -- bash -c "cat > {rootfs}/rootfs/home/mmtc/README.md << \'EOF\'\n'
             f'{content}\nEOF"'
         )
         try:
@@ -801,7 +862,7 @@ vm_manager = VmManager()
 #vm_manager.run_lxc_command(
 #    "mehdi", ["sh", "-c", f"echo '{current_config}' > /etc/nbd-server/config"]
 #)
-#push_docker_images = ["lxc", "file", "push", "mmtc-docker.tar", f"{"mehdi"}/root/nfsroot/rootfs/home/mmtc/"]
+#push_docker_images = ["lxc", "file", "push", "mmtc-docker.tar", f"{"mehdi"}/root/nfsroot-jp-3541/rootfs/home/mmtc/"]
 #vm_manager.run_command(push_docker_images, "Push Docker images")
 #push_nfs_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "nfs_setup.sh"), f"{"mehdi"}/root/"]
 #vm_manager.run_command(push_nfs_setup, "Push NFS setup script")

@@ -1,8 +1,21 @@
 #!/bin/bash
 
+# Ensure at least two parameters are provided: one for nfsroot-v and at least one device name
+if [ "$#" -lt 2 ]; then
+    echo "Usage: $0 <nfsroot-v> <device1> <device2> ..."
+    exit 1
+fi
+
+# Get the nfsroot-v value from the first parameter and shift it out
+NFS_ROOT_V="$1"
+shift
+
+# The remaining parameters are device names
+DEVICE_NAMES=("$@")
+
 # Directories
-BASE_ROOTFS="/root/nfsroot/rootfs"   # Shared root filesystem directory
-NFS_ROOT="/root/nfsroot"             # Base NFS directory for device-specific root filesystems
+NFS_ROOT="/root/$NFS_ROOT_V"             # Base NFS directory for device-specific root filesystems
+BASE_ROOTFS="$NFS_ROOT/rootfs"           # Shared root filesystem directory
 EXPORTS_FILE="/etc/exports"
 
 # Directories that should NOT be shared (unique to each device)
@@ -18,15 +31,6 @@ is_unique_dir() {
     done
     return 1
 }
-
-# Ensure at least one device name is provided
-if [ "$#" -lt 1 ]; then
-    echo "Usage: $0 <device1> <device2> ..."
-    exit 1
-fi
-
-DEVICE_NAMES=("$@")
-
 
 # Setup root filesystem for each device
 for DEVICE in "${DEVICE_NAMES[@]}"; do

@@ -10,11 +10,12 @@ class Jetson:
         self.xavier_id_product = "7e19"
         self.number_xavier = 0
         self.orin_id = "ID 0955-7323 NVIDIA Corp. APX"
-        self.xavier_kit ="jetson-xavier-nx-devkit-emmc"
+        self.xavier_kit ="jetson-xavier-nx-devkit"
         self.orin_kit ="jetson-orin-nano-devkit"
         # self.orin_kit ="jetson-orin-nano-devkit-nvme"
         self.nano_kit ="jetson-nano-devkit-emmc"
-         
+        self .TEGRA_3276 ="Linux_for_Tegra_jp3276"
+        self .TEGRA_3541 = "Linux_for_Tegra_jp3541"
 
     def get_xavier_instances(self):
         # List to store detected Xavier USB instances
@@ -149,28 +150,18 @@ class Jetson:
             print("STDERR:\n", e.stderr)
             return
     def flash_jetson(self, nfs_ip_address, nfspath, usb_instance, model, nvidia_id):
-        # Get the directory of the current script
-        script_dir = os.path.dirname(os.path.abspath(__file__))
 
-        # Define the parent directory
-        parentpath = os.path.join(script_dir, '../api', 'jetson')
-        
-        # Define the working directory based on the parentpath
-        working_directory = os.path.join(parentpath, 'Linux_for_Tegra')
 
-        # Extract the NFS IP address
-        net = nfs_ip_address.split('/')[0]
-        
-        # Construct the NFS target
-        nfs_target = f"{net}:/{nfspath}"
-        
         # Select the correct kit based on the model
         if model == "Jetson-Xavier-NX":
             kit = self.xavier_kit
+            tegra_folder= self.TEGRA_3541
         elif model == "Jetson-Orin-NX":
             kit = self.orin_kit
+            tegra_folder= self.TEGRA_3541
         elif model == "Jetson-Nano":
             kit = self.nano_kit
+            tegra_folder= self.TEGRA_3276
         else:
             print("Unknown model provided")
             return {
@@ -179,6 +170,20 @@ class Jetson:
                 "wait_status": "Error: Unknown model"
             }
 
+        # Get the directory of the current script
+        script_dir = os.path.dirname(os.path.abspath(__file__))
+
+        # Define the parent directory
+        parentpath = os.path.join(script_dir, '../api', 'jetson')
+        
+        # Define the working directory based on the parentpath
+        working_directory = os.path.join(parentpath, tegra_folder)
+
+        # Extract the NFS IP address
+        net = nfs_ip_address.split('/')[0]
+        
+        # Construct the NFS target
+        nfs_target = f"{net}:/{nfspath}"
         # Define the command using the selected kit
         command = [
             'sudo', './flash.sh', '--usb-instance', usb_instance, '-N', nfs_target,
