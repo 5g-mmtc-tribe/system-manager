@@ -246,23 +246,32 @@ sudo nano /etc/openvpn/server.conf
 Add the following configuration:
 
 ```bash
-local 192.168.0.8
+local 10.71.241.150
 port 1194
 proto tcp
 dev tun
+auth-user-pass-verify /etc/openvpn/auth_sqlite.sh via-file
+script-security 3
+#plugin /usr/lib/openvpn/openvpn-plugin-auth-pam.so openvpn
 ca /etc/openvpn/ca.crt
 cert /etc/openvpn/server.crt
 key /etc/openvpn/server.key
 dh /etc/openvpn/dh.pem
 tls-auth /etc/openvpn/ta.key 0
 server 10.8.0.0 255.255.255.0
-#define the  webportal network 
-#push "10.5.21.8 255.255.255.255"
+
 #define the vlan ip address 
-#push "10.111.195.0 255.255.255.0"
+# vlan 1
+push "route 10.111.67.0 255.255.255.0"
+# vlan 2
+push "route 10.111.212.0 255.255.255.0"
+#define the  webportal network 
+push "route 10.71.241.184 255.255.255.255"
+#api access 
+push "route 192.168.0.8 255.255.255.255"
 #push "redirect-gateway def1 bypass-dhcp"
-push "dhcp-option DNS 8.8.8.8
-push "dhcp-option DNS 8.8.8.4
+push "dhcp-option DNS 8.8.8.8"
+push "dhcp-option DNS 8.8.8.4"
 keepalive 10 120
 cipher AES-256-CBC
 auth SHA256
@@ -270,7 +279,7 @@ status /var/log/openvpn-status.log
 log-append /var/log/openvpn.log
 verb 3
 ```
-sudo systemctl restart openvpn@server
+sudo systemctl restart openvpn
 
 ### 6. OpenVPN VLAN Configuration
 
@@ -285,11 +294,17 @@ sudo iptables -t nat -A POSTROUTING -o enp6s0 -j MASQUERADE
 
 ```bash
 sudo nano /etc/sysctl.conf
-iptables -t nat -A POSTROUTING -s 10.5.0.0/24 -d 10.111.195.0/24 -j MASQUERADE
+sudo iptables -t nat -A POSTROUTING -s 10.8.0.0/24 -o enp5s0 -j MASQUERADE
 
-# Allow forwarding between VPN and VLAN 195
+#  optionelle :Allow forwarding between VPN and VLAN 195
 iptables -A FORWARD -i tun0 -o enp6s0 -j ACCEPT
 iptables -A FORWARD -i enp6s0 -o tun0 -j ACCEPT
+```
+### 4.1 forward  port of vpn server 
+```
+iptables -t nat -A PREROUTING -p tcp  --dport 2220 -j DNAT --to-destination 10.71.241.150:1194
+iptables -A FORWARD -p tcp -d 10.71.241.150 --dport 2220 -m state --state NEW,ESTABLISHED,RELATED -j ACCEPT
+
 ```
 ### 5. Create Client Configuration
 ```bash
@@ -304,7 +319,7 @@ cat <<EOF > /root/openvpn-ca/mehdi.ovpn
 client
 dev tun
 proto tcp
-remote 10.111.195.30  1194
+remote 193.55.250.147  2220
 resolv-retry infinite
 nobind
 persist-key
@@ -317,8 +332,9 @@ key-direction 1
 verb 3
 mssfix 1300
 keepalive 10 60
-route-nopull
-<ca>
+auth-user-pass
+#route 10.111.67.4 255.255.255.255
+#route-nopull
 $(cat /etc/openvpn/ca.crt)
 </ca>
 <cert>
@@ -338,10 +354,6 @@ sudo openvpn --config <clientName>.ovpn
 
 
 
-socat TCP-LISTEN:1194,fork TCP:10.154.195.130:1194 &
-```
-sudo openvpn --config /etc/openvpn/server.conf
----
 
 ## Annex
 
@@ -377,3 +389,8 @@ iptables -A FORWARD -d 10.5.21.232 -p tcp --dport <PORT> -j ACCEPT
 
 sudo iptables -t nat -A PREROUTING -p tcp --dport 1194 -j DNAT --to-destination 10.71.241.150:1194
 sudo iptables -A FORWARD -p tcp -d 10.71.241.150 --dport 1194 -j ACCEPT
+
+socat TCP-LISTEN:1194,fork TCP:10.154.195.130:1194 &
+```
+sudo openvpn --config /etc/openvpn/server.conf
+---

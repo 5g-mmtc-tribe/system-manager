@@ -133,22 +133,7 @@ class Jetson:
 
             return number_devices
 
-
-        
-    def flash_jetson_v1 (self, nfs_ip_addres ,nfspath,parentpath):
-            # Flash the Jetson
-        nfs_ip_addres= nfs_ip_addres.split('/')[0]
-        print(nfs_ip_addres)        
-        command_librray_install=   [F" {parentpath}Linux_for_Tegra/flash.sh" ,"-N",F"{nfs_ip_addres }:/{nfspath}","--rcm-boot","jetson-xavier-nx-devkit-emmc" ,"eth0"]
-        print("command",command_librray_install)
-        try:
-            result = subprocess.run(command_librray_install , capture_output=True, text=True, check=True)
-            print("STDOUT:", result.stdout)
-        except subprocess.CalledProcessError as e:
-            print("Failed to execute command:", e)
-            print("STDOUT:\n", e.stdout)
-            print("STDERR:\n", e.stderr)
-            return
+     
     def flash_jetson(self, nfs_ip_address, nfspath, usb_instance, model, nvidia_id):
 
 
