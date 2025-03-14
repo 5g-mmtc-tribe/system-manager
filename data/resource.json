@@ -20,23 +20,23 @@
 
   },
   {
-    "name": "j20-tribe2",
+    "name": "j40-tribe1",
     "cable_id": "2.16",
     "switch_interface": "GigabitEthernet1/0/25",
-    "model":"Jetson-Xavier-NX",
+    "model":"Jetson-Orin-NX",
     "nvidia_id": "0955-7323",
     "usb_instance": "1-4.3",
     "state":"Alive"
 
   },
   {
-    "name": "j40-tribe2",
+    "name": "j20-tribe2",
     "cable_id": "3.16",
     "switch_interface": "GigabitEthernet1/0/26",
-    "model":"Jetson-Orin-NX",
+    "model":"Jetson-Xavier-NX",
     "nvidia_id": "0955-7323",
     "usb_instance": "1-4.4" ,
-    "state":"Offline"
+    "state":"Alive"
 
   },
   {
