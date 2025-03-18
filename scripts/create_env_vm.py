@@ -17,6 +17,7 @@ from ip_addr_manager import IpAddr
 
 USER_SCRIPT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../user-scripts'))
 SWITCH_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../switch'))
+TOOLS_SCRIPT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tools'))
 sys.path.append(SWITCH_PATH)
 from switch_manager import SwitchManager
 
@@ -410,6 +411,13 @@ class VmManager:
     # --------------------------------------------------------------------------
     # 7. Additional Configuration
     # --------------------------------------------------------------------------
+    def setup_vpn_vlan(self ,vpn_name, vlan):
+        """Run the setup_eth_vlan_vpn.sh script with given VM name and VLAN."""
+        try:
+            subprocess.run([TOOLS_SCRIPT_PATH+"/setup_eth_vlan_vpn.sh", vpn_name, str(vlan)], check=True)
+            print(f"Successfully configured VLAN {vlan} on VM {vpn_name}.")
+        except subprocess.CalledProcessError as e:
+            print(f"Error configuring VLAN {vlan} on VM {vpn_name}: {e}")
 
 
     def _install_nbd_packages(self, vm_name: str) -> None:

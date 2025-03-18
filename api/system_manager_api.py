@@ -39,6 +39,7 @@ ROOT_FS_3276 ="/root/nfsroot-jp-3276"
 ROOT_FS_3541 = "/root/nfsroot-jp-3541"
 DRIVER_3541 = 'rootfs-basic-jp3541-noeula-user.tar.gz'
 DRIVER_3276 ='rootfs-jp3276.tar.gz'
+VPN_NAME ="vm-openvpn-server"
 def load_switch_config():
     """
     Load and return the switch configuration from the JSON file.
@@ -320,6 +321,8 @@ def create_user_env_vm(ubuntu_version: str, vm_name: str, root_size: str, user_i
                 continue
             vm_manager.setup_nfs_jetson(user_name, rootfs,nodes)
         vm_manager.configure_nbd_on_lxc_vm(vm_name, nfs_ip_addr.split('/')[0],nodes)
+        ## add vpn interface if the vlan 
+        vm_manager.setup_vpn_vlan(VPN_NAME, user_network_id)
         return {"vm_ip_address": "10.0.0.0", "status": "User Env Created"}
     else:
         vm_manager.start_vm(vm_name)
