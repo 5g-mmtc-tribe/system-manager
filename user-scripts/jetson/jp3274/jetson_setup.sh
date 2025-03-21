@@ -74,6 +74,7 @@ sudo nbd-client "${nbd_server_ip}" 10809 /dev/nbd0 -name nbd_jetson_"${HOSTNAME}
 
 # Format and mount the NBD device to the workspace
 #echo "Formatting /dev/nbd0 with ext4..."
+#sudo dd if=/dev/zero of=/root/nbd_jetson/nbd_jetson.img bs=1M count=4096 
 #sudo mkfs.ext4  -F /dev/nbd0
 echo "Mounting /dev/nbd0 to ${workspace_dir}..."
 sudo mount /dev/nbd0 "$workspace_dir"

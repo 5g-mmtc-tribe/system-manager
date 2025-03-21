@@ -448,13 +448,19 @@ class VmManager:
         """
 
         # Read the current configuration file.
-        base_image_path = "nbd_jetson.img"
+        base_image_path = ""
         result = self.run_lxc_command(vm_name, ["cat", "/etc/nbd-server/config"])
         existing_config = result.stdout
      
 
         new_config_content = ""
         for node in nodes:
+
+            if "j20" in node or "j40" in node:
+               base_image_path ="nbd_jetson_jp3541.img"
+            elif "j10" in node:
+                 base_image_path ="nbd_jetson_jp3274.img"
+
             node_section = f"[nbd_jetson_{node}]"
             # If the node section already exists, skip processing for this node.
             if node_section in existing_config:
@@ -466,7 +472,7 @@ class VmManager:
             self.run_lxc_command(vm_name, ["mkdir", "-p", node_folder])
             
             # Define the node image path.
-            node_image_path = f"{node_folder}/nbd_jetson.img"
+            node_image_path = f"{node_folder}/{base_image_path}"
             push_command = ["lxc", "file", "push", base_image_path, f"{vm_name}{node_image_path}"]
             self.run_command(push_command,"push nbd images ")
             
@@ -667,50 +673,75 @@ class VmManager:
         ]:
             subprocess.run(['lxc', 'exec', lxd_vm_name, '--'] + cmd, check=True)
         logging.info("SSH key verification and update complete for VM %s", lxd_vm_name)
-    import os
 
-    def push_files_to_vm(self, vm_name, nfs_root, user_script_path, nfs_ip_addr):
+
+    def push_files_to_vm(self, vm_name, nfs_root, user_script_path, nfs_ip_addr, user_script_path_jp):
         """
-        Push multiple files to the VM in a single function.
+        Push multiple files to the VM and create necessary directories.
 
         Parameters:
         - vm_name: Name of the virtual machine.
-        - nfs_root: The NFS root directory path.
+        - nfs_root: The NFS root directory path (e.g., "/root/nfsroot/").
         - user_script_path: The local folder path where the scripts are stored.
         - nfs_ip_addr: IP address for network file system operations.
+        - user_script_path_jp: Additional script path for Jetson files.
         """
 
-        # Define the target directory in the VM
-        target_dir = f"{vm_name}{nfs_root}/rootfs/home/mmtc/"
 
-        # List of files with their corresponding descriptions.
-        # For files that are part of the user_script_path, we join the path.
-        # The Docker images file is assumed to be in the current directory.
+        # === Folder Creation Directory (Used for Creating Folders) ===
+        base_folder_creation_dir = f"{nfs_root}/rootfs/home/mmtc"
+
+        # === File Pushing Directory (Used for Pushing Files) ===
+        base_file_pushing_dir = f"{vm_name}{nfs_root}/rootfs/home/mmtc"
+
+        # Ensure the main scripts directory exists (folder creation directory)
+        scripts_root = f"{base_folder_creation_dir}/scripts"
+        self.run_command(["lxc", "exec", vm_name, "--", "mkdir", "-p", scripts_root], "Ensuring scripts root directory exists")
+
+        # Define corrected folder structure inside `/root/nfsroot/rootfs/home/mmtc/scripts/`
+        directories = {
+            "setup": f"{scripts_root}/setup",       # Jetson & library setup scripts + Dockerfile
+            "network": f"{scripts_root}/network",   # Network configuration scripts
+            "system": f"{scripts_root}/system",     # System maintenance scripts
+            "fan": f"{scripts_root}/fan",           # Fan control scripts
+        }
+
+        # Ensure required subdirectories exist inside `/root/nfsroot/rootfs/home/mmtc/`
+        for key, path in directories.items():
+            self.run_command(["lxc", "exec", vm_name, "--", "mkdir", "-p", path], f"Creating {key} directory in VM")
+
+        # Define files and their corresponding directories (for file pushing)
         files_to_push = [
-            ("Dockerfile", "Push Dockerfile to user home"),
-            ("lib_setup.sh", "Push Jetson setup script to user home"),
-            ("jetson_setup.sh", "Push jetson setup script"),
-            ("restart_jetson.sh", "Push restart jetson setup script"),
-            ("configure_PPP.sh", "Push configure PPP script"),
-            ("fan_control.py", "Push fan control script")
-            #("mmtc-docker.tar", "Push Docker images")  # Assumed to be in the current working directory
+            ("Dockerfile", "setup", "Push Dockerfile to setup directory"),
+            ("lib_setup.sh", "setup", "Push Jetson setup script"),
+            ("jetson_setup.sh", "setup", "Push Jetson setup script"),
+            ("restart_jetson.sh", "system", "Push system restart script"),
+            ("configure_PPP.sh", "network", "Push network configuration script"),
+            ("fan_control.py", "fan", "Push fan control script")
         ]
 
-        # Loop through each file and push it to the target directory
-        for file_name, description in files_to_push:
-            if file_name == "mmtc-docker.tar":
-                # For the docker image tar file, the file is in the current folder.
-                file_path = file_name
+        # Loop through each file and push it to the appropriate directory (file pushing directory)
+        for file_name, folder, description in files_to_push:
+            # Determine the correct file path
+            if file_name in ["lib_setup.sh", "Dockerfile", "jetson_setup.sh"]:
+                full_user_script_path = os.path.join(USER_SCRIPT_PATH,user_script_path_jp)
             else:
-                # For all other files, use the user_script_path
-                file_path = os.path.join(user_script_path, file_name)
+                full_user_script_path = user_script_path
 
-            # Build the command list for pushing the file
+            file_path = os.path.join(full_user_script_path, file_name)
+            #target_dir = directories[folder].replace(base_folder_creation_dir, base_file_pushing_dir)
+            target_dir = os.path.join( directories[folder].replace(base_folder_creation_dir, base_file_pushing_dir), file_name)
+
+
+            # Build and execute the command to push the file
             push_command = ["lxc", "file", "push", file_path, target_dir]
             self.run_command(push_command, description)
 
-        # Create a readme in the VM after pushing all files
-        VmManager.create_readme_in_vm(vm_name, nfs_ip_addr,nfs_root)
+        # Create a README in the VM after pushing all files
+        VmManager.create_readme_in_vm(vm_name, nfs_ip_addr, nfs_root)
+
+        print("All files successfully pushed and organized in the VM.")
+
 
     # --------------------------------------------------------------------------
     # 9. Tool Installation
@@ -749,14 +780,14 @@ class VmManager:
             # If the command fails (i.e., the folder doesn't exist), return False.
             return False
             
-    def configure_nfs_jetson(self ,vm_name: str, nfs_ip_addr: str ,nfs_root:str ,driver :str):
+    def configure_nfs_jetson(self ,vm_name: str, nfs_ip_addr: str ,nfs_root:str ,driver :str, user_script_path_jp :str):
         if self.folder_exists(vm_name, nfs_root):
             print(f"Folder {nfs_root} already exists in container {vm_name}. Skipping configuration steps.")
             return
         self.create_nfs_server(vm_name, nfs_root,driver)
         push_nfs_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "nfs_setup.sh"), f"{vm_name}/root/"]
         self.run_command(push_nfs_setup, "Push NFS setup script")
-        self.push_files_to_vm(vm_name,nfs_root,USER_SCRIPT_PATH,nfs_ip_addr)
+        self.push_files_to_vm(vm_name,nfs_root,USER_SCRIPT_PATH,nfs_ip_addr,user_script_path_jp)
         time.sleep(10)
 
 
@@ -788,12 +819,13 @@ class VmManager:
             return
 
         script_path = "/root/nfs_setup.sh"
+        logging.info("Executing NFS  in VM with %s %s", nfsroot_v,device_names)
         # First argument is now the nfsroot_v, followed by the device names
         args = " ".join([nfsroot_v] + device_names)
         
         try:
             subprocess.run(["lxc", "exec", vm_name, "--", "chmod", "+x", script_path], check=True)
-            logging.info("Executing NFS setup script in VM %s", vm_name)
+            logging.info("Executing NFS setup script in VM %s %s", vm_name ,nfsroot_v)
             subprocess.run(["lxc", "exec", vm_name, "--", "bash", "-c", f"{script_path} {args}"], check=True)
             logging.info("NFS setup script executed successfully in VM %s", vm_name)
         except subprocess.CalledProcessError as e:
@@ -809,13 +841,37 @@ class VmManager:
         """
     
         nfs_ip = nfs_ip_addr.split('/')[0]
-        content = f"""# Setup Instructions
+        content = f"""#  Instructions
         
-- Run lib_setup.sh to install required libraries.
-- Run jetson_setup.sh with your NFS IP address:
-    ./jetson_setup.sh {nfs_ip}
+## 1️⃣ Install Required Libraries
+Run this command to install necessary libraries:
 
-Replace {nfs_ip} with your actual NFS IP address.
+./scripts/setup/lib_setup.sh
+
+
+## 2️⃣ Configure Jetson
+Run the setup script with your NFS IP:
+
+./scripts/setup/jetson_setup.sh {nfs_ip}
+
+📌 Replace `{nfs_ip}` with your actual NFS IP if different.
+
+## 3️⃣ Network Configuration
+Set up network connectivity:
+
+./scripts/network/configure_PPP.sh
+
+
+## 4️⃣ System Maintenance
+Restart Jetson when necessary:
+
+./scripts/system/restart_jetson.sh
+
+## 5️⃣ Fan Control (Optional)
+Manage the Jetson fan:
+
+./scripts/fan/fan_control.py
+
 """    
         touch_cmd = f'lxc exec {vm_name} -- bash -c "touch {rootfs}/rootfs/home/mmtc/README.md"'
         try:
@@ -901,7 +957,9 @@ vm_manager = VmManager()
 #vm_manager.run_command(push_docker_images, "Push Docker images")
 #push_nfs_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "nfs_setup.sh"), f"{"mehdi"}/root/"]
 #vm_manager.run_command(push_nfs_setup, "Push NFS setup script")
-#vm_manager.setup_nfs_jetson("mehdi",["j20-tribe2"])
+#vm_manager.setup_nfs_jetson("mehdi","/nfsroot-jp-3541",["j40-tribe1"])
 #base_image_path="nbd_jetson.img"
 #push_command = ["lxc", "file", "push", base_image_path, "mehdi/root/nbd_jetson_j20-tribe2/"]
 #vm_manager.run_command(push_command,"push ")
+#vm_manager.push_files_to_vm(vm_name="mehdi",nfs_root='/root/nfsroot-jp-3274',user_script_path=USER_SCRIPT_PATH , nfs_ip_addr="10.111.67.4",user_script_path_jp="jetson/jp3274/")
+#vm_manager.create_readme_in_vm("mehdi",  nfs_ip_addr="10.111.67.4", rootfs='/root/nfsroot-jp-3274')

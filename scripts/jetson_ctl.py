@@ -11,10 +11,10 @@ class Jetson:
         self.number_xavier = 0
         self.orin_id = "ID 0955-7323 NVIDIA Corp. APX"
         self.xavier_kit ="jetson-xavier-nx-devkit"
-        self.orin_kit ="jetson-orin-nano-devkit-nvme"
+        self.orin_kit ="jetson-orin-nano-devkit"
         # self.orin_kit ="jetson-orin-nano-devkit-nvme"
         self.nano_kit ="jetson-nano-devkit-emmc"
-        self .TEGRA_3276 ="Linux_for_Tegra_jp3276"
+        self .TEGRA_3274 ="Linux_for_Tegra_jp3274"
         self .TEGRA_3541 = "Linux_for_Tegra_jp3541"
 
     def get_xavier_instances(self):
@@ -146,7 +146,7 @@ class Jetson:
             tegra_folder= self.TEGRA_3541
         elif model == "Jetson-Nano":
             kit = self.nano_kit
-            tegra_folder= self.TEGRA_3276
+            tegra_folder= self.TEGRA_3274
         else:
             print("Unknown model provided")
             return {
@@ -239,10 +239,12 @@ class Jetson:
         except Exception as e:
             print(f"An error occurred during ping test: {e}")
             return False
-#jetson = Jetson()
+jetson = Jetson()
 #jetson.flash_jetson("10.111.67.4/24","/root/nfsroot-jp-3541/rootfs",'1-4.3',"Jetson-Orin-NX","")    
 #number = jetson.number_of_jetsons_xavier_connected()
 
 #print(jetson.get_xavier_instances())
 #sudo ./flash.sh -N 10.111.36.4:/root/nfsroot/rootfs --rcm-boot jetson-xavier-nx-devkit-emmc eth0 
 #sudo ./flash.sh --usb-instance '1-4.3'  -N 10.111.67.4:/root/nfsroot-jp-3541/rootfs  --rcm-boot jetson-orin-nano-devkit-nvme eth0 
+#sudo ./flash.sh --usb-instance '1-4.1.4'  -N 10.111.67.4:/root/nfsroot-jp-3274/rootfs  --rcm-boot jetson-nano-emmc eth0 
+#sudo ./flash.sh --usb-instance '1-4.1.2'  -N 10.111.67.4:/root/nfsroot-jp-3274/rootfs  --rcm-boot jetson-nano-emmc eth0 

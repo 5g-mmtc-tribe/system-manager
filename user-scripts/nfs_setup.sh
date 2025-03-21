@@ -110,18 +110,21 @@ for DEVICE in "${DEVICE_NAMES[@]}"; do
     fi
 
     # Check if the fan control script is already in rc.local
-    if ! grep -q "/usr/bin/python3 /home/mmtc/fan_control.py" "$RC_LOCAL_FILE"; then
+    if ! grep -q "/usr/bin/python3 /home/mmtc/scripts/fan/fan_control.py" "$RC_LOCAL_FILE"; then
         echo "Adding fan control script to $RC_LOCAL_FILE"
-        echo "/usr/bin/python3 /home/mmtc/fan_control.py &" >>"$RC_LOCAL_FILE"
+        echo "/usr/bin/python3 /home/mmtc/scripts/fan/fan_control.py &" >>"$RC_LOCAL_FILE"
     else
         echo "Fan control script is already in rc.local."
     fi
 done
 
 # Configure NFS exports
-echo "# Configuring NFS exports..." > "$EXPORTS_FILE"
+echo "# Configuring NFS exports..." >> "$EXPORTS_FILE"
 
-echo "$BASE_ROOTFS *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000,crossmnt)" >> "$EXPORTS_FILE"
+line="$BASE_ROOTFS *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000,crossmnt)"
+if ! grep -qxF "$line" "$EXPORTS_FILE"; then
+    echo "$line" >> "$EXPORTS_FILE"
+fi
 
 for DEVICE in "${DEVICE_NAMES[@]}"; do
     FINAL_ROOT="$NFS_ROOT/$DEVICE/rootfs"

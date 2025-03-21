@@ -35,10 +35,13 @@ SWITCH_CONFIG_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '..
 DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data'))
 ACTIVE_USERS_PATH = os.path.join(DATA_DIR, 'active_users.json')
 RESOURCE_JSON_PATH = os.path.join(DATA_DIR, 'resource.json')
-ROOT_FS_3276 ="/root/nfsroot-jp-3276"
+ROOT_FS_3274 ="/root/nfsroot-jp-3274"
+DRIVER_3274 ='rootfs-jp3274.tar.gz'
 ROOT_FS_3541 = "/root/nfsroot-jp-3541"
 DRIVER_3541 = 'rootfs-basic-jp3541-noeula-user.tar.gz'
-DRIVER_3276 ='rootfs-jp3276.tar.gz'
+
+USER_SCRIPT_PATH_3274="jetson/jp3274/"
+USER_SCRIPT_PATH_3271="jetson/jp3541/"
 VPN_NAME ="vm-openvpn-server"
 def load_switch_config():
     """
@@ -299,12 +302,14 @@ def create_user_env_vm(ubuntu_version: str, vm_name: str, root_size: str, user_i
             if "j20" in node or "j40" in node:
                 rootfs = ROOT_FS_3541
                 driver = DRIVER_3541
+                user_script_path = USER_SCRIPT_PATH_3271
             elif "j10" in node:
-                rootfs = ROOT_FS_3276
-                driver = DRIVER_3276
+                rootfs = ROOT_FS_3274
+                driver = DRIVER_3274
+                user_script_path = USER_SCRIPT_PATH_3274
             else:
                 continue  # Skip unrecognized node types
-            vm_manager.configure_nfs_jetson(vm_name, nfs_ip_addr, rootfs,driver)
+            vm_manager.configure_nfs_jetson(vm_name, nfs_ip_addr, rootfs,driver,user_script_path)
        
         vm_manager.create_dhcp_server(vm_name, nfs_ip_addr)
         vm_manager.configure_vm_nat(vm_name)
@@ -315,11 +320,11 @@ def create_user_env_vm(ubuntu_version: str, vm_name: str, root_size: str, user_i
             if "j20" in node or "j40" in node:
                 rootfs = ROOT_FS_3541.split("/")[2]
             elif "j10" in node:
-                rootfs = ROOT_FS_3276.split("/")[2]
-                
+                rootfs = ROOT_FS_3274.split("/")[2]
             else:
                 continue
-            vm_manager.setup_nfs_jetson(user_name, rootfs,nodes)
+            vm_manager.setup_nfs_jetson(user_name, rootfs,[node])
+
         vm_manager.configure_nbd_on_lxc_vm(vm_name, nfs_ip_addr.split('/')[0],nodes)
         ## add vpn interface if the vlan 
         vm_manager.setup_vpn_vlan(VPN_NAME, user_network_id)
@@ -331,22 +336,25 @@ def create_user_env_vm(ubuntu_version: str, vm_name: str, root_size: str, user_i
             if "j20" in node or "j40" in node:
                 rootfs = ROOT_FS_3541
                 driver = DRIVER_3541
+                user_script_path = USER_SCRIPT_PATH_3271
             elif "j10" in node:
-                rootfs = ROOT_FS_3276
-                driver = DRIVER_3276
+                rootfs = ROOT_FS_3274
+                driver = DRIVER_3274
+                user_script_path = USER_SCRIPT_PATH_3274
             else:
                 continue  # Skip unrecognized node types
-            vm_manager.configure_nfs_jetson(vm_name, nfs_ip_addr, rootfs,driver)
+            vm_manager.configure_nfs_jetson(vm_name, nfs_ip_addr, rootfs,driver,user_script_path)
         vm_manager.add_ssh_key_to_lxd(user_name, user_name)
         for node in nodes:
             if "j20" in node or "j40" in node:
                 rootfs = ROOT_FS_3541.split("/")[2]
             elif "j10" in node:
-                rootfs = ROOT_FS_3276.split("/")[2]
+                rootfs = ROOT_FS_3274.split("/")[2]
                 
             else:
                 continue
-            vm_manager.setup_nfs_jetson(user_name, rootfs,nodes)
+            vm_manager.setup_nfs_jetson(user_name, rootfs,[node])
+
         vm_manager.update_nbd_config(vm_name, nfs_ip_addr.split('/')[0],nodes)
         return {"vm_ip_address": "10.0.0.0", "status": "User Env Created"}
 
@@ -395,4 +403,4 @@ if __name__ == "__main__":
     # create_user_env_vm(ubuntu_version, vm_name, root_size, user_info, nodes=None)
     #testbed_reset()
     #turn_off_node("GigabitEthernet1/0/25")
-    #turn_on_node("GigabitEthernet1/0/25")
+    turn_on_node("GigabitEthernet1/0/26")
