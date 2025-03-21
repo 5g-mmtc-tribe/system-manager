@@ -403,4 +403,4 @@ if __name__ == "__main__":
     # create_user_env_vm(ubuntu_version, vm_name, root_size, user_info, nodes=None)
     #testbed_reset()
     #turn_off_node("GigabitEthernet1/0/25")
-    turn_on_node("GigabitEthernet1/0/26")
+    #turn_on_node("GigabitEthernet1/0/26")

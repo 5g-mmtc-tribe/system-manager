@@ -395,7 +395,7 @@ class VmManager:
         delete_cmd = ['lxc', 'exec', vm_name, '--', 'rm', '-f', f'/root/{driver}']
         self.run_command(delete_cmd, "Delete driver tarball after extraction")
 
-        exports_cmd = f"echo '{nfs_root}/rootfs *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000)' > /etc/exports"
+        """exports_cmd = f"echo '{nfs_root}/rootfs *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000)' > /etc/exports"
         lxc_exports = f"lxc exec {vm_name} -- sh -c \"{exports_cmd}\""
         try:
             subprocess.run(lxc_exports, shell=True, capture_output=True, text=True, check=True)
@@ -403,7 +403,7 @@ class VmManager:
         except subprocess.CalledProcessError as e:
             logging.error("Failed to update /etc/exports: %s", e)
         self.run_command(["lxc", "exec", vm_name, "--", "sudo", "exportfs", "-a"],
-                         "Refresh NFS exports")
+                         "Refresh NFS exports")"""
         for action in [("restart", "Restart NFS server"), ("enable", "Enable NFS server")]:
             cmd = ["lxc", "exec", vm_name, "--", "sudo", "systemctl", action[0], "nfs-kernel-server"]
             self.run_command(cmd, action[1])
@@ -957,7 +957,7 @@ vm_manager = VmManager()
 #vm_manager.run_command(push_docker_images, "Push Docker images")
 #push_nfs_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "nfs_setup.sh"), f"{"mehdi"}/root/"]
 #vm_manager.run_command(push_nfs_setup, "Push NFS setup script")
-#vm_manager.setup_nfs_jetson("mehdi","/nfsroot-jp-3541",["j40-tribe1"])
+#vm_manager.setup_nfs_jetson("mtestvm","nfsroot-jp-3541",["j20-tribe4"])
 #base_image_path="nbd_jetson.img"
 #push_command = ["lxc", "file", "push", base_image_path, "mehdi/root/nbd_jetson_j20-tribe2/"]
 #vm_manager.run_command(push_command,"push ")

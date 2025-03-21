@@ -49,6 +49,7 @@ for DEVICE in "${DEVICE_NAMES[@]}"; do
         else
             echo "Shared root filesystem already mounted for $DEVICE."
         fi
+        continue
 
     fi
 
@@ -116,20 +117,21 @@ for DEVICE in "${DEVICE_NAMES[@]}"; do
     else
         echo "Fan control script is already in rc.local."
     fi
+    #export nfs 
+    # Configure NFS exports
+    echo "# Configuring NFS exports $DEVICE ..." >> "$EXPORTS_FILE"
+    FINAL_ROOT_EXPORT="$NFS_ROOT/$DEVICE/rootfs"
+    echo "$FINAL_ROOT_EXPORT *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000,crossmnt)" >> "$EXPORTS_FILE"
 done
 
-# Configure NFS exports
-echo "# Configuring NFS exports..." >> "$EXPORTS_FILE"
 
-line="$BASE_ROOTFS *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000,crossmnt)"
-if ! grep -qxF "$line" "$EXPORTS_FILE"; then
-    echo "$line" >> "$EXPORTS_FILE"
+
+# Export the shared BASE_ROOTFS if not already exported
+base_export_line="$BASE_ROOTFS *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000,crossmnt)"
+if ! grep -Fxq "$base_export_line" "$EXPORTS_FILE"; then
+    echo "$base_export_line" >> "$EXPORTS_FILE"
 fi
 
-for DEVICE in "${DEVICE_NAMES[@]}"; do
-    FINAL_ROOT="$NFS_ROOT/$DEVICE/rootfs"
-    echo "$FINAL_ROOT *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000,crossmnt)" >> "$EXPORTS_FILE"
-done
 
 # Restart NFS server
 echo "Restarting NFS server..."
