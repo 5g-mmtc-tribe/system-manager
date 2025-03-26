@@ -61,20 +61,20 @@ user_info_data = json.loads(response_user_info.json())
 # Creating user env
 #----------------------------------------------------
 
-# user_env_info = {
-#     'ubuntu_version': '24.04',
-#     'vm_name': user_info_data['user_name'],
-#     'root_size': '4GiB',
-#     'user_info': user_info_data
-# }
+user_env_info = {
+    'ubuntu_version': '24.04',
+   'vm_name': user_info_data['user_name'],
+     'root_size': '4GiB',
+     'user_info': user_info_data
+ }
 
 # # Create Pydantic model instance
-# request_data = CreateUserEnvVMRequest(**user_env_info)
+request_data = CreateUserEnvVMRequest(**user_env_info)
 
 # # Send request
-# response = requests.post('http://127.0.0.1:8000/create_user_env_vm', json=request_data.dict())
-# print(response.status_code)
-# print(response.json())
+response = requests.post('http://127.0.0.1:8000/create_user_env_vm', json=request_data.dict())
+print(response.status_code)
+print(response.json())
 
 
 
@@ -87,6 +87,11 @@ data = {
 }
 
 response = requests.post('http://127.0.0.1:8000/destroy_env_vm', json=data)
+print(response.status_code)
+print(response.json())
+
+
+response = requests.post('http://127.0.0.1:8000/clear_active_users')
 print(response.status_code)
 print(response.json())
 
@@ -105,15 +110,15 @@ print(response.json())
 # -------------------------------------
 # Turn on all nodes
 
-# response = requests.post('http://127.0.0.1:8000/turn_on_all')
-# print(response.status_code)
-# print(response.json())
+response = requests.post('http://127.0.0.1:8000/turn_on_all')
+print(response.status_code)
+print(response.json())
 
 # -------------------------------------
 
 
 # Turn off all nodes
 
-# response = requests.post('http://127.0.0.1:8000/testbed_reset')
-# print(response.status_code)
-# print(response.json())
+response = requests.post('http://127.0.0.1:8000/testbed_reset')
+print(response.status_code)
+print(response.json())

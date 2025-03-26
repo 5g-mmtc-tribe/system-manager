@@ -1,0 +1,172 @@
+---
+
+# Task 1: Ensure LXD is installed
+- name: Install LXD
+  shell: snap install lxd --channel=latest/stable
+  become: yes
+
+# Task 2: Initialize LXD with minimal configuration
+- name: Initialize LXD
+  shell: lxd init --minimal
+  become: yes
+
+# Task 3: Add the user running the playbook to the LXD group
+- name: Add the local user running the playbook to the lxd group
+  user:
+    name: "{{ lookup('env', 'USER') }}"  # Retrieve the local user running the playbook
+    groups: lxd
+    append: yes  # Ensure the user is added to the lxd group without removing them from others
+  become: yes  # Required to modify user group membersh
+
+
+# Task 4: Install required Python dependencies (with --break-system-packages)
+# Task: Install required Python dependencies (Use apt where possible)
+- name: Install Python packages using apt
+  apt:
+    name:
+      - python3-fastapi
+      - python3-pandas
+      - python3-pylxd
+      - python3-uvicorn
+      - python3-redis
+      - python3-netmiko
+      - bzip2
+    state: present
+  become: yes
+
+- name: Install remaining Python dependencies with pip
+  command: > 
+    python3 -m pip install --break-system-packages {{ item }}
+  loop:
+    - ansible-pylibssh
+  become: yes
+
+
+
+- name: install apt jq
+  apt:
+    name: jq 
+    state: present
+# Task 3: Add the user running the playbook to the LXD group
+- name: Add the local user running the playbook to the lxd group
+  user:
+    name: "{{ lookup('env', 'USER') }}"  # Retrieve the local user running the playbook
+    groups: lxd
+    append: yes  # Ensure the user is added to the lxd group without removing them from others
+  become: yes  # Required to modify user group membersh
+
+
+# Task 5: Check if BSP file exists
+- name: Check if BSP file exists
+  stat:
+    path: "../../data/{{ bsp_file_name }}"
+  register: bsp_stat
+
+# Task 6: Check if rootfs file exists
+- name: Check if rootfs file exists
+  stat:
+    path: "../../data/{{ rootfs_file_name }}"
+  register: rootfs_stat
+
+# Task 7: Download BSP file if not already present
+- name: Download BSP if not already present
+  get_url:
+    url: "{{ bsp_url }}"
+    dest: "../../data/{{ bsp_file_name }}"
+  when: not bsp_stat.stat.exists
+
+# Task 8: Download rootfs file if not already present
+- name: Download rootfs if not already present
+  get_url:
+    url: "{{ rootfs_url }}"
+    dest: "../../data/{{ rootfs_file_name }}"
+  when: not rootfs_stat.stat.exists
+
+# Step 1: Check if api/jetson directory exists, if not, create it
+- name: Ensure api/jetson directory exists
+  file:
+    path: "{{system_manager_base_path}}/api/jetson"
+    state: directory
+
+# Step 2: Extract Jetson Linux package
+- name: Extract Jetson Linux package
+  unarchive:
+    src: "{{ base_dir }}/Jetson_Linux_R35.4.1_aarch64.tbz2"
+    dest: "{{system_manager_base_path}}/api/jetson"
+    remote_src: yes
+
+# Step 3: Extract Tegra root filesystem
+- name: Extract Tegra root filesystem
+  unarchive:
+    src: "{{ base_dir }}/Tegra_Linux_Sample-Root-Filesystem_R35.4.1_aarch64.tbz2"
+    dest: "{{system_manager_base_path}}/api/jetson/Linux_for_Tegra/rootfs"
+    remote_src: yes
+
+# Step 4: Add universe repository and install dependencies
+- name: Add universe repository
+  apt_repository:
+    repo: "deb http://archive.ubuntu.com/ubuntu/ {{ ansible_distribution_release }} universe"
+    state: present
+
+- name: Update apt cache
+  apt:
+    update_cache: yes
+
+- name: Install qemu-user-static
+  apt:
+    name: qemu-user-static
+    state: present
+
+# Step 5: Apply binaries
+- name: Apply Jetson binaries
+  shell: "sudo ./apply_binaries.sh"
+  args:
+    chdir: "{{system_manager_base_path}}/api/jetson/Linux_for_Tegra"
+
+# Step 6: Install additional dependencies for user creation
+- name: Install lz4 and libxml2-utils
+  apt:
+    name:
+      - lz4
+      - libxml2-utils
+    state: present
+
+# Step 7: Create default user
+- name: Create default user
+  shell: |
+    sudo ./tools/l4t_create_default_user.sh -u {{ username }} -p {{ password }} -n {{ hostname }} --accept-license
+  args:
+    chdir: "{{system_manager_base_path}}/api/jetson/Linux_for_Tegra"
+
+# Step 5: Check if the file exists before downloading
+- name: Check if rootfs-basic-jp3541-noeula-user.tar.gz exists
+  stat:
+    path: "{{ system_manager_base_path }}/api/rootfs-basic-jp3541-noeula-user.tar.gz"
+  register: rootfs_file
+
+- name: Download rootfs-basic-jp3541-noeula-user.tar.gz if not exists
+  command: >
+    wget -O {{ system_manager_base_path }}/api/rootfs-basic-jp3541-noeula-user.tar.gz http://localhost:80/rootfs-basic-jp3541-noeula-user.tar.gz
+  when: not rootfs_file.stat.exists
+
+
+  # Task 10: Launch get_xavier_instances from jetson_ctl.py
+- name: Launch get_xavier_instances function from jetson_ctl.py
+  command: python3 {{ system_manager_base_path }}/scripts/jetson_ctl.py get_xavier_instances
+  become: yes
+
+# Task 11: Initialize active_users.json with an empty list
+- name: Initialize active_users.json with empty list
+  copy:
+    content: "[]"
+    dest: "{{ system_manager_base_path }}/data/active_users.json"
+    owner: nobody  # Generic non-root user
+    group: nogroup  # Generic non-root group
+    mode: '0666'  # Allow read and write access to everyone
+  become: yes
+  
+# Optional Task: Start the system manager service (if needed)
+#- name: Start system manager service
+#   shell: python3 api/system_manager_service.py &
+#   args:
+#     executable: /bin/bash

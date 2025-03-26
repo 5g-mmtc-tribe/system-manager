@@ -1,1 +1,31 @@
-[]
+[
+    {
+        "user_name": "mehdi",
+        "user_network_id": 67,
+        "user_subnet": "10.111.67.0/24",
+        "nfs_ip_addr": "10.111.67.4/24",
+        "macvlan_interface": "macvlan_mehdi"
+    },
+    {
+        "user_name": "fmolano",
+        "user_network_id": 212,
+        "user_subnet": "10.111.212.0/24",
+        "nfs_ip_addr": "10.111.212.4/24",
+        "macvlan_interface": "macvlan_fmolano"
+    },
+    {
+        "user_name": "cadjih",
+        "user_network_id": 201,
+        "user_subnet": "10.111.201.0/24",
+        "nfs_ip_addr": "10.111.201.4/24",
+        "macvlan_interface": "macvlan_cadjih"
+    },
+
+    {
+        "user_name": "mtestvm",
+        "user_network_id": 195,
+        "user_subnet": "10.111.195.0/24",
+        "nfs_ip_addr": "10.111.195.4/24",
+        "macvlan_interface": "macvlan_mtestvm"
+    }
+]

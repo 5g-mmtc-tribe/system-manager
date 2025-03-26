@@ -1,0 +1,102 @@
+---
+
+# Step 1: Create LXC VM for the web portal
+- name: Create LXC VM for the web portal
+  shell: |
+    lxc launch ubuntu:20.04 WebPortal --vm --device root,size=80GB -c limits.cpu=4 -c limits.memory=4GiB
+  register: lxc_vm_created
+  ignore_errors: yes  # Ignore errors if the VM already exists
+
+# Step 2: Wait for VM to boot up and get IP address
+- name: Wait for LXC VM to boot and retrieve IP address
+  shell: |
+    lxc list WebPortal --format=json | jq -r '.[0].state.network.enp5s0.addresses[] | select(.family == "inet") | .address'
+  register: lxc_vm_ip
+  retries: 10
+  delay: 10
+  until: lxc_vm_ip.stdout.strip() != ""
+  changed_when: false
+
+# Step 3: Show the IP address of WebPortal
+- name: Show the IP address of WebPortal
+  debug:
+    msg: "The IP address of WebPortal is: {{ lxc_vm_ip.stdout.strip() }}"
+
+# Step 4: Add SSH public key for root user (direct modification)
+- name: Add SSH public key to the LXC VM for root
+  shell: |
+    lxc exec WebPortal -- bash -c "
+    mkdir -p /root/.ssh && \
+    echo '{{ lookup('file', '~/.ssh/id_rsa.pub') }}' >> /root/.ssh/authorized_keys && \
+    chmod 600 /root/.ssh/authorized_keys && \
+    chmod 700 /root/.ssh"
+  args:
+    executable: /bin/bash
+
+# Step 5: Wait for SSH to be available on the WebPortal LXC VM
+- name: Wait for SSH to be available on the WebPortal LXC VM
+  wait_for:
+    host: "{{ lxc_vm_ip.stdout.strip() }}"
+    port: 22
+    delay: 5
+    timeout: 300
+
+# Step 6: Add the IP to the webportal inventory as root
+- name: Update inventory with the WebPortal root user and IP
+  add_host:
+    name: "{{ lxc_vm_ip.stdout.strip() }}"
+    ansible_user: root
+    ansible_ssh_private_key_file: ~/.ssh/id_rsa
+    ansible_connection: ssh
+
+
+# Step 8: Clone the WebPortal repository from GitHub (using personal access token)
+- name: Clone WebPortal project repository from GitHub (private)
+  git:
+    repo: "https://{{ github_user }}:{{ github_token }}@github.com/5g-mmtc-tribe/5g-testbed-webportal.git"
+    dest: /root/testbed-webportal
+    version: dev
+  become: yes
+  delegate_to: "{{ lxc_vm_ip.stdout.strip() }}"
+
+# Step 9: Install Node.js 13.14.0 on WebPortal VM (running as root)
+- name: Install Node.js 13.14.0 on WebPortal VM
+  shell: |
+    curl -sL https://deb.nodesource.com/setup_13.x | sudo -E bash -
+    sudo apt-get install -y nodejs
+  args:
+    executable: /bin/bash
+  become: yes
+  delegate_to: "{{ lxc_vm_ip.stdout.strip() }}"
+
+# Step 10: Install npm dependencies on the LXC VM (running as root)
+- name: Install npm project dependencies
+  shell: npm install
+  args:
+    chdir: /root/testbed-webportal
+  become: yes
+  delegate_to: "{{ lxc_vm_ip.stdout.strip() }}"
+
+- name: Run local development server
+  shell: |
+    nohup npm run serve &
+  args:
+    chdir: /root/testbed-webportal
+  async: 3600
+  poll: 0
+  register: webportal_job
+  delegate_to: "{{ lxc_vm_ip.stdout.strip() }}"
+
+#Step 12: Wait for Web Portal to start
+- name: Wait for Web Portal to start
+  wait_for:
+    host: "{{ lxc_vm_ip.stdout.strip() }}"
+    port: 8080
+    delay: 5
+    timeout: 300
+
+
+# Step 13: Display message that the app is running with its IP
+- name: run the app 
+  debug:
+    msg: " the server start at {{ lxc_vm_ip.stdout.strip() }}:8080 "
