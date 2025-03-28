@@ -41,3 +41,6 @@ class TurnNode(BaseModel):
 class VlanNode(BaseModel):
     node_name :str
     vlan_id :int
+
+class Ressource(BaseModel):
+    name :str

@@ -31,11 +31,11 @@
   },
   {
     "name": "j20-tribe2",
-    "cable_id": "3.16",
-    "switch_interface": "GigabitEthernet1/0/26",
+    "cable_id": "2.23",
+    "switch_interface": "GigabitEthernet1/0/20",
     "model":"Jetson-Xavier-NX",
     "nvidia_id": "0955-7323",
-    "usb_instance": "1-4.4" ,
+    "usb_instance": "1-4.2.2" ,
     "state":"Alive"
 
   },

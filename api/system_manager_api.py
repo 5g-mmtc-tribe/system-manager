@@ -101,7 +101,22 @@ def get_resource_list():
     except Exception as e:
         logging.error("Error reading resource list: %s", e)
         raise
+def update_resource(name):
+    """
+    Load and return the update resource  from resource.json.
+    """
+    try:
 
+        with open(RESOURCE_JSON_PATH, 'r') as file:
+            data = json.load(file)
+            for ressource in data :
+                if name in ressource["name"]: 
+                    return ressource
+ 
+       
+    except Exception as e:
+        logging.error("Error reading resource list: %s", e)
+        raise
 # ---------------------------
 # Switch Operations
 # ---------------------------
