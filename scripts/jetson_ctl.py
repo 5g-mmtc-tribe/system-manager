@@ -69,7 +69,7 @@ class Jetson:
             )
 
                 # Write the xavier_instances to the resource file
-        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data'))
+        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../config'))
         file_path = os.path.join(script_path, 'resource.json')
 
         try:

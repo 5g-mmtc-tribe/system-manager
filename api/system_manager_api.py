@@ -1,3 +1,4 @@
+import subprocess
 from fastapi import FastAPI, HTTPException
 import os
 import sys
@@ -31,15 +32,18 @@ from switch_manager import SwitchManager
 from poe_manager import PoeManager
 
 # Global configuration paths
-SWITCH_CONFIG_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../switch/switch_config.json'))
-DATA_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data'))
-ACTIVE_USERS_PATH = os.path.join(DATA_DIR, 'active_users.json')
-RESOURCE_JSON_PATH = os.path.join(DATA_DIR, 'resource.json')
+SWITCH_CONFIG_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../config/switch_config.json'))
+CONFIG_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../config'))
+ACTIVE_USERS_PATH = os.path.join(CONFIG_DIR , 'active_users.json')
+RESOURCE_JSON_PATH = os.path.join(CONFIG_DIR , 'resource.json')
+RESSOURCE_CSV_PATH  = os.path.join('/home/fs-5gmmtclab/Workspace/list_devices.csv')
+
+
 ROOT_FS_3274 ="/root/nfsroot-jp-3274"
 DRIVER_3274 ='rootfs-jp3274.tar.gz'
 ROOT_FS_3541 = "/root/nfsroot-jp-3541"
 DRIVER_3541 = 'rootfs-basic-jp3541-noeula-user.tar.gz'
-
+TOOLS_SCRIPT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tools'))
 USER_SCRIPT_PATH_3274="jetson/jp3274/"
 USER_SCRIPT_PATH_3271="jetson/jp3541/"
 VPN_NAME ="vm-openvpn-server"
@@ -90,18 +94,46 @@ def destroy_env(config: UserEnv):
     """
     destroy_user_env(config)
 
+def update_ressource_from_platforme(list_ressource_csv, list_ressource_json):
+    """update ressource from the platforme csv """
+    result = subprocess.run(
+        ["python3", TOOLS_SCRIPT_PATH+"/csv_to_json.py", list_ressource_csv , list_ressource_json],
+        capture_output=True,
+        text=True
+    )
+    print("STDOUT:", result.stdout)
+    print("STDERR:", result.stderr)
+    return result.returncode
+
 def get_resource_list():
     """
     Load and return the resource list from resource.json.
     """
     try:
+        # update
+        #update_ressource_from_platforme(RESSOURCE_CSV_PATH,RESOURCE_JSON_PATH)
         with open(RESOURCE_JSON_PATH, 'r') as file:
             data = json.load(file)
         return data
     except Exception as e:
         logging.error("Error reading resource list: %s", e)
         raise
+def update_resource(name):
+    """
+    Load and return the update resource  from resource.json.
+    """
+    try:
 
+        with open(RESOURCE_JSON_PATH, 'r') as file:
+            data = json.load(file)
+            for ressource in data :
+                if name in ressource["name"]: 
+                    return ressource
+ 
+       
+    except Exception as e:
+        logging.error("Error reading resource list: %s", e)
+        raise
 # ---------------------------
 # Switch Operations
 # ---------------------------
@@ -238,6 +270,7 @@ def get_user_info(user_name: str, user_network_id: int):
         logging.error("Error getting user info: %s", e)
         raise
 
+
 # ---------------------------
 # VM Management
 # ---------------------------
@@ -344,7 +377,7 @@ def create_user_env_vm(ubuntu_version: str, vm_name: str, root_size: str, user_i
             else:
                 continue  # Skip unrecognized node types
             vm_manager.configure_nfs_jetson(vm_name, nfs_ip_addr, rootfs,driver,user_script_path)
-        vm_manager.add_ssh_key_to_lxd(user_name, user_name)
+        #vm_manager.add_ssh_key_to_lxd(user_name, user_name)
         for node in nodes:
             if "j20" in node or "j40" in node:
                 rootfs = ROOT_FS_3541.split("/")[2]
@@ -383,6 +416,8 @@ def flash_jetson(nfs_ip_address: str, nfspath: str, usb_instance: str, switch_in
         logging.error("Error flashing Jetson: %s", e)
         return str(e)
 
+
+
 # ---------------------------
 # Module Test Section
 # ---------------------------
@@ -404,3 +439,4 @@ if __name__ == "__main__":
     #testbed_reset()
     #turn_off_node("GigabitEthernet1/0/25")
     #turn_on_node("GigabitEthernet1/0/26")
+#update_ressource_from_platforme(RESSOURCE_CSV_PATH ,RESOURCE_JSON_PATH)

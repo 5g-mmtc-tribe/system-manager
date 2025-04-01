@@ -113,7 +113,7 @@ class IpAddr:
             ips = net.split(".")
             plage = net.rsplit('.', 1)[0]   
             subnet_low = str(int(ips[3]) + 2)
-            subnet_up = str(int(ips[3]) + 5)
+            subnet_up = str(int(ips[3]) + 7)
 
             new_content = f"""subnet {plage}.0 netmask 255.255.255.0 {{
             range {plage}.{subnet_low} {plage}.{subnet_up};

@@ -12,7 +12,8 @@ from models import (
     TurnNode,
     VlanNode,
     jetsonInfo,
-    sshInfo
+    sshInfo,
+    Ressource
 )
 os.makedirs('../logs', exist_ok=True)
 # Configure logging
@@ -44,6 +45,18 @@ def call_get_resource_list():
         logging.error("Error retrieving resource list: %s", e)
         raise HTTPException(status_code=500, detail="Failed to get resource list")
 
+
+#--------------------------------------------------
+# Update Resource 
+#--------------------------------------------------
+@app.post('/get_resource_update', summary=" get update  Resource info", description="Update resources from the system.")
+def call_update_resource(request:Ressource):
+    try:
+        resource_list = system_manager_api.update_resource(request.name)
+        return resource_list
+    except Exception as e:
+        logging.error("Error updating resource: %s", e)
+        raise HTTPException(status_code=500, detail="Failed to update resource ")
 #--------------------------------------------------
 # Destroy User Environment (VM)
 #--------------------------------------------------
@@ -176,7 +189,8 @@ def call_add_vlan_int(request: VlanNode):
         logging.info("Add VLAN request: %s", request)
         interface = system_manager_api.get_switch_interface(request.node_name)
         system_manager_api.attach_vlan_device_interface(interface, request.vlan_id)
-        return {"status": f"VLAN {request.vlan_id} added to node '{request.node_name}'"}
+        #return {"status": f"VLAN {request.vlan_id} added to node '{request.node_name}'"}
+        return {"success": True, "vlan_id": "request.vlan_id"}
     except Exception as e:
         logging.error("Error adding VLAN: %s", e)
         raise HTTPException(status_code=500, detail="Failed to add VLAN")

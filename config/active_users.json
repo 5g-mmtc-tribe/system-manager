@@ -1,0 +1,9 @@
+[
+    {
+        "user_name": "mehdi",
+        "user_network_id": 113,
+        "user_subnet": "10.111.113.0/24",
+        "nfs_ip_addr": "10.111.113.4/24",
+        "macvlan_interface": "macvlan_mehdi"
+    }
+]
