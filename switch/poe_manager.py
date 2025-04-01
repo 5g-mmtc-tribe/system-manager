@@ -22,7 +22,7 @@ class PoeManager:
 
         interfaces = []
         # Get the absolute path of the parent directory
-        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../data'))
+        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../config'))
         # Now include the directory path in the file path
         file_path = os.path.join(script_path, 'resource.json')
 

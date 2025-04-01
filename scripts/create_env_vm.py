@@ -13,6 +13,7 @@ from macvlan import MacVlan
 # Update sys.path for additional modules
 SCRIPT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts'))
 sys.path.append(SCRIPT_PATH)
+#print("my path",SCRIPT_PATH)
 from ip_addr_manager import IpAddr
 
 USER_SCRIPT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../user-scripts'))
@@ -33,7 +34,7 @@ class VmManager:
     """
     # Constants and paths
     current_dir: str = os.path.dirname(__file__)
-    data_dir: str = os.path.join(current_dir, '../data')
+    data_dir: str = os.path.join(current_dir, '../config')
     jetson_path: str = os.path.join(data_dir, 'jetson')
     bsp_path: str = os.path.join(data_dir, 'jetson_linux_r35.4.1_aarch64.tbz2')
     rootfs_path: str = os.path.join(data_dir, 'tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2')
