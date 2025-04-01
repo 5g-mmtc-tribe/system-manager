@@ -11,42 +11,36 @@ from subprocess import run, CalledProcessError
 # Configure logging
 logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
 
-# Add the scripts directory to sys.path
-SCRIPT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts'))
-sys.path.append(SCRIPT_DIR)
 
 # Import functions from scripts
-from create_env import launch_env
-from destroy_env import destroy_user_env
-from user_env import UserEnv
-from jetson_ctl import Jetson
-from ip_addr_manager import IpAddr
-from create_env_vm import VmManager
-from macvlan import MacVlan
-from container_create import Container
-
-# Add the switch directory to sys.path
-SWITCH_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../switch'))
-sys.path.append(SWITCH_DIR)
-from switch_manager import SwitchManager
-from poe_manager import PoeManager
+from config import DRIVER_3274_PATH, DRIVER_3541_PATH, HOST_INTERFACE, VM_INTERFACE
+from scripts.create_env import launch_env
+from scripts.destroy_env import destroy_user_env
+from scripts.user_env import UserEnv
+from scripts.jetson_ctl import Jetson
+from scripts.ip_addr_manager import IpAddr
+from scripts.create_env_vm import VmManager
+from scripts.macvlan import MacVlan
+from scripts.container_create import Container
+# switch import 
+from switch.switch_manager import SwitchManager
+from switch.poe_manager import PoeManager
 
 # Global configuration paths
-SWITCH_CONFIG_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../config/switch_config.json'))
-CONFIG_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../config'))
-ACTIVE_USERS_PATH = os.path.join(CONFIG_DIR , 'active_users.json')
-RESOURCE_JSON_PATH = os.path.join(CONFIG_DIR , 'resource.json')
-RESSOURCE_CSV_PATH  = os.path.join('/home/fs-5gmmtclab/Workspace/list_devices.csv')
+from config.config import SWITCH_CONFIG_PATH ,ACTIVE_USERS_PATH ,RESOURCE_JSON_PATH ,RESSOURCE_CSV_PATH ,DRIVER_3274 ,DRIVER_3541 ,VPN_NAME ,USER_SCRIPT_PATH_3271 ,USER_SCRIPT_PATH_3274
+from config.constants import ROOT_FS_3274 ,ROOT_FS_3541 ,TOOLS_SCRIPT_PATH
 
 
-ROOT_FS_3274 ="/root/nfsroot-jp-3274"
-DRIVER_3274 ='rootfs-jp3274.tar.gz'
-ROOT_FS_3541 = "/root/nfsroot-jp-3541"
-DRIVER_3541 = 'rootfs-basic-jp3541-noeula-user.tar.gz'
-TOOLS_SCRIPT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tools'))
-USER_SCRIPT_PATH_3274="jetson/jp3274/"
-USER_SCRIPT_PATH_3271="jetson/jp3541/"
-VPN_NAME ="vm-openvpn-server"
+# old imports
+#SCRIPT_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts'))
+#sys.path.append(SCRIPT_DIR)
+# Add the switch directory to sys.path
+#SWITCH_DIR = os.path.abspath(os.path.join(os.path.dirname(__file__), '../switch'))
+#sys.path.append(SWITCH_DIR)
+
+
+
+
 def load_switch_config():
     """
     Load and return the switch configuration from the JSON file.
@@ -279,7 +273,7 @@ def destroy_user_env_vm(vm_name: str, macvlan_name: str):
     """
     Destroy a VM environment and remove the associated macvlan interface.
     """
-    interface_name = "eno1"  # Update as needed.
+    interface_name = HOST_INTERFACE # Update as needed.
     macvlan_manager = MacVlan(interface_name)
     vm_manager = VmManager()
     vm_manager.delete_vm(vm_name)
@@ -318,14 +312,14 @@ def create_user_env_vm(ubuntu_version: str, vm_name: str, root_size: str, user_i
     nfs_ip_addr = user_info["nfs_ip_addr"]
     user_network_id = user_info["user_network_id"]
 
-    interface_name = "eno1"  # Update as needed.
+    interface_name = HOST_INTERFACE # Update as needed.
     vm_manager = VmManager()
     existed = vm_manager.create_user_vm(ubuntu_version, vm_name, root_size)
     
     if existed["created"]:
         time.sleep(20)
         vm_manager.create_macvlan_for_vm(user_name, user_network_id, SWITCH_CONFIG, interface_name, macvlan_name)
-        res = vm_manager.interface_check(vm_name, "enp6s0")
+        res = vm_manager.interface_check(vm_name, VM_INTERFACE)
         time.sleep(10)
         logging.info("Interface check result: %s", res)
         vm_manager.set_nfs_ip_addr(vm_name, nfs_ip_addr)
@@ -335,14 +329,16 @@ def create_user_env_vm(ubuntu_version: str, vm_name: str, root_size: str, user_i
             if "j20" in node or "j40" in node:
                 rootfs = ROOT_FS_3541
                 driver = DRIVER_3541
+                driver_path  = DRIVER_3541_PATH
                 user_script_path = USER_SCRIPT_PATH_3271
             elif "j10" in node:
                 rootfs = ROOT_FS_3274
                 driver = DRIVER_3274
+                driver_path = DRIVER_3274_PATH
                 user_script_path = USER_SCRIPT_PATH_3274
             else:
                 continue  # Skip unrecognized node types
-            vm_manager.configure_nfs_jetson(vm_name, nfs_ip_addr, rootfs,driver,user_script_path)
+            vm_manager.configure_nfs_jetson(vm_name, nfs_ip_addr, rootfs,driver,user_script_path,driver_path)
        
         vm_manager.create_dhcp_server(vm_name, nfs_ip_addr)
         vm_manager.configure_vm_nat(vm_name)
@@ -369,14 +365,16 @@ def create_user_env_vm(ubuntu_version: str, vm_name: str, root_size: str, user_i
             if "j20" in node or "j40" in node:
                 rootfs = ROOT_FS_3541
                 driver = DRIVER_3541
+                driver_path  = DRIVER_3541_PATH
                 user_script_path = USER_SCRIPT_PATH_3271
             elif "j10" in node:
                 rootfs = ROOT_FS_3274
                 driver = DRIVER_3274
+                driver_path = DRIVER_3274_PATH
                 user_script_path = USER_SCRIPT_PATH_3274
             else:
                 continue  # Skip unrecognized node types
-            vm_manager.configure_nfs_jetson(vm_name, nfs_ip_addr, rootfs,driver,user_script_path)
+            vm_manager.configure_nfs_jetson(vm_name, nfs_ip_addr, rootfs,driver,user_script_path,driver_path)
         #vm_manager.add_ssh_key_to_lxd(user_name, user_name)
         for node in nodes:
             if "j20" in node or "j40" in node:

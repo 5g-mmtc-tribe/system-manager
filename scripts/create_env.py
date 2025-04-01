@@ -1,8 +1,8 @@
 import subprocess
-from network_interface import NetworkInterface
-from macvlan import MacVlan
-from container_create import Container
-from user_env import UserEnv
+from scripts.network_interface import NetworkInterface
+from scripts.macvlan import MacVlan
+from scripts.container_create import Container
+from scripts.user_env import UserEnv
 
 
 def attatch_macvlan_container(macvlan_name, container_name, container_veth):

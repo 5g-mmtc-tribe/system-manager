@@ -159,7 +159,7 @@
 - name: Initialize active_users.json with empty list
   copy:
     content: "[]"
-    dest: "{{ system_manager_base_path }}/data/active_users.json"
+    dest: "{{ system_manager_base_path }}/config/active_users.json"
     owner: nobody  # Generic non-root user
     group: nogroup  # Generic non-root group
     mode: '0666'  # Allow read and write access to everyone

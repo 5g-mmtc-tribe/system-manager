@@ -1,4 +1,5 @@
 from fastapi import FastAPI, Request, HTTPException
+from config import API_HOST, API_PORT, SYSTEM_MANAGER_LOG_FILE
 import system_manager_api
 import logging
 import uvicorn
@@ -17,7 +18,7 @@ from models import (
 )
 os.makedirs('../logs', exist_ok=True)
 # Configure logging
-logging.basicConfig(filename='../logs/system_manager.log', force=True,level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
+logging.basicConfig(filename=SYSTEM_MANAGER_LOG_FILE, force=True,level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
 logging.info("Logging is configured and file is in the logs folder.")
 
 # Add a stream handler to also display logs in the console
@@ -244,4 +245,4 @@ async def call_flash_jetson(request: jetsonInfo):
 # Main: Run API with Uvicorn
 #--------------------------------------------------
 if __name__ == "__main__":
-    uvicorn.run(app, host="localhost", port=5000)
+    uvicorn.run(app, host=API_HOST, port=API_PORT)
