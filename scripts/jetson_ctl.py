@@ -3,8 +3,9 @@ import os
 import time 
 import json 
 import logging
-
 from config import RESOURCE_JSON_PATH
+# Setup module-level logger
+logger = logging.getLogger(__name__)
 class Jetson:
 
     def __init__(self):

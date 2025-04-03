@@ -1,8 +1,0 @@
-{
-    "device_type": "cisco_ios_telnet",  
-    "ip": "192.168.0.30",
-    "port": 23,
-    "password": "tribe",
-    "username": "tribe",  
-    "secret": "tribe"  
-}

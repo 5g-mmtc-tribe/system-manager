@@ -1,5 +1,6 @@
 from fastapi import FastAPI, Request, HTTPException
-from config import API_HOST, API_PORT, SYSTEM_MANAGER_LOG_FILE
+from config import API_HOST, API_PORT, SYSTEM_MANAGER_LOG_FILE ,SYSTEM_MANAGER_LOG_LEVEL ,LOGGING_FORMAT
+from config.init_logging import setup_logging
 import system_manager_api
 import logging
 import uvicorn
@@ -16,17 +17,15 @@ from models import (
     sshInfo,
     Ressource
 )
-os.makedirs('../logs', exist_ok=True)
 # Configure logging
-logging.basicConfig(filename=SYSTEM_MANAGER_LOG_FILE, force=True,level=logging.INFO, format="%(asctime)s - %(levelname)s - %(message)s")
-logging.info("Logging is configured and file is in the logs folder.")
+# Initialize logging with your environment-based configuration
+logger = setup_logging(
+    log_file_path=SYSTEM_MANAGER_LOG_FILE ,
+    log_level= SYSTEM_MANAGER_LOG_LEVEL,
+    log_format=LOGGING_FORMAT,
+)
+logger.info("System Manager API Server is starting at http://"+API_HOST +":"+ str(API_PORT) + "....")
 
-# Add a stream handler to also display logs in the console
-console_handler = logging.StreamHandler()
-console_handler.setLevel(logging.INFO)
-formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
-console_handler.setFormatter(formatter)
-logging.getLogger().addHandler(console_handler)
 # Initialize FastAPI app
 app = FastAPI(title="System Manager API", description="REST API for managing testbed environments", version="1.0")
 

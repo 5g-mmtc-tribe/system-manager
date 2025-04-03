@@ -9,11 +9,12 @@ import logging
 from subprocess import run, CalledProcessError
 
 # Configure logging
-logging.basicConfig(level=logging.INFO, format='%(asctime)s - %(levelname)s - %(message)s')
+# Setup module-level logger
+logger = logging.getLogger(__name__)
 
 
 # Import functions from scripts
-from config import DRIVER_3274_PATH, DRIVER_3541_PATH, HOST_INTERFACE, VM_INTERFACE
+from config import SWITCH_PASSWORD, SWITCH_SECRET
 from scripts.create_env import launch_env
 from scripts.destroy_env import destroy_user_env
 from scripts.user_env import UserEnv
@@ -27,8 +28,8 @@ from switch.switch_manager import SwitchManager
 from switch.poe_manager import PoeManager
 
 # Global configuration paths
-from config.config import SWITCH_CONFIG_PATH ,ACTIVE_USERS_PATH ,RESOURCE_JSON_PATH ,RESSOURCE_CSV_PATH ,DRIVER_3274 ,DRIVER_3541 ,VPN_NAME ,USER_SCRIPT_PATH_3271 ,USER_SCRIPT_PATH_3274
-from config.constants import ROOT_FS_3274 ,ROOT_FS_3541 ,TOOLS_SCRIPT_PATH
+from config.config import SWITCH_CONFIG_PATH ,ACTIVE_USERS_PATH ,RESOURCE_JSON_PATH ,RESSOURCE_CSV_PATH ,VPN_NAME ,HOST_INTERFACE, VM_INTERFACE
+from config.constants import ROOT_FS_3274 ,ROOT_FS_3541 ,TOOLS_SCRIPT_PATH ,USER_SCRIPT_PATH_3271 ,USER_SCRIPT_PATH_3274 ,DRIVER_3274 ,DRIVER_3541 ,DRIVER_3274_PATH, DRIVER_3541_PATH
 
 
 # old imports
@@ -48,13 +49,22 @@ def load_switch_config():
     try:
         with open(SWITCH_CONFIG_PATH, 'r') as file:
             config = json.load(file)
+
+        # config_data has fields like "password" and "secret_env"
+        password_env_key = config.pop("password", None)
+        secret_env_key = config.pop("secret", None)
+
+        if password_env_key:
+            config["password"] = SWITCH_PASSWORD
+        if secret_env_key:
+            config["secret"] =SWITCH_SECRET
+
         return config
     except Exception as e:
         logging.error("Failed to load switch config: %s", e)
         raise
 
 SWITCH_CONFIG = load_switch_config()
-
 def get_switch_and_poe():
     """
     Helper function to initialize and return both the SwitchManager and PoeManager.

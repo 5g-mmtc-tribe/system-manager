@@ -7,30 +7,15 @@ import logging
 from typing import Any, Optional
 import pylxd
 import redis
-from config import BASE_IMAGE_J10, BASE_IMAGE_J20_J40, DHCP_CONFIG_FILE_PATH, IP_CONFIG_FILE_PATH, NBD_IMAGE_NAME_J10, NBD_IMAGE_NAME_J20_J40, REDIS_HOST, REDIS_PORT, REDIS_USER_INDEX, VM_INTERFACE ,USER_SCRIPT_PATH ,TOOLS_SCRIPT_PATH ,NBD_SIZE
+from config import DHCP_CONFIG_FILE_PATH, IP_CONFIG_FILE_PATH,  REDIS_HOST, REDIS_PORT, REDIS_USER_INDEX, VM_INTERFACE ,USER_SCRIPT_PATH ,TOOLS_SCRIPT_PATH ,NBD_SIZE
+from config.constants import BASE_IMAGE_J10, BASE_IMAGE_J20_J40 ,NBD_IMAGE_NAME_J10, NBD_IMAGE_NAME_J20_J40
 from scripts.macvlan import MacVlan
 from scripts.ip_addr_manager import IpAddr
 from switch.switch_manager import SwitchManager
 
 
-
-
-# old modules config
-#SCRIPT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts'))
-#sys.path.append(SCRIPT_PATH)
-#print("my path",SCRIPT_PATH)
-
-#SWITCH_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../switch'))
-#sys.path.append(SWITCH_PATH)
-
-
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
-
+# Setup module-level logger
+logger = logging.getLogger(__name__)
 class VmManager:
     """
     A class to manage Virtual Machines using LXC.
