@@ -13,8 +13,9 @@ setup(
         "pylxd",
         "redis",
         "uvicorn" ,
-         "netmiko"
-        # add other dependencies as needed
+        "netmiko",
+        "python-dotenv"
+
     ],
 
 )

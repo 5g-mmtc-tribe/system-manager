@@ -1,4 +1,12 @@
 ---
+- name: Import interface name from .env.dev
+  set_fact:
+    new_interface_name: "{{ lookup('ini', 'HOST_INTERFACE type=properties file=' + env_file_path) }}"
+
+- name: Import static IP from .env.dev
+  set_fact:
+    static_ip: "{{ lookup('ini', 'STATIC_IP type=properties file=' + env_file_path) }}"
+
   # Task 1: Configure Netplan for interface renaming and static IP
   - name: Configure Netplan for renaming and static IP
     copy:
