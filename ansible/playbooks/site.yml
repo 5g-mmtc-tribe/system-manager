@@ -1,8 +1,8 @@
-- name: Configure Server
-  hosts: sys
-  gather_facts: false
-  roles:
-   - server
+#- name: Configure Server
+#  hosts: sys
+#  gather_facts: false
+#  roles:
+#   - server
    
 - name: Configure System Manager
   hosts: sys

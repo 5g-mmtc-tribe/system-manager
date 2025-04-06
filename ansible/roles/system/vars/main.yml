@@ -1,2 +1,17 @@
 # Base path for system manager (adjust as needed)
 system_manager_base_path: "{{ playbook_dir | dirname}}/.."
+nbd_jp3541_url: "http://193.55.250.147/nbd-images/nbd_jetson_jp3541.img"
+nbd_jp3541_dest: "{{ system_manager_base_path }}/config/nbd_jetson_jp3541.img"
+# Additional NBD image files from the same server
+nbd_jp3274_url: "http://193.55.250.147/nbd-images/nbd_jetson_jp3274.img"
+nbd_jp3274_dest: "{{ system_manager_base_path }}/config/nbd_jetson_jp3274.img"
+
+# Rootfs tarball for Jetson (downloaded separately)
+
+rootfs_tarball_url_jp3274: "http://193.55.250.147/rootfs-jetson/rootfs-jp3274.tar.gz"
+rootfs_dest_jp3274: "{{ system_manager_base_path }}/config/rootfs-jp3274.tar.gz"
+
+# Rootfs tarball for Jetson (downloaded separately)
+rootfs_tarball_url_jp3541: "http://193.55.250.147/rootfs-jetson/rootfs-basic-jp3541-noeula-user.tar.gz"
+rootfs_dest_jp3541: "{{ system_manager_base_path }}/config/rootfs-basic-jp3541-noeula-user.tar.gz"
+

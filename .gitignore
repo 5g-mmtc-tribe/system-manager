@@ -12,3 +12,4 @@ logs/system_manager.log
 .gitignore
 config/dhcpConfig.txt
 config/ipconfig.txt
+*-info

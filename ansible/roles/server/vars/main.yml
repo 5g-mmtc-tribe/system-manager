@@ -10,4 +10,6 @@ use_nmcli: true
 
 # Reboot control
 reboot_required: true
-env_file_path: "{{ playbook_dir }}/5g-conf/system_manager/dev/.env.dev"
+# Base path for system manager (adjust as needed)
+system_manager_base_path: "{{ playbook_dir | dirname }}/.."
+env_file_path: "{{system_manager_base_path}}/5g-conf/system_manager/dev/.env.dev"

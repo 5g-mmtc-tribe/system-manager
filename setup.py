@@ -14,8 +14,9 @@ setup(
         "redis",
         "uvicorn" ,
         "netmiko",
-        "python-dotenv"
-
+        "python-dotenv",
+        "ansible-pylibssh",
+ 
     ],
 
 )

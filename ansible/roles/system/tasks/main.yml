@@ -18,18 +18,9 @@
   - name: Install Python packages using apt
     apt:
       name:
-        - python3-fastapi
-        - python3-pandas
-        - python3-pylxd
-        - python3-uvicorn
-        - python3-redis
-        - python3-netmiko
         - bzip2
-        - python-dotenv
       state: present
 
-  - name: Install remaining Python dependency with pip
-    command: python3 -m pip install --break-system-packages ansible-pylibssh
 
   - name: Install jq using apt
     apt:
@@ -63,19 +54,84 @@
         - libxml2-utils
       state: present
 
+  #-  name : configure var jetson 3541
+  #   include_vars :
+  #    file : ../vars/jetson_jp3541.yml
 
-  - name: Configure Jetson JP3541 system
-    import_tasks: jetson_jp3541.yml
-    vars_files:
-      - "../vars/jetson_jp3541.yml"
+  #- name: Configure Jetson JP3541 system
+  #  import_tasks: 
+  #    file : jetson_jp3541.yml
 
-  - name: Configure Jetson jp3274system
-    import_tasks: jetson_jp3274.yml
-    vars_files:
-      - "../vars/jetson_jp3274.yml"
+  #-  name : configure var jetson 3274
+  #   include_vars :
+  #    file : "../vars/jetson_jp3274.yml"
+
+  #- name: Configure Jetson jp3274system
+  #  import_tasks: jetson_jp3274.yml
 
 
 
+    #-------------------------------------------
+    # Download rootfs tarball for Jetson (if missing)
+    #-------------------------------------------
+  - name: Ensure config directory exists
+    file:
+      path: "{{ system_manager_base_path }}/config"
+      state: directory
+      mode: '0755'
+
+  - name: Check if rootfs tarball exists
+    stat:
+      path: "{{ rootfs_dest_jp3541 }}"
+    register: rootfs_tarball
+
+  - name: Download rootfs tarball if not exists
+    get_url:
+      url: "{{ rootfs_tarball_url_jp3541 }}"
+      dest: "{{ rootfs_dest_jp3541 }}"
+      mode: '0644'
+    when: not rootfs_tarball.stat.exists
+
+  - name: Check if rootfs tarball exists
+    stat:
+      path: "{{ rootfs_dest_jp3274}}"
+    register: rootfs_tarball
+
+  - name: Download rootfs tarball if not exists
+    get_url:
+      url: "{{ rootfs_tarball_url_jp3274  }}"
+      dest: "{{ rootfs_dest_jp3274 }}"
+      mode: '0644'
+    when: not rootfs_tarball.stat.exists
+
+    #-------------------------------------------
+    # Download additional NBD image files (if missing)
+    #-------------------------------------------
+
+
+  - name: Check if nbd_jetson_jp3541.img exists
+    stat:
+      path: "{{ nbd_jp3541_dest }}"
+    register: nbd_jp3541_stat
+
+  - name: Download nbd_jetson_jp3541.img if not exists
+    get_url:
+      url: "{{ nbd_jp3541_url }}"
+      dest: "{{ nbd_jp3541_dest }}"
+      mode: '0644'
+    when: not nbd_jp3541_stat.stat.exists
+  
+  - name: Check if nbd_jetson_jp3274.img exists
+    stat:
+      path: "{{ nbd_jp3274_dest }}"
+    register: nbd_jp3274_stat
+
+  - name: Download nbd_jetson_jp3274.img if not exists
+    get_url:
+      url: "{{ nbd_jp3274_url }}"
+      dest: "{{ nbd_jp3274_dest }}"
+      mode: '0644'
+    when: not nbd_jp3274_stat.stat.exists
   #-------------------------------------------
   # Initialize active_users.json
   #-------------------------------------------

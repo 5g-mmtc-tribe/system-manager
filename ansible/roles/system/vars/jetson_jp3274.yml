@@ -12,18 +12,12 @@ bsp_file_name: "jetson-210_linux_r32.7.4_aarch64.tbz2"
 rootfs_file_name: "tegra_linux_sample-root-filesystem_r32.7.4_aarch64.tbz2"
 
 # Extraction directory for Linux_for_Tegra (Jetson Nano 4GB)
-linux_for_tegra_dir: "{{ system_manager_base_path }}/api/jetson/Linux_for_Tegra_jp3541"
+linux_for_tegra_dir_jp3274 : "{{ system_manager_base_path }}/api/jetson/Linux_for_Tegra_jp3274"
 
 # User creation variables
 username: "mmtc"
 password: "tribe"
 hostname: "mmtc"
-# Rootfs tarball for Jetson (downloaded separately)
-rootfs_tarball_url: "http://193.55.250.147/rootfs-jetson/rootfs-jp3274.tar.gz"
-rootfs_dest: "{{ system_manager_base_path }}/config/rootfs-jp3274.tar.gz"
 
 
-# Additional NBD image files from the same server
-nbd_jp3274_url: "http://193.55.250.147/nbd-images/nbd_jetson_jp3274.img"
-nbd_jp3274_dest: "{{ system_manager_base_path }}/config/nbd_jetson_jp3274.img"
 

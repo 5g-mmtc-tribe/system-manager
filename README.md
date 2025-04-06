@@ -28,12 +28,11 @@ This installation procedure first installs the Python dependencies using your se
    ```
 
 2. **Install Python Dependencies:**
-   
-   For a regular install:
-   ```bash
-   python setup.py install
-   ```
-   
+   install first pip 
+      ```bash
+ 
+   sudo apt install python3-pip
+      ```
    For a development (editable) install:
    ```bash
    pip install -e .
@@ -55,9 +54,9 @@ After installing the Python dependencies, ensure that you have the latest config
    
    *Optional:* If you need only part of the configuration (e.g., only the system-manager folder), perform a sparse checkout:
    ```bash
-   cd config/5g-conf
+   cd 5g-conf
    git sparse-checkout init --cone
-   git sparse-checkout set systeme_manager README.md
+   git sparse-checkout set system_manager README.md
    cd ../..
    ```
 

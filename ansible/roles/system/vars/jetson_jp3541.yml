@@ -12,17 +12,12 @@ bsp_file_name: "Jetson_Linux_R35.4.1_aarch64.tbz2"
 rootfs_file_name: "Tegra_Linux_Sample-Root-Filesystem_R35.4.1_aarch64.tbz2"
 
 # Extraction directory for Linux_for_Tegra_jp3541
-linux_for_tegra_dir: "{{ system_manager_base_path }}/api/jetson/Linux_for_Tegra_jp3541"
+linux_for_tegra_dir_jp3541: "{{ system_manager_base_path }}/api/jetson/Linux_for_Tegra_jp3541"
 
 # Jetson binaries and default user parameters
 username: "mmtc"
 password: "tribe"
 hostname: "mmtc"
 
-# Rootfs tarball for Jetson (downloaded separately)
-rootfs_tarball_url: "http://193.55.250.147/rootfs-jetson/rootfs-basic-jp3541-noeula-user.tar.gz"
-rootfs_dest: "{{ system_manager_base_path }}/config/rootfs-basic-jp3541-noeula-user.tar.gz"
 
 
-nbd_jp3541_url: "http://193.55.250.147/nbd-images/nbd_jetson_jp3541.img"
-nbd_jp3541_dest: "{{ system_manager_base_path }}/config/nbd_jetson_jp3541.img"

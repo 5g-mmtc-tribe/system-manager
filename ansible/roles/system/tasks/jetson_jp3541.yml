@@ -1,4 +1,14 @@
----
+--- 
+  - name: Ensure required directories exist
+    file:
+      path: "{{ item.path }}"
+      state: directory
+      mode: "{{ item.mode | default('0755') }}"
+    loop:
+      - { path: "{{ system_manager_base_path }}/api/jetson" }
+      - { path: "{{ linux_for_tegra_dir_jp3541 }}", mode: "0755" }
+      - { path: "{{ base_dir }}", mode: "0755" }
+
 
   #-------------------------------------------
   # Download BSP and Rootfs packages (if missing)
@@ -28,74 +38,28 @@
   #-------------------------------------------
   # Extract packages into Linux_for_Tegra_jp3541 folder
   #-------------------------------------------
-  - name: Ensure jetson directory exists
-    file:
-      path: "{{ system_manager_base_path }}/api/jetson"
-      state: directory
-
-  - name: Ensure Linux_for_Tegra_jp3541 folder exists
-    file:
-      path: "{{ linux_for_tegra_dir }}"
-      state: directory
-      mode: '0755'
 
   - name: Extract Jetson Linux package (BSP)
     unarchive:
       src: "{{ base_dir }}/{{ bsp_file_name }}"
-      dest: "{{ linux_for_tegra_dir }}"
+      dest: "{{ linux_for_tegra_dir_jp3541 }}"
       remote_src: yes
+      extra_opts: [--strip-components=1]
 
   - name: Extract Tegra Rootfs
     unarchive:
       src: "{{ base_dir }}/{{ rootfs_file_name }}"
-      dest: "{{ linux_for_tegra_dir }}/rootfs"
+      dest: "{{ linux_for_tegra_dir_jp3541 }}/rootfs"
       remote_src: yes
 
   - name: Apply Jetson binaries
     shell: "./apply_binaries.sh"
     args:
-      chdir: "{{ linux_for_tegra_dir }}"
+      chdir: "{{ linux_for_tegra_dir_jp3541 }}"
 
   - name: Create default user
     shell: "./tools/l4t_create_default_user.sh -u {{ username }} -p {{ password }} -n {{ hostname }} --accept-license"
     args:
-      chdir: "{{ linux_for_tegra_dir }}"
-
-  #-------------------------------------------
-  # Download rootfs tarball for Jetson (if missing)
-  #-------------------------------------------
-  - name: Ensure config directory exists
-    file:
-      path: "{{ system_manager_base_path }}/config"
-      state: directory
-      mode: '0755'
-
-  - name: Check if rootfs tarball exists
-    stat:
-      path: "{{ rootfs_dest }}"
-    register: rootfs_tarball
-
-  - name: Download rootfs tarball if not exists
-    get_url:
-      url: "{{ rootfs_tarball_url }}"
-      dest: "{{ rootfs_dest }}"
-      mode: '0644'
-    when: not rootfs_tarball.stat.exists
+      chdir: "{{ linux_for_tegra_dir_jp3541 }}"
 
 
-   #-------------------------------------------
-    # Download additional NBD image files (if missing)
-    #-------------------------------------------
-
-
-    - name: Check if nbd_jetson_jp3541.img exists
-      stat:
-        path: "{{ nbd_jp3541_dest }}"
-      register: nbd_jp3541_stat
-
-    - name: Download nbd_jetson_jp3541.img if not exists
-      get_url:
-        url: "{{ nbd_jp3541_url }}"
-        dest: "{{ nbd_jp3541_dest }}"
-        mode: '0644'
-      when: not nbd_jp3541_stat.stat.exists

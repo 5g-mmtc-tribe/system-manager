@@ -1,22 +1,16 @@
 ---
 
 
-- name: Ensure jetson directory exists
+- name: Ensure required directories exist
   file:
-    path: "{{ system_manager_base_path }}/api/jetson"
+    path: "{{ item.path }}"
     state: directory
+    mode: "{{ item.mode | default('0755') }}"
+  loop:
+    - { path: "{{ system_manager_base_path }}/api/jetson" }
+    - { path: "{{ linux_for_tegra_dir_jp3274  }}", mode: "0755" }
+    - { path: "{{ base_dir }}", mode: "0755" }
 
-- name: Ensure Linux_for_Tegra_jp3541 folder exists
-  file:
-    path: "{{ linux_for_tegra_dir }}"
-    state: directory
-    mode: '0755'
-
-- name: Ensure data directory exists
-  file:
-    path: "{{ base_dir }}"
-    state: directory
-    mode: '0755'
 
 - name: Check if BSP file exists
   stat:
@@ -45,13 +39,14 @@
 - name: Extract BSP package (Jetson Nano BSP)
   unarchive:
     src: "{{ base_dir }}/{{ bsp_file_name }}"
-    dest: "{{ linux_for_tegra_dir }}"
+    dest: "{{ linux_for_tegra_dir_jp3274  }}"
     remote_src: yes
+    extra_opts: [--strip-components=1]
 
 - name: Extract Tegra Rootfs
   unarchive:
     src: "{{ base_dir }}/{{ rootfs_file_name }}"
-    dest: "{{ linux_for_tegra_dir }}/rootfs"
+    dest: "{{ linux_for_tegra_dir_jp3274  }}/rootfs"
     remote_src: yes
 
 
@@ -59,50 +54,14 @@
 - name: Apply Jetson binaries
   shell: "./apply_binaries.sh"
   args:
-    chdir: "{{ linux_for_tegra_dir }}"
-
-    state: present
+    chdir: "{{ linux_for_tegra_dir_jp3274 }}"
 
 - name: Create default user for Jetson Nano
   shell: "./tools/l4t_create_default_user.sh -u {{ username }} -p {{ password }} -n {{ hostname }} -a --accept-license"
   args:
-    chdir: "{{ linux_for_tegra_dir }}"
+    chdir: "{{ linux_for_tegra_dir_jp3274  }}"
 
 
-  #-------------------------------------------
-  # Download rootfs tarball for Jetson (if missing)
-  #-------------------------------------------
-  - name: Ensure config directory exists
-    file:
-      path: "{{ system_manager_base_path }}/config"
-      state: directory
-      mode: '0755'
-
-  - name: Check if rootfs tarball exists
-    stat:
-      path: "{{ rootfs_dest }}"
-    register: rootfs_tarball
-
-  - name: Download rootfs tarball if not exists
-    get_url:
-      url: "{{ rootfs_tarball_url }}"
-      dest: "{{ rootfs_dest }}"
-      mode: '0644'
-    when: not rootfs_tarball.stat.exists
 
 
-   #-------------------------------------------
-    # Download additional NBD image files (if missing)
-    #-------------------------------------------
 
-  - name: Check if nbd_jetson_jp3274.img exists
-    stat:
-      path: "{{ nbd_jp3274_dest }}"
-    register: nbd_jp3274_stat
-
-  - name: Download nbd_jetson_jp3274.img if not exists
-    get_url:
-      url: "{{ nbd_jp3274_url }}"
-      dest: "{{ nbd_jp3274_dest }}"
-      mode: '0644'
-    when: not nbd_jp3274_stat.stat.exists
