@@ -13,3 +13,4 @@ logs/system_manager.log
 config/dhcpConfig.txt
 config/ipconfig.txt
 *-info
+logs/*
