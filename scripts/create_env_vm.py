@@ -370,8 +370,13 @@ class VmManager:
                          "Set permissions for NFS folder")
         tarball_cmd = ['lxc', 'file', 'push', driver_path, f'{vm_name}/root/']
         self.run_command(tarball_cmd, "Push rootfs tarball")
-        extract_cmd = ['lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
-                       '-C', f'{nfs_root}/rootfs']
+        #extract_cmd = ['lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
+        #               '-C', f'{nfs_root}/rootfs'] fro nano
+        extract_cmd = [
+        'lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
+        '--strip-components=1', '-C', f'{nfs_root}/rootfs'
+        ]
+
         self.run_command(extract_cmd, "Extract rootfs tarball")
 
         # Delete the driver tarball from the VM after extraction
@@ -826,34 +831,37 @@ class VmManager:
         """
     
         nfs_ip = nfs_ip_addr.split('/')[0]
-        content = f"""#  Instructions
+        content = f"""
         
-## 1️⃣ Install Required Libraries
-Run this command to install necessary libraries:
+# Jetson Configuration and Maintenance Guide
+
+## 1. Jetson Initial Setup
+
+Run the initial setup script with your NFS IP:
+
+./scripts/system/restart_jetson.sh {nfs_ip}
+
+📌 **Replace `{nfs_ip}` with your actual NFS IP.**
+
+when Restart the Jetson execute the same scripts.
+
+
+##  Install Required Libraries *(Optional)*
+
+Install necessary libraries using:
 
 ./scripts/setup/lib_setup.sh
 
+##  Network Configuration *(Optional)*
 
-## 2️⃣ Configure Jetson
-Run the setup script with your NFS IP:
-
-./scripts/setup/jetson_setup.sh {nfs_ip}
-
-📌 Replace `{nfs_ip}` with your actual NFS IP if different.
-
-## 3️⃣ Network Configuration
-Set up network connectivity:
+Configure network connectivity:
 
 ./scripts/network/configure_PPP.sh
 
 
-## 4️⃣ System Maintenance
-Restart Jetson when necessary:
+##  Fan Control *(Optional)*
 
-./scripts/system/restart_jetson.sh
-
-## 5️⃣ Fan Control (Optional)
-Manage the Jetson fan:
+Manage Jetson fan speed:
 
 ./scripts/fan/fan_control.py
 

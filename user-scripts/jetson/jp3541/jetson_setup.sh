@@ -55,9 +55,9 @@ create_dir_if_not_exists "$workspace_dir"
 echo "Setting ownership for Workspace at $workspace_dir..."
 sudo chown -R "$(whoami)":"$(whoami)" "$workspace_dir"
 
-echo "=== Installing and Configuring NBD-Client ==="
-sudo apt update -qq
-sudo apt install -y nbd-client
+#echo "=== Installing and Configuring NBD-Client ==="
+#sudo apt update -qq
+#sudo apt install -y nbd-client
 
 # Remove and reinstall to ensure a proper service file is in place
 sudo rm -f /lib/systemd/system/nbd-client.service
@@ -90,12 +90,13 @@ export TMPDIR="${workspace_dir}/tmp"
 
 # Create docker data-root directory and create a symlink to /var/lib/docker
 create_dir_if_not_exists "$docker_data_root"
-if [ ! -L /var/lib/docker ]; then
-  echo "Creating symlink for Docker data-root..."
-  sudo ln -s "$docker_data_root" /var/lib/docker
-else
-  echo "Docker symlink already exists: /var/lib/docker"
-fi
+#if [ ! -L /var/lib/docker ]; then
+echo "Creating symlink for Docker data-root..."
+sudo rm /mnt/Workspace/var-lib/docker
+sudo ln -s "$docker_data_root" /var/lib/docker
+#else
+#  echo "Docker symlink already exists: /var/lib/docker"
+#fi
 
 echo "=== Restarting Docker service ==="
 sudo systemctl restart docker
