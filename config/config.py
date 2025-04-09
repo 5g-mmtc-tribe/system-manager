@@ -9,7 +9,7 @@ System Manager Configuration Settings
 # 1) Identify this file’s directory (i.e. 5g-conf/system_manager)
 BASE_DIR = os.path.dirname(os.path.abspath(__file__))
 
-root_file_relative = os.path.join("..", "5g-conf", "system_manager","dev")
+root_file_relative = os.path.join("..", "..","5g-conf", "system_manager","dev")
 env_file = os.path.join(BASE_DIR,root_file_relative, ".env.dev" )
 # If you want to load a production file, replace with ".env.prod"
 
