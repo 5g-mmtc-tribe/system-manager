@@ -16,7 +16,7 @@ env_file = os.path.join(BASE_DIR,root_file_relative, ".env.dev" )
 if os.path.exists(env_file):
     load_dotenv(dotenv_path=env_file)
 
-print()
+
 # --------------------------------------------------------------------------
 # Network Settings
 # --------------------------------------------------------------------------
