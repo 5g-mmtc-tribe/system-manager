@@ -38,27 +38,9 @@ This installation procedure first installs the Python dependencies using your se
    pip install -e .
    ```
 
-### Step 2: Download or Update the Configuration
+### Step 2: Download  the Configuration
 
-After installing the Python dependencies, ensure that you have the latest configuration. If this is your first time or if you want to update, run the following commands:
-
-1. **Initialize/Update the Configuration Submodule:**
-   ```bash
-   git submodule update --init --recursive
-   ```
-
-2. **Pull the Latest Configuration Updates:**
-   ```bash
-   git submodule update --remote --merge
-   ```
-   
-   *Optional:* If you need only part of the configuration (e.g., only the system-manager folder), perform a sparse checkout:
-   ```bash
-   cd 5g-conf
-   git sparse-checkout init --cone
-   git sparse-checkout set system_manager README.md
-   cd ../..
-   ```
+After installing the Python dependencies, make sure you download the latest configuration folder from the [5g-conf repository](https://github.com/5g-mmtc-tribe/5g-conf).
 
 ### Step 3: Automated Installation Using Ansible
 
