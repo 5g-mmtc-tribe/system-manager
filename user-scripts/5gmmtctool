@@ -4,6 +4,8 @@ import argparse
 import subprocess
 import os
 
+from config import DHCP_CONFIG_FILE_PATH
+
 class VmManager:
     @staticmethod
     def run_command(command, description):
@@ -22,7 +24,7 @@ def reconfigure_dhcp_cmd():
     VmManager.run_command(command_librray_install, "Install the DHCP server")
     
     # Copy the DHCP server config file
-    command_librray_install = ["sudo", "cp", "dhcpConfig.txt", "/etc/dhcp/dhcpd.conf"]
+    command_librray_install = ["sudo", "cp", DHCP_CONFIG_FILE_PATH, "/etc/dhcp/dhcpd.conf"]
     VmManager.run_command(command_librray_install, "Copy DHCP config")
 
     # Restart and enable DHCP server

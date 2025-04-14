@@ -1,12 +1,15 @@
 # MAC address and desired network interface name
 mac_address: "00:24:9b:4f:21:69"
-new_interface_name: "eno1"
+#new_interface_name: "eno1"
 
 # Static IP configuration
-static_ip: "192.168.0.8"
+#static_ip: "192.168.0.8"
 
 # Optional: Use NetworkManager for persistence
 use_nmcli: true
 
 # Reboot control
 reboot_required: true
+# Base path for system manager (adjust as needed)
+system_manager_base_path: "{{ playbook_dir | dirname }}/.."
+env_file_path: "{{system_manager_base_path}}/5g-conf/system_manager/dev/.env.dev"

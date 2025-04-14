@@ -1,4 +1,5 @@
-from switch_manager import SwitchManager
+from config import RESOURCE_JSON_PATH
+from switch.switch_manager import SwitchManager
 import time
 import os
 import sys
@@ -22,9 +23,9 @@ class PoeManager:
 
         interfaces = []
         # Get the absolute path of the parent directory
-        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../config'))
+
         # Now include the directory path in the file path
-        file_path = os.path.join(script_path, 'resource.json')
+        file_path = RESOURCE_JSON_PATH
 
         # Open and read the JSON file
         with open(file_path, 'r') as file:

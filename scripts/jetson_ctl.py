@@ -3,6 +3,9 @@ import os
 import time 
 import json 
 import logging
+from config import RESOURCE_JSON_PATH
+# Setup module-level logger
+logger = logging.getLogger(__name__)
 class Jetson:
 
     def __init__(self):
@@ -17,7 +20,7 @@ class Jetson:
         self .TEGRA_3274 ="Linux_for_Tegra_jp3274"
         self .TEGRA_3541 = "Linux_for_Tegra_jp3541"
 
-    def get_xavier_instances(self):
+    def get_xavier_instances_v2(self):
         # List to store detected Xavier USB instances
         xavier_usb_instance = []
 
@@ -69,8 +72,8 @@ class Jetson:
             )
 
                 # Write the xavier_instances to the resource file
-        script_path = os.path.abspath(os.path.join(os.path.dirname(__file__), '../config'))
-        file_path = os.path.join(script_path, 'resource.json')
+
+        file_path = RESOURCE_JSON_PATH
 
         try:
             with open(file_path, 'w') as file:
@@ -80,7 +83,7 @@ class Jetson:
             print(f"Error writing to resource file: {e}")
 
         return xavier_instances
-    def get_xavier_instances_v1(self):
+    def get_xavier_instances(self):
 
         xavier_usb_instance = []
         number_jetsons = self.number_of_jetsons_xavier_connected()
@@ -239,7 +242,7 @@ class Jetson:
         except Exception as e:
             print(f"An error occurred during ping test: {e}")
             return False
-jetson = Jetson()
+#jetson = Jetson()
 #jetson.flash_jetson("10.111.67.4/24","/root/nfsroot-jp-3541/rootfs",'1-4.3',"Jetson-Orin-NX","")    
 #number = jetson.number_of_jetsons_xavier_connected()
 

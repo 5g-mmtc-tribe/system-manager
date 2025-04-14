@@ -1,0 +1,23 @@
+---
+# Base path for system manager (adjust as needed)
+system_manager_base_path: "{{ playbook_dir | dirname}}/.."
+
+# Base directory containing BSP and Rootfs packages
+base_dir: "{{ system_manager_base_path }}/data"
+
+# BSP and Rootfs file details for Jetson Nano 4GB
+bsp_url: "https://developer.nvidia.com/downloads/embedded/l4t/r32_release_v7.4/t210/jetson-210_linux_r32.7.4_aarch64.tbz2"
+rootfs_url: "https://developer.nvidia.com/downloads/embedded/l4t/r32_release_v7.4/t210/tegra_linux_sample-root-filesystem_r32.7.4_aarch64.tbz2"
+bsp_file_name: "jetson-210_linux_r32.7.4_aarch64.tbz2"
+rootfs_file_name: "tegra_linux_sample-root-filesystem_r32.7.4_aarch64.tbz2"
+
+# Extraction directory for Linux_for_Tegra (Jetson Nano 4GB)
+linux_for_tegra_dir_jp3274 : "{{ system_manager_base_path }}/api/jetson/Linux_for_Tegra_jp3274"
+
+# User creation variables
+username: "mmtc"
+password: "tribe"
+hostname: "mmtc"
+
+
+

@@ -17,12 +17,12 @@ def check_interface_up(interface):
         return False
 
 # Example usage
-interface = "enx3c18a0b38076" # Replace with your interface name
-if check_interface_exists(interface):
-    if check_interface_up(interface):
-        print(f"Interface {interface} exists and is up.")
-    else:
-        print(f"Interface {interface} exists but is not up.")
-else:
-    print(f"Interface {interface} does not exist.")
+#interface = "enx3c18a0b38076" # Replace with your interface name
+#if check_interface_exists(interface):
+#    if check_interface_up(interface):
+#       print(f"Interface {interface} exists and is up.")
+#    else:
+#        print(f"Interface {interface} exists but is not up.")
+#else:
+#    print(f"Interface {interface} does not exist.")
 

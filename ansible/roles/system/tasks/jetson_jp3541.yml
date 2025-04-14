@@ -1,0 +1,65 @@
+--- 
+  - name: Ensure required directories exist
+    file:
+      path: "{{ item.path }}"
+      state: directory
+      mode: "{{ item.mode | default('0755') }}"
+    loop:
+      - { path: "{{ system_manager_base_path }}/api/jetson" }
+      - { path: "{{ linux_for_tegra_dir_jp3541 }}", mode: "0755" }
+      - { path: "{{ base_dir }}", mode: "0755" }
+
+
+  #-------------------------------------------
+  # Download BSP and Rootfs packages (if missing)
+  #-------------------------------------------
+  - name: Check if BSP file exists
+    stat:
+      path: "{{ base_dir }}/{{ bsp_file_name }}"
+    register: bsp_stat
+
+  - name: Check if Rootfs file exists
+    stat:
+      path: "{{ base_dir }}/{{ rootfs_file_name }}"
+    register: rootfs_stat
+
+  - name: Download BSP if not present
+    get_url:
+      url: "{{ bsp_url }}"
+      dest: "{{ base_dir }}/{{ bsp_file_name }}"
+    when: not bsp_stat.stat.exists
+
+  - name: Download Rootfs if not present
+    get_url:
+      url: "{{ rootfs_url }}"
+      dest: "{{ base_dir }}/{{ rootfs_file_name }}"
+    when: not rootfs_stat.stat.exists
+
+  #-------------------------------------------
+  # Extract packages into Linux_for_Tegra_jp3541 folder
+  #-------------------------------------------
+
+  - name: Extract Jetson Linux package (BSP)
+    unarchive:
+      src: "{{ base_dir }}/{{ bsp_file_name }}"
+      dest: "{{ linux_for_tegra_dir_jp3541 }}"
+      remote_src: yes
+      extra_opts: [--strip-components=1]
+
+  - name: Extract Tegra Rootfs
+    unarchive:
+      src: "{{ base_dir }}/{{ rootfs_file_name }}"
+      dest: "{{ linux_for_tegra_dir_jp3541 }}/rootfs"
+      remote_src: yes
+
+  - name: Apply Jetson binaries
+    shell: "./apply_binaries.sh"
+    args:
+      chdir: "{{ linux_for_tegra_dir_jp3541 }}"
+
+  - name: Create default user
+    shell: "./tools/l4t_create_default_user.sh -u {{ username }} -p {{ password }} -n {{ hostname }} --accept-license"
+    args:
+      chdir: "{{ linux_for_tegra_dir_jp3541 }}"
+
+

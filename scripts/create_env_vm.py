@@ -5,40 +5,24 @@ import os
 import sys
 import logging
 from typing import Any, Optional
-
 import pylxd
 import redis
-from macvlan import MacVlan
+from config import DHCP_CONFIG_FILE_PATH, IP_CONFIG_FILE_PATH,  REDIS_HOST, REDIS_PORT, REDIS_USER_INDEX, VM_INTERFACE ,USER_SCRIPT_PATH ,TOOLS_SCRIPT_PATH ,NBD_SIZE
+from config.constants import BASE_IMAGE_J10, BASE_IMAGE_J20_J40 ,NBD_IMAGE_NAME_J10, NBD_IMAGE_NAME_J20_J40
+from scripts.macvlan import MacVlan
+from scripts.ip_addr_manager import IpAddr
+from switch.switch_manager import SwitchManager
 
-# Update sys.path for additional modules
-SCRIPT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../scripts'))
-sys.path.append(SCRIPT_PATH)
-#print("my path",SCRIPT_PATH)
-from ip_addr_manager import IpAddr
 
-USER_SCRIPT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../user-scripts'))
-SWITCH_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../switch'))
-TOOLS_SCRIPT_PATH = os.path.abspath(os.path.join(os.path.dirname(__file__), '../tools'))
-sys.path.append(SWITCH_PATH)
-from switch_manager import SwitchManager
-
-# Configure logging
-logging.basicConfig(
-    level=logging.INFO,
-    format="%(asctime)s - %(levelname)s - %(message)s"
-)
-
+# Setup module-level logger
+logger = logging.getLogger(__name__)
 class VmManager:
     """
     A class to manage Virtual Machines using LXC.
     """
-    # Constants and paths
-    current_dir: str = os.path.dirname(__file__)
-    data_dir: str = os.path.join(current_dir, '../config')
-    jetson_path: str = os.path.join(data_dir, 'jetson')
-    bsp_path: str = os.path.join(data_dir, 'jetson_linux_r35.4.1_aarch64.tbz2')
-    rootfs_path: str = os.path.join(data_dir, 'tegra_linux_sample-root-filesystem_r35.4.1_aarch64.tbz2')
-    nbd_size: int = 16384
+
+
+
 
     # --------------------------------------------------------------------------
     # 1. Utility Functions
@@ -180,7 +164,7 @@ class VmManager:
             interval = 2
             start_time = time.time()
             while time.time() - start_time < timeout:
-                if self.is_interface_up(vm_name, "enp6s0"):
+                if self.is_interface_up(vm_name, VM_INTERFACE):
                     logging.info("VM %s is running with an active network interface.", vm_name)
                     self.configure_vm_nat(vm_name)
                     return 0
@@ -245,7 +229,7 @@ class VmManager:
         """
         Configures the NFS IP address inside the VM.
         """
-        interface_name = "enp6s0"
+        interface_name = VM_INTERFACE
         if self.interface_check(vm_name, interface_name):
             command_check = ["lxc", "exec", vm_name, "--", "ip", "addr", "show", interface_name]
             try:
@@ -258,8 +242,8 @@ class VmManager:
                 return
 
             ip = IpAddr()
-            ip.update_network_config("ipconfig.txt", nfs_ip_addr)
-            push_command = ["lxc", "file", "push", "ipconfig.txt", f"{vm_name}/root/"]
+            ip.update_network_config(IP_CONFIG_FILE_PATH, nfs_ip_addr)
+            push_command = ["lxc", "file", "push", IP_CONFIG_FILE_PATH, f"{vm_name}/root/"]
             self.run_command(push_command, "Copy NFS IP config")
             time.sleep(7)
             lxc_command = f"lxc exec {vm_name} -- sh -c \"cat /root/ipconfig.txt > /etc/netplan/50-cloud-init.yaml\""
@@ -355,8 +339,8 @@ class VmManager:
         install_command = ["lxc", "exec", vm_name, "--", "sudo", "apt", "install", "-y", "isc-dhcp-server"]
         self.run_command(install_command, "Install DHCP server")
         ip = IpAddr()
-        ip.update_dhcp_configuration("dhcpConfig.txt", nfs_ip_addr)
-        push_cmd = ["lxc", "file", "push", "dhcpConfig.txt", f"{vm_name}/root/"]
+        ip.update_dhcp_configuration(DHCP_CONFIG_FILE_PATH, nfs_ip_addr)
+        push_cmd = ["lxc", "file", "push",DHCP_CONFIG_FILE_PATH, f"{vm_name}/root/"]
         self.run_command(push_cmd, "Copy DHCP config")
         lxc_cmd = f"lxc exec {vm_name} -- sh -c \"sudo cat /root/dhcpConfig.txt >> /etc/dhcp/dhcpd.conf\""
         try:
@@ -368,14 +352,12 @@ class VmManager:
             cmd = ["lxc", "exec", vm_name, "--", "sudo", "systemctl", action[0], "isc-dhcp-server"]
             self.run_command(cmd, action[1])
 
-    def create_nfs_server(self, vm_name: str, nfs_root: str ,driver:str) -> None:
+    def create_nfs_server(self, vm_name: str, nfs_root: str ,driver:str ,driver_path:str) -> None:
         """
         Configures the NFS server inside the VM.
         """
          
-        #nfs_root = "/root/nfsroot-jp-3541"
-        #driver = 'rootfs-basic-jp3541-noeula-user.tar.gz'
-        #driver = 'rootfs-basic-jp3541-with-docker-noeula-user.tar.gz'
+
         vmcmd = ["lxc", "exec", vm_name, "--", "sudo"]
         for folder in [nfs_root, f"{nfs_root}/rootfs"]:
             self.run_command(vmcmd + ["mkdir", folder],
@@ -386,10 +368,15 @@ class VmManager:
                          "Change ownership of NFS folder")
         self.run_command(vmcmd_no_sudo + ["sudo", "chmod", "755", f"{nfs_root}"],
                          "Set permissions for NFS folder")
-        tarball_cmd = ['lxc', 'file', 'push', driver, f'{vm_name}/root/']
+        tarball_cmd = ['lxc', 'file', 'push', driver_path, f'{vm_name}/root/']
         self.run_command(tarball_cmd, "Push rootfs tarball")
-        extract_cmd = ['lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
-                       '-C', f'{nfs_root}/rootfs']
+        #extract_cmd = ['lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
+        #               '-C', f'{nfs_root}/rootfs'] fro nano
+        extract_cmd = [
+        'lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
+        '--strip-components=1', '-C', f'{nfs_root}/rootfs'
+        ]
+
         self.run_command(extract_cmd, "Extract rootfs tarball")
 
         # Delete the driver tarball from the VM after extraction
@@ -458,9 +445,11 @@ class VmManager:
         for node in nodes:
 
             if "j20" in node or "j40" in node:
-               base_image_path ="nbd_jetson_jp3541.img"
+               base_image_path = BASE_IMAGE_J20_J40 
+               base_image_name = NBD_IMAGE_NAME_J20_J40
             elif "j10" in node:
-                 base_image_path ="nbd_jetson_jp3274.img"
+                 base_image_path = BASE_IMAGE_J10
+                 base_image_name = NBD_IMAGE_NAME_J10
 
             node_section = f"[nbd_jetson_{node}]"
             # If the node section already exists, skip processing for this node.
@@ -473,7 +462,7 @@ class VmManager:
             self.run_lxc_command(vm_name, ["mkdir", "-p", node_folder])
             
             # Define the node image path.
-            node_image_path = f"{node_folder}/{base_image_path}"
+            node_image_path = f"{node_folder}/{base_image_name}"
             push_command = ["lxc", "file", "push", base_image_path, f"{vm_name}{node_image_path}"]
             self.run_command(push_command,"push nbd images ")
             
@@ -536,7 +525,7 @@ class VmManager:
             print(f"Disk image not found, creating new disk image: {image_path}")
 
         # Create disk image using the dd command.
-        dd_cmd = ["dd", "if=/dev/zero", f"of={image_path}", "bs=1M", f"count={self.nbd_size}"]
+        dd_cmd = ["dd", "if=/dev/zero", f"of={image_path}", "bs=1M", f"count={NBD_SIZE}"]
         self.run_lxc_command(vm_name, dd_cmd)
 
         # Format the disk image as ext4.
@@ -636,8 +625,8 @@ class VmManager:
         """
         Adds SSH public keys to the VM's authorized_keys file.
         """
-        index_name = 'UserIdxs'
-        redis_client = redis.Redis(host='localhost', port=6379)
+        index_name = REDIS_USER_INDEX
+        redis_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT)
         search_results = redis_client.ft(index_name).search(f"@login:({username})")
         if not search_results.docs:
             raise ValueError(f"No user found with login: {username}")
@@ -781,11 +770,11 @@ class VmManager:
             # If the command fails (i.e., the folder doesn't exist), return False.
             return False
             
-    def configure_nfs_jetson(self ,vm_name: str, nfs_ip_addr: str ,nfs_root:str ,driver :str, user_script_path_jp :str):
+    def configure_nfs_jetson(self ,vm_name: str, nfs_ip_addr: str ,nfs_root:str ,driver :str, user_script_path_jp :str,driver_path:str):
         if self.folder_exists(vm_name, nfs_root):
             print(f"Folder {nfs_root} already exists in container {vm_name}. Skipping configuration steps.")
             return
-        self.create_nfs_server(vm_name, nfs_root,driver)
+        self.create_nfs_server(vm_name, nfs_root,driver,driver_path)
         push_nfs_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "nfs_setup.sh"), f"{vm_name}/root/"]
         self.run_command(push_nfs_setup, "Push NFS setup script")
         self.push_files_to_vm(vm_name,nfs_root,USER_SCRIPT_PATH,nfs_ip_addr,user_script_path_jp)
@@ -799,8 +788,8 @@ class VmManager:
         Installs the 5gmmtctool and updates DHCP configuration.
         """
         ip = IpAddr()
-        ip.update_dhcp_configuration("dhcpConfig.txt", nfs_ip_addr)
-        push_cmd = ["lxc", "file", "push", "dhcpConfig.txt", f"{vm_name}/root/"]
+        ip.update_dhcp_configuration(DHCP_CONFIG_FILE_PATH, nfs_ip_addr)
+        push_cmd = ["lxc", "file", "push", DHCP_CONFIG_FILE_PATH, f"{vm_name}/root/"]
         self.run_command(push_cmd, "Push DHCP configuration")
         push_tool = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "5gmmtctool"), f"{vm_name}/root/"]
         self.run_command(push_tool, "Push 5gmmtctool")
@@ -842,34 +831,37 @@ class VmManager:
         """
     
         nfs_ip = nfs_ip_addr.split('/')[0]
-        content = f"""#  Instructions
+        content = f"""
         
-## 1️⃣ Install Required Libraries
-Run this command to install necessary libraries:
+# Jetson Configuration and Maintenance Guide
+
+## 1. Jetson Initial Setup
+
+Run the initial setup script with your NFS IP:
+
+./scripts/system/restart_jetson.sh {nfs_ip}
+
+📌 **Replace `{nfs_ip}` with your actual NFS IP.**
+
+when Restart the Jetson execute the same scripts.
+
+
+##  Install Required Libraries *(Optional)*
+
+Install necessary libraries using:
 
 ./scripts/setup/lib_setup.sh
 
+##  Network Configuration *(Optional)*
 
-## 2️⃣ Configure Jetson
-Run the setup script with your NFS IP:
-
-./scripts/setup/jetson_setup.sh {nfs_ip}
-
-📌 Replace `{nfs_ip}` with your actual NFS IP if different.
-
-## 3️⃣ Network Configuration
-Set up network connectivity:
+Configure network connectivity:
 
 ./scripts/network/configure_PPP.sh
 
 
-## 4️⃣ System Maintenance
-Restart Jetson when necessary:
+##  Fan Control *(Optional)*
 
-./scripts/system/restart_jetson.sh
-
-## 5️⃣ Fan Control (Optional)
-Manage the Jetson fan:
+Manage Jetson fan speed:
 
 ./scripts/fan/fan_control.py
 
@@ -964,3 +956,5 @@ vm_manager = VmManager()
 #vm_manager.run_command(push_command,"push ")
 #vm_manager.push_files_to_vm(vm_name="mehdi",nfs_root='/root/nfsroot-jp-3274',user_script_path=USER_SCRIPT_PATH , nfs_ip_addr="10.111.67.4",user_script_path_jp="jetson/jp3274/")
 #vm_manager.create_readme_in_vm("mehdi",  nfs_ip_addr="10.111.67.4", rootfs='/root/nfsroot-jp-3274')
+#ip = IpAddr()
+#ip.update_dhcp_configuration(DHCP_CONFIG_FILE_PATH,"10.111.100.6/24")
