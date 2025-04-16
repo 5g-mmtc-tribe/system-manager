@@ -11,6 +11,8 @@ def get_model(device_name):
         return "Jetson-Xavier-NX"
     elif device_name.startswith("j40-"):
         return "Jetson-Orin-NX"
+    elif device_name.startswith("rpi4"):
+        return  "Raspberry-pi"
     else:
         return "Unknown"
 
@@ -44,9 +46,7 @@ def process_row(row):
         # if the row doesn't have the expected number of columns, skip it
         return None
 
-    # Optionally skip rows without a USB instance
-    if not usb_instance.strip():
-        return None
+
 
     # Determine state: replace "available" with "Alive", otherwise "Dead"
     state = "Alive" if notes.strip().lower() == "available" else "Dead"
