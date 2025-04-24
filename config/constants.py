@@ -30,6 +30,8 @@ DHCP_CONFIG_FILE_PATH = os.path.join(CONFIG_DIR, "dhcpConfig.txt")
 #--- nfs 
 ROOT_FS_3274 = "/root/nfsroot-jp-3274"
 ROOT_FS_3541 = "/root/nfsroot-jp-3541"
+ROOT_FS_RPI4 = "/root/nfsroot_rpi4"
+
 
 # -------------------------------
 # User Script Paths for Jetson from user-scripts
@@ -37,16 +39,19 @@ ROOT_FS_3541 = "/root/nfsroot-jp-3541"
 USER_SCRIPT_PATH_3274 = "jetson/jp3274/"
 USER_SCRIPT_PATH_3271 = "jetson/jp3541/"
 
-
+# nfs script name
+JETSON_SETUP_NFS = "nfs_setup.sh"
+RPI4_SETUP_NFS = "nfs_rpi4_setup.sh"
 # -------------------------------
 #  NFS Driver Settings
 # ------------------------------
-
+DRIVER_SERVER_IP = "193.55.250.147"
 DRIVER_3274 =  "rootfs-jp3274.tar.gz"
 DRIVER_3541 =  "rootfs-basic-jp3541-noeula-user.tar.gz"
-DRIVER_3274_PATH = os.path.join(CONFIG_DIR, "rootfs-jp3274.tar.gz")
-DRIVER_3541_PATH  = os.path.join(CONFIG_DIR, "rootfs-basic-jp3541-noeula-user.tar.gz")
-
+DRIVER_RPI4 = "core-image-minimal-rpi4-rootfs.tar.bz2"
+DRIVER_3274_PATH = os.path.join(CONFIG_DIR, DRIVER_3541 )
+DRIVER_3541_PATH  = os.path.join(CONFIG_DIR, DRIVER_3541 )
+DRIVER_RPI4_PATH = os.path.join(CONFIG_DIR, DRIVER_RPI4 )
 BASE_IMAGE_J20_J40 = os.path.join(BASE_DIR, "nbd_jetson_jp3541.img")
 NBD_IMAGE_NAME_J20_J40 ="nbd_jetson_jp3541.img"
 

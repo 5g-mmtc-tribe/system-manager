@@ -1,26 +1,47 @@
 
 # Virtual Machine and Server Setup
 
-## 1. Virtual Machine Setup (VM Side)
+## 1. Virtual Machine Setup
 
-### 1.1 Launch Ubuntu VM with LXC
+### 1.1 Launch Ubuntu VM Using LXC
+
+Create a new LXC virtual machine with defined resource limits:
+
 ```bash
-lxc launch ubuntu:24.04 <vmName> --vm --device root,size=<diskSize GB> -c limits.cpu=4 -c limits.memory=4GiB
+lxc launch ubuntu:24.04 <vm_name> --vm \
+  --device root,size=<disk_size_GB> \
+  -c limits.cpu=4 \
+  -c limits.memory=4GiB
 ```
 
-### 1.2 Set Up Macvlan VLAN
+---
+
+### 1.2 Configure Macvlan Network Interface
+
+Attach a macvlan interface with VLAN tagging:
+
 ```bash
-lxc config device add <vmName> eth2 nic nictype=macvlan parent=<serverInterface> vlan=<vlanID>
-ip addr add <vmVlanAddress> dev enp7s0
+lxc config device add <vm_name> eth2 nic \
+  nictype=macvlan \
+  parent=<server_interface> \
+  vlan=<vlan_id>
+
+ip addr add <vm_vlan_ip_address> dev enp7s0
 ip link set enp7s0 up
 ```
 
-### 1.3 Configure Netplan with NFS IP Address
-Edit the Netplan configuration:
+---
+
+### 1.3 Configure Netplan
+
+Edit Netplan configuration to define interface settings:
+
 ```bash
 sudo vi /etc/netplan/50-cloud-init.yaml
 ```
-Add the following content:
+
+Example configuration:
+
 ```yaml
 network:
   version: 2
@@ -30,106 +51,204 @@ network:
     enp6s0:
       dhcp4: no
       addresses:
-        - <nfsAddress>/24
+        - <nfs_address>/24
 ```
 
-### 1.4 Set Up NFS Root
+Apply changes:
+
+```bash
+sudo netplan apply
+```
+
+---
+
+### 1.4 Set Up NFS Root Directory
+
+Install and configure the NFS server:
+
 ```bash
 sudo apt install nfs-kernel-server
-sudo mkdir /root/nfsroot_<jetpack_version>
+sudo mkdir -p /root/nfsroot_<jetpack_version>
 sudo chown -R nobody:nogroup /root/nfsroot_<jetpack_version>
 sudo chmod 755 /root/nfsroot_<jetpack_version>
 ```
 
-### 1.5 Configure NFS Export
+---
+
+### 1.5 Configure NFS Exports
+
+Define NFS shares for different devices:
+
 ```bash
-sudo lxc exec <vm-name> -- bash -c 'echo "/root/nfsroot_<jetpack_version> *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000,crossmnt)" >> /etc/exports'
+sudo lxc exec <vm_name> -- bash -c 'echo "/root/nfsroot_<jetpack_version> *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000)" >> /etc/exports' # jetson
+sudo lxc exec <vm_name> -- bash -c 'echo "/root/nfsroot_<rpi_version> *(rw,sync,no_subtree_check,no_root_squash,crossmnt)" >> /etc/exports' # raspbery
+```
+
+Export and restart the service:
+
+```bash
 sudo exportfs -a
 sudo systemctl restart nfs-kernel-server
 sudo systemctl enable nfs-kernel-server
+```
+
+Install additional tools:
+
+```bash
 sudo apt install binutils
 ```
 
-### 1.6 Configure NBD
-1. **Install and set up NBD-Server:**
-   ```bash
-   sudo apt install -y nbd-server
-   sudo mkdir -p /root/nbd_jetson
-   sudo chmod 755 /root/nbd_jetson
-   ```
-2. **Edit NBD configuration:**
-   ```bash
-   sudo vi /etc/nbd-server/config
+---
 
-   [generic]
-      allowlist = true
-      #   #includedir = /etc/nbd-server/conf.d
+### 1.6 Configure TFTP Server (TFTPD)
 
-   # setup Jetson Xavier / Jetson Orin
-   [nbd_jetson]
-      exportname = /root/nbd_jetson/nbd_jetson.img
-      readonly = false
-      listenaddr = <ip vm server>
+#### Install and Prepare TFTP Directory:
 
-   # setup Jetson Nano
-   [nbd_jetson_jp3274]
-      exportname = /root/nbd_jetson_jp3274/nbd_jetson_jp3274.img
-      readonly = false
-      listenaddr = <ip vm server>
-   ```
-
-3. **Create images for NBD:**
-   ```bash
-   sudo dd if=/dev/zero of=/root/nbd_jetson/nbd_jetson.img bs=1M count=4096     # Jetson Nano
-   sudo dd if=/dev/zero of=/root/nbd_jetson/nbd_jetson.img bs=1M count=13312   # Jetson Xavier / Jetson Orin
-   sudo mkfs.ext4 /root/nbd_jetson/nbd_jetson.img                              # Jetson Xavier / Jetson Orin
-   sudo mkfs.ext4 /root/nbd_jetson_jp3274/nbd_jetson_jp3274.img                # Jetson Nano
-   ```
-
-4. **(Optional) Download NBD images with Docker inside:**
-   ```bash
-   # _Jetson Xavier / Jetson Orin_
-   sudo wget -P nbd_jetson_{jetson_Name}/ http://193.55.250.147/nbd-images/nbd_jetson_jp3541.img
-   ```
-
-   ```bash
-   # _Jetson Nano_
-   sudo wget -P nbd_jetson_{jetson_Name} http://193.55.250.147/nbd-images/nbd_jetson_jp3274.img
-   ```
-
-### 1.7 Set Up DHCP Server
 ```bash
-lxc exec <vmName> -- bash -c 'sudo cat /root/test.txt > /etc/dhcp/dhcpd.conf'
+sudo apt install tftpd-hpa
+sudo mkdir -p /var/lib/tftpboot
+sudo chown -R tftp:tftp /var/lib/tftpboot
+sudo chmod -R 755 /var/lib/tftpboot
+sudo mkdir /var/lib/tftpboot/<rpi_version>
+```
+
+#### Update TFTP Configuration:
+
+```bash
+sudo vi /etc/default/tftpd-hpa
+```
+
+Set the following values:
+
+```bash
+TFTP_USERNAME="tftp"
+TFTP_DIRECTORY="/var/lib/tftpboot" # custom folder like tftpboot/<rpi_version>
+TFTP_ADDRESS=":69"
+TFTP_OPTIONS="--secure"
+```
+
+Restart and enable the TFTP service:
+
+```bash
+sudo systemctl restart tftpd-hpa
+sudo systemctl enable tftpd-hpa
+```
+
+---
+
+### 1.7 Configure NBD (Network Block Device)
+
+#### Install and Prepare NBD Environment:
+
+```bash
+sudo apt install -y nbd-server
+sudo mkdir -p /root/nbd_jetson
+sudo chmod 755 /root/nbd_jetson
+```
+
+#### Edit NBD Server Configuration:
+
+```bash
+sudo vi /etc/nbd-server/config
+```
+
+Example configuration:
+
+```ini
+[generic]
+allowlist = true
+
+[nbd_jetson]
+exportname = /root/nbd_jetson/nbd_jetson.img
+readonly = false
+listenaddr = <vm_ip_address>
+
+[nbd_jetson_jp3274]
+exportname = /root/nbd_jetson_jp3274/nbd_jetson_jp3274.img
+readonly = false
+listenaddr = <vm_ip_address>
+```
+
+#### Create NBD Images:
+
+```bash
+# Jetson Nano
+sudo dd if=/dev/zero of=/root/nbd_jetson/nbd_jetson.img bs=1M count=4096
+
+# Jetson Xavier / Orin
+sudo dd if=/dev/zero of=/root/nbd_jetson/nbd_jetson.img bs=1M count=13312
+sudo mkfs.ext4 /root/nbd_jetson/nbd_jetson.img
+
+# Jetson Nano image format
+sudo mkfs.ext4 /root/nbd_jetson_jp3274/nbd_jetson_jp3274.img
+```
+
+#### Optional: Download Prebuilt NBD Images
+
+```bash
+# Jetson Xavier / Orin
+sudo wget -P nbd_jetson_<name>/ http://193.55.250.147/nbd-images/nbd_jetson_jp3541.img
+
+# Jetson Nano
+sudo wget -P nbd_jetson_<name>/ http://193.55.250.147/nbd-images/nbd_jetson_jp3274.img
+```
+
+---
+
+### 1.8 Configure DHCP Server
+
+#### Create and Apply DHCP Configuration:
+
+```bash
+lxc exec <vm_name> -- bash -c 'cat /root/test.txt > /etc/dhcp/dhcpd.conf'
 sudo apt install isc-dhcp-server
 sudo vi /etc/dhcp/dhcpd.conf
 ```
-Add the following:
-```bash
+
+Example configuration:
+
+```conf
 subnet 192.168.0.0 netmask 255.255.255.0 {
   range 192.168.0.12 192.168.0.15;
   option routers 192.168.0.10;
   option domain-name-servers 8.8.8.8, 8.8.4.4;
 }
 ```
-Start and enable DHCP:
+
+Restart and enable the service:
+
 ```bash
 sudo systemctl restart isc-dhcp-server
 sudo systemctl enable isc-dhcp-server
 ```
 
-5. **Download and extract rootfs (example commands):**
+---
 
-   - **Jetson Xavier / Jetson Orin:**
-     ```bash
-     wget http://193.55.250.147/rootfs-jetson/rootfs-basic-jp3541-noeula-user.tar.gz
-     sudo tar xpzf /root/rootfs-basic-jp3541-noeula-user.tar.gz -C /root/nfsroot-jp-3274/
-     ```
+### 1.9 Download and Extract Root Filesystems
 
-   - **Jetson Nano:**
-     ```bash
-     wget http://193.55.250.147/rootfs-jetson/rootfs-jp3274.tar.gz
-     sudo tar xpzf /root/rootfs-basic-jp3274-noeula-user.tar.gz -C /root/nfsroot-jp-3541/
-     ```
+#### Jetson Xavier / Orin
+
+```bash
+wget http://193.55.250.147/rootfs-jetson/rootfs-basic-jp3541-noeula-user.tar.gz
+sudo tar xpzf rootfs-basic-jp3541-noeula-user.tar.gz -C /root/nfsroot-jp-3274/
+```
+
+#### Jetson Nano
+
+```bash
+wget http://193.55.250.147/rootfs-jetson/rootfs-jp3274.tar.gz
+sudo tar xpzf rootfs-jp3274.tar.gz -C /root/nfsroot-jp-3541/
+```
+
+#### Raspberry Pi 4
+
+```bash
+wget http://193.55.250.147/core-image-minimal-rpi4-rootfs.tar.bz2
+sudo tar -xf core-image-minimal-rpi4-rootfs.tar.bz2 -C /root/nfsroot_<rpi_version>/
+
+wget http://193.55.250.147/rpi4.tar
+sudo tar -xf rpi4.tar -C /var/lib/tftpboot/
+```
 
 ---
 
@@ -210,7 +329,245 @@ sudo systemctl enable isc-dhcp-server
    sudo ./flash.sh -N <nfsIP>:/root/nfsroot_<jetpack_version> --rcm-boot jetson-orin-nano-devkit eth0   # Jetson Orin NX
    ```
 
+
+
+#  Raspberry Pi 4/5
+
+##  U-Boot Setup on Raspberry Pi 4
+
+### System Requirements (Ubuntu 20.04)
+
+Install required packages:
+
+```bash
+sudo apt install -y git dosfstools gcc-aarch64-linux-gnu make flex bison bc libssl-dev
+sudo apt install -y u-boot-tools
+```
+
 ---
+
+### Clone Source Code
+
+#### U-Boot Source
+
+```bash
+git clone --depth=1 --branch=v2024.09 https://source.denx.de/u-boot/u-boot.git
+```
+
+#### Raspberry Pi Firmware
+
+```bash
+git clone --depth=1 --branch=1.20241001 https://github.com/raspberrypi/firmware.git
+```
+
+---
+
+### Build U-Boot for 64-bit ARM
+
+Compile U-Boot for Raspberry Pi 4:
+
+```bash
+cd u-boot
+CROSS_COMPILE=aarch64-linux-gnu- make rpi_4_defconfig
+CROSS_COMPILE=aarch64-linux-gnu- make -j$(nproc)
+```
+
+---
+
+### Prepare Boot Directory
+
+```bash
+mkdir ../boot-sd
+cp u-boot.bin ../boot-sd/
+```
+
+---
+
+### Copy Firmware Files
+
+For Raspberry Pi 4:
+
+```bash
+cp ../firmware/boot/{bcm2711-rpi-4-b.dtb,fixup4.dat,fixup_x.dat,start4.elf,start_x.elf,bootcode.bin} ../boot-sd/
+```
+
+For Raspberry Pi 5:
+
+```bash
+cp ../firmware/boot/{bcm2712-rpi-5-b.dtb,fixup4.dat,fixup_x.dat,start4.elf,start_x.elf,bootcode.bin} ../boot-sd/
+```
+
+---
+
+### Create `config.txt`
+
+```bash
+cat << EOF > ../boot-sd/config.txt
+enable_uart=1
+arm_64bit=1
+kernel=u-boot.bin
+EOF
+```
+
+---
+
+### Prepare Kernel Image (`zImage`)
+
+```bash
+zcat -S .img ../firmware/boot/kernel8.img > ../boot-sd/zImage
+```
+
+---
+
+### Create U-Boot Boot Script (`boot.source`)
+
+```bash
+cat << EOF > ../boot.source
+setenv autoload no
+dhcp || reset
+setenv nfsroot \${serverip}:/root/nfsroot_rpi4,tcp,v3
+tftp \${fdt_addr_r} rpi4/bcm2711-rpi-4-b.dtb || reset
+tftp \${kernel_addr_r} rpi4/Image || reset
+setenv nfs_bootargs "rootwait rw root=/dev/nfs nfsroot=\${nfsroot} ip=dhcp"
+setenv console_bootargs "8250.nr_uarts=1 console=ttyS0,115200 earlyprintk"
+setenv bootargs "\${nfs_bootargs} \${console_bootargs}"
+booti \${kernel_addr_r} - \${fdt_addr_r} || reset
+EOF
+```
+
+---
+
+### Generate `boot.scr`
+
+```bash
+mkimage -A arm -O linux -T script -C none -n boot.scr -d ../boot.source ../boot-sd/boot.scr
+```
+
+---
+
+### Prepare SD Card
+
+**Note:** Replace `/dev/sdx` with the correct device.
+
+```bash
+sudo umount /dev/sdx*
+sudo parted -s /dev/sdx mklabel msdos mkpart primary fat32 1M 30M
+sudo mkfs.vfat /dev/sdx1
+sudo mount /dev/sdx1 /mnt
+sudo cp -r ../boot-sd/* /mnt
+sudo umount /mnt
+```
+
+---
+
+##  Yocto Dunfell Setup for Raspberry Pi 4
+
+### System Requirements (Ubuntu)
+
+```bash
+sudo apt-get install gawk wget git-core diffstat unzip texinfo gcc-multilib \
+    build-essential chrpath socat cpio python3 python3-pip python3-pexpect \
+    xz-utils debianutils iputils-ping python3-git python3-jinja2 libegl1-mesa \
+    libsdl1.2-dev pylint3 xterm
+```
+
+---
+
+### Directory Structure
+
+```bash
+mkdir -p yocto-rpi4/sources
+cd yocto-rpi4
+```
+
+---
+
+### Clone Yocto Layers
+
+```bash
+git clone git://git.yoctoproject.org/poky -b dunfell sources/poky
+git clone git://git.yoctoproject.org/meta-raspberrypi -b dunfell sources/meta-raspberrypi
+git clone https://git.openembedded.org/meta-openembedded -b dunfell sources/meta-openembedded
+```
+
+---
+
+### Initialize BitBake Environment
+
+```bash
+. sources/poky/oe-init-build-env
+```
+
+---
+
+### Configure `bblayers.conf`
+
+Edit `conf/bblayers.conf` and add:
+
+```conf
+BBLAYERS ?= " \
+  ${TOPDIR}/../sources/poky/meta \
+  ${TOPDIR}/../sources/poky/meta-poky \
+  ${TOPDIR}/../sources/poky/meta-yocto-bsp \
+  ${TOPDIR}/../sources/meta-raspberrypi \
+  ${TOPDIR}/../sources/meta-openembedded/meta-oe \
+  ${TOPDIR}/../sources/meta-openembedded/meta-multimedia \
+  ${TOPDIR}/../sources/meta-openembedded/meta-networking \
+  ${TOPDIR}/../sources/meta-openembedded/meta-python \
+"
+```
+
+---
+
+### Modify `local.conf`
+
+Edit `conf/local.conf`:
+
+```conf
+MACHINE ?= "raspberrypi4"
+CONF_VERSION = "1"
+IMAGE_INSTALL:append = " u-boot"
+DISTRO_FEATURES:append = " systemd"
+IMAGE_INSTALL_append = " openssh openssh-sftp-server"
+```
+
+---
+
+### Build the Image
+
+```bash
+bitbake core-image-minimal
+```
+
+---
+
+### Deploy Build Artifacts
+
+Copy files to a local server for network boot:
+
+```bash
+sudo mkdir -p /var/www/html/rpi4
+sudo cp ./build/tmp/deploy/images/raspberrypi4/core-image-minimal-*.rootfs.tar.bz2 /var/www/html/core-image-minimal-rpi4-rootfs.tar.bz2
+sudo cp ./build/tmp/deploy/images/raspberrypi4/bootfiles/bcm2711-rpi-4-b.dtb /var/www/html/rpi4/
+sudo cp ./build/tmp/deploy/images/raspberrypi4/bootfiles/Image /var/www/html/rpi4/
+```
+
+Note: U-Boot boot scripts (`boot.source` and `boot.scr`) must be created as shown in the U-Boot section if not included in the Yocto output.
+
+---
+
+##  SSH Configuration (Pending)
+
+To enable SSH access using legacy RSA host keys, the following command is suggested:
+
+```bash
+ssh -oHostKeyAlgorithms=+ssh-rsa -oPubkeyAcceptedAlgorithms=+ssh-rsa root@<ip_VM>
+```
+
+---
+
+Let me know if you'd like a version of this as a Markdown or PDF document.
+
 
 ## 3. Jetson Setup
 
