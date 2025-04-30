@@ -90,13 +90,13 @@ export TMPDIR="${workspace_dir}/tmp"
 
 # Create docker data-root directory and create a symlink to /var/lib/docker
 create_dir_if_not_exists "$docker_data_root"
-if [ ! -L /var/lib/docker ]; then
-  echo "Creating symlink for Docker data-root..."
-  sudo ln -s "$docker_data_root" /var/lib/docker
-else
-  echo "Docker symlink already exists: /var/lib/docker"
-fi
-
+#if [ ! -L /var/lib/docker ]; then
+echo "Creating symlink for Docker data-root..."
+#sudo rm /mnt/Workspace/var-lib/docker
+sudo ln -s "$docker_data_root" /var/lib/docker
+#else
+#  echo "Docker symlink already exists: /var/lib/docker"
+#fi
 echo "=== Restarting Docker service ==="
 sudo systemctl restart docker
 sudo systemctl enable docker

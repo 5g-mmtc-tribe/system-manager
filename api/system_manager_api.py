@@ -69,12 +69,14 @@ def get_switch_and_poe():
     """
     Helper function to initialize and return both the SwitchManager and PoeManager.
     """
+    
     config = SWITCH_CONFIG
     switch = SwitchManager(
         device_type=config.get('device_type'),
         ip=config.get('ip'),
         port=config.get('port'),
-        password=config.get('password')
+        password=config.get('password'),
+        #username= config.get('username')
     )
     poe = PoeManager(switch)
     return switch, poe
@@ -201,11 +203,11 @@ def configure_and_setup_nfs_nodes(
                 cfg["driver_path"]
             
             )
-            vm_manager.setup_nfs_rpi(
+            """vm_manager.setup_nfs_rpi(
                 user_name,
                 rootfs_dir,
                 [node],
-            )
+            )"""
             vm_manager.setup_tftp_for_rpi_lxc(vm_name,rpi_version)
         elif matched.startswith("j"):
             # Jetson flow

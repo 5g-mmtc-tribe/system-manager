@@ -139,17 +139,20 @@ class Jetson:
      
     def flash_jetson(self, nfs_ip_address, nfspath, usb_instance, model, nvidia_id):
 
-
+        
         # Select the correct kit based on the model
         if model == "Jetson-Xavier-NX":
             kit = self.xavier_kit
             tegra_folder= self.TEGRA_3541
+            rcm = '--rcm-boot'
         elif model == "Jetson-Orin-NX":
             kit = self.orin_kit
             tegra_folder= self.TEGRA_3541
+            rcm = '--rcm-boot'
         elif model == "Jetson-Nano":
             kit = self.nano_kit
             tegra_folder= self.TEGRA_3274
+            rcm = ''
         else:
             print("Unknown model provided")
             return {
@@ -175,7 +178,7 @@ class Jetson:
         # Define the command using the selected kit
         command = [
             'sudo', './flash.sh', '--usb-instance', usb_instance, '-N', nfs_target,
-            '--rcm-boot', kit, 'eth0'
+            rcm, kit, 'eth0'
         ]
         logging.info("Flash jetson command: %s", command)
         try:

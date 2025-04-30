@@ -7,8 +7,8 @@ import logging
 from typing import Any, Optional
 import pylxd
 import redis
-from config import DHCP_CONFIG_FILE_PATH, DRIVER_SERVER_IP, IP_CONFIG_FILE_PATH, JETSON_SETUP_NFS,  REDIS_HOST, REDIS_PORT, REDIS_USER_INDEX, RPI4_SETUP_NFS, VM_INTERFACE ,USER_SCRIPT_PATH ,TOOLS_SCRIPT_PATH ,NBD_SIZE
-from config.constants import BASE_IMAGE_J10, BASE_IMAGE_J20_J40 ,NBD_IMAGE_NAME_J10, NBD_IMAGE_NAME_J20_J40
+from config import DHCP_CONFIG_FILE_PATH, DRIVER_SERVER_IP, IP_CONFIG_FILE_PATH, JETSON_SETUP_NFS,  REDIS_HOST, REDIS_PORT, REDIS_USER_INDEX, ROOT_FS_RPI4, RPI4_SETUP_NFS, VM_INTERFACE ,USER_SCRIPT_PATH ,TOOLS_SCRIPT_PATH ,NBD_SIZE
+from config.constants import BASE_IMAGE_J10, BASE_IMAGE_J20_J40 ,NBD_IMAGE_NAME_J10, NBD_IMAGE_NAME_J20_J40, ROOT_FS_3274
 from scripts.macvlan import MacVlan
 from scripts.ip_addr_manager import IpAddr
 from switch.switch_manager import SwitchManager
@@ -384,12 +384,13 @@ class VmManager:
                          "Set permissions for NFS folder")
         tarball_cmd = ['lxc', 'file', 'push', driver_path, f'{vm_name}/root/']
         self.run_command(tarball_cmd, "Push rootfs tarball")
-        #extract_cmd = ['lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
-        #               '-C', f'{nfs_root}/rootfs'] fro nano
-        extract_cmd = [
-        'lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
-        '--strip-components=1', '-C', f'{nfs_root}/rootfs'
-        ]
+        if nfs_root == ROOT_FS_3274 :
+            extract_cmd = ['lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}','-C', f'{nfs_root}/rootfs'] #fro nano
+        else :
+            extract_cmd = [
+            'lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
+            '--strip-components=1', '-C', f'{nfs_root}/rootfs'
+            ]
 
         self.run_command(extract_cmd, "Extract rootfs tarball")
 
@@ -406,10 +407,11 @@ class VmManager:
         Configures the NFS server inside the VM.
         """
         vmcmd = ["lxc", "exec", vm_name, "--", "sudo"]
-        for folder in [nfs_root, f"{nfs_root}/rootfs"]:
+        """for folder in [nfs_root, f"{nfs_root}/rootfs"]:
             self.run_command(vmcmd + ["mkdir", folder],
-                         f"Create folder {folder} in VM {vm_name}")
-            
+                         f"Create folder {folder} in VM {vm_name}")"""
+        self.run_command(vmcmd + ["mkdir", f"{nfs_root}"],
+                         f"Create folder {nfs_root} in VM {vm_name}")    
         vmcmd_no_sudo = ["lxc", "exec", vm_name, "--"]
         self.run_command(vmcmd_no_sudo + ["chown", "-R", "nobody:nogroup", f"{nfs_root}"],
                          "Change ownership of NFS folder")
@@ -419,11 +421,15 @@ class VmManager:
         self.run_command(tarball_cmd, "Push rootfs tarball")
         #extract_cmd = ['lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
         #               '-C', f'{nfs_root}/rootfs'] fro nano
-        extract_cmd = [
+
+        """extract_cmd = [
         'lxc', 'exec', vm_name, '--', 'tar', '-xf', f'/root/{driver}',
         '--strip-components=1', '-C', f'{nfs_root}/rootfs'
+        ]"""
+        extract_cmd = [
+        'lxc', 'exec', vm_name, '--', 'tar', '-xf', f'/root/{driver}',
+        '-C', f'{nfs_root}/'
         ]
-
         self.run_command(extract_cmd, "Extract rootfs tarball")
 
         # Delete the driver tarball from the VM after extraction
@@ -663,7 +669,7 @@ class VmManager:
         config_script = f"""
 cat << 'EOF' > /etc/default/tftpd-hpa
 TFTP_USERNAME="tftp"
-TFTP_DIRECTORY="{version_dir}"
+TFTP_DIRECTORY="{ base_dir }"
 TFTP_ADDRESS=":69"
 TFTP_OPTIONS="--secure"
 EOF
@@ -801,7 +807,7 @@ EOF
             ("Dockerfile", "setup", "Push Dockerfile to setup directory"),
             ("lib_setup.sh", "setup", "Push Jetson setup script"),
             ("jetson_setup.sh", "setup", "Push Jetson setup script"),
-            ("restart_jetson.sh", "system", "Push system restart script"),
+            ("restart_services.sh", "system", "Push system restart script"),
             ("configure_PPP.sh", "network", "Push network configuration script"),
             ("fan_control.py", "fan", "Push fan control script")
         ]
@@ -971,7 +977,7 @@ EOF
 
 Run the initial setup script with your NFS IP:
 
-./scripts/system/restart_jetson.sh {nfs_ip}
+./scripts/system/restart_services.sh {nfs_ip}
 
 📌 **Replace `{nfs_ip}` with your actual NFS IP.**
 

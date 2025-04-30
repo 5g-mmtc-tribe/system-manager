@@ -135,3 +135,7 @@ sudo systemctl stop docker
 
 For a full description of the manual configuration, please refer to [docs/vm_server_config.md](docs/vm_server_config.md).
 
+#rpi 
+ssh -oHostKeyAlgorithms=+ssh-rsa \
+    -oPubkeyAcceptedAlgorithms=+ssh-rsa \
+   root@10.111.113.6

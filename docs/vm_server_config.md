@@ -122,7 +122,7 @@ Set the following values:
 
 ```bash
 TFTP_USERNAME="tftp"
-TFTP_DIRECTORY="/var/lib/tftpboot" # custom folder like tftpboot/<rpi_version>
+TFTP_DIRECTORY="/var/lib/tftpboot" #
 TFTP_ADDRESS=":69"
 TFTP_OPTIONS="--secure"
 ```

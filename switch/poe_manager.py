@@ -64,7 +64,7 @@ class PoeManager:
 
 
 # Define the device
-device = {
+"""device = {
   'device_type': 'cisco_ios_telnet',
   'ip': '192.168.0.30',
   'port':23,
@@ -80,7 +80,7 @@ switch = SwitchManager(device_type = device['device_type'],
 
 
 
-power = PoeManager(switch)
+power = PoeManager(switch)"""
 #switch.poe_on("GigabitEthernet1/0/14")
 # switch_interfaces = power.get_switch_interfaces()
 # print(switch_interfaces)
