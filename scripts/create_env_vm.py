@@ -436,6 +436,21 @@ class VmManager:
         delete_cmd = ['lxc', 'exec', vm_name, '--', 'rm', '-f', f'/root/{driver}']
         self.run_command(delete_cmd, "Delete driver tarball after extraction")
 
+        export_line = f"{nfs_root} " \
+                  "*(rw,sync,no_subtree_check,no_root_squash,crossmnt)"
+        self.run_command(
+            ["lxc", "exec", vm_name, "--", "bash", "-c",
+            f"echo '{export_line}' >> /etc/exports"],
+            "Add NFS export to /etc/exports"
+        )
+
+        # NEW: exportfs -a (re‑load exports table)
+        self.run_command(
+            ["lxc", "exec", vm_name, "--", "sudo", "exportfs", "-a"],
+            "Reload NFS exports"
+        )
+
+
         for action in [("restart", "Restart NFS server"), ("enable", "Enable NFS server")]:
             cmd = ["lxc", "exec", vm_name, "--", "sudo", "systemctl", action[0], "nfs-kernel-server"]
             self.run_command(cmd, action[1])
