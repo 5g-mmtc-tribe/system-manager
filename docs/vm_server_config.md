@@ -572,10 +572,10 @@ Let me know if you'd like a version of this as a Markdown or PDF document.
 ## 3. Jetson Setup
 
 ### 3.1 Enable NAT and Internet Access
+launch on the vm 
 ```bash
-ip route del default via <gatewayIP>
 sudo sysctl -w net.ipv4.ip_forward=1
-sudo iptables -t nat -A POSTROUTING -o eth0 -j MASQUERADE
+sudo iptables -t nat -A POSTROUTING -o enp5s0 (interface of internet ) -j MASQUERADE
 ```
 
 ### 3.2 Install Diverse Tools
