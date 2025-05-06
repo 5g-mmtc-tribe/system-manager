@@ -1,0 +1,27 @@
+{
+    "j20": {
+      "rootfs": "/root/nfsroot-jp-3541",
+      "driver": "rootfs-basic-jp3541-noeula-user.tar.gz",
+      "driver_path": "../config/rootfs-basic-jp3541-noeula-user.tar.gz",
+      "user_script_path": "jetson/jp3541/"
+    },
+    "j40": {
+      "rootfs": "/root/nfsroot-jp-3541",
+      "driver": "rootfs-basic-jp3541-noeula-user.tar.gz",
+      "driver_path": "../config/rootfs-basic-jp3541-noeula-user.tar.gz",
+      "user_script_path": "jetson/jp3541/"
+    },
+    "j10": {
+      "rootfs": "/root/nfsroot-jp-3274",
+      "driver": "rootfs-jp3274.tar.gz",
+      "driver_path": "../config/rootfs-jp3274.tar.gz",
+      "user_script_path": "jetson/jp3274/"
+    },
+    "rpi4": {
+      "rootfs": "/root/nfsroot_rpi4",
+      "driver": "core-image-minimal-rpi4-rootfs.tar.bz2",
+      "driver_path": "../config/core-image-minimal-rpi4-rootfs.tar.bz2",
+      "user_script_path": null
+    }
+  }
+  

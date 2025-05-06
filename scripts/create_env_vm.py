@@ -7,8 +7,8 @@ import logging
 from typing import Any, Optional
 import pylxd
 import redis
-from config import DHCP_CONFIG_FILE_PATH, IP_CONFIG_FILE_PATH,  REDIS_HOST, REDIS_PORT, REDIS_USER_INDEX, VM_INTERFACE ,USER_SCRIPT_PATH ,TOOLS_SCRIPT_PATH ,NBD_SIZE
-from config.constants import BASE_IMAGE_J10, BASE_IMAGE_J20_J40 ,NBD_IMAGE_NAME_J10, NBD_IMAGE_NAME_J20_J40
+from config import DHCP_CONFIG_FILE_PATH, DRIVER_SERVER_IP, IP_CONFIG_FILE_PATH, JETSON_SETUP_NFS,  REDIS_HOST, REDIS_PORT, REDIS_USER_INDEX, ROOT_FS_RPI4, RPI4_SETUP_NFS, VM_INTERFACE ,USER_SCRIPT_PATH ,TOOLS_SCRIPT_PATH ,NBD_SIZE
+from config.constants import BASE_IMAGE_J10, BASE_IMAGE_J20_J40 ,NBD_IMAGE_NAME_J10, NBD_IMAGE_NAME_J20_J40, ROOT_FS_3274
 from scripts.macvlan import MacVlan
 from scripts.ip_addr_manager import IpAddr
 from switch.switch_manager import SwitchManager
@@ -64,7 +64,23 @@ class VmManager:
             raise Exception(error_message)
         else:
             logging.info("Command executed successfully")
-
+    def folder_exists(self, vm_name: str, folder: str) -> bool:
+        """
+        Checks if the folder specified by nfs_root exists in the LXC container.
+        
+        For example, if nfs_root is "/mnt/nfs", this function runs:
+            lxc file list <vm_name>/mnt/nfs
+        and returns True if the folder exists.
+        """
+        # Construct the command using the container name and the folder path.
+        check_command = ["lxc", "exec", vm_name, "--", "test", "-d", folder]
+        try:
+            # Attempt to check if the directory exists inside the container.
+            self.run_command(check_command, f"Check if directory {folder} exists")
+            return True
+        except Exception:
+            # If the command fails (i.e., the folder doesn't exist), return False.
+            return False
     # --------------------------------------------------------------------------
     # 2. VM State Checkers & Helpers
     # --------------------------------------------------------------------------
@@ -356,8 +372,6 @@ class VmManager:
         """
         Configures the NFS server inside the VM.
         """
-         
-
         vmcmd = ["lxc", "exec", vm_name, "--", "sudo"]
         for folder in [nfs_root, f"{nfs_root}/rootfs"]:
             self.run_command(vmcmd + ["mkdir", folder],
@@ -370,12 +384,13 @@ class VmManager:
                          "Set permissions for NFS folder")
         tarball_cmd = ['lxc', 'file', 'push', driver_path, f'{vm_name}/root/']
         self.run_command(tarball_cmd, "Push rootfs tarball")
-        #extract_cmd = ['lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
-        #               '-C', f'{nfs_root}/rootfs'] fro nano
-        extract_cmd = [
-        'lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
-        '--strip-components=1', '-C', f'{nfs_root}/rootfs'
-        ]
+        if nfs_root == ROOT_FS_3274 :
+            extract_cmd = ['lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}','-C', f'{nfs_root}/rootfs'] #fro nano
+        else :
+            extract_cmd = [
+            'lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
+            '--strip-components=1', '-C', f'{nfs_root}/rootfs'
+            ]
 
         self.run_command(extract_cmd, "Extract rootfs tarball")
 
@@ -383,18 +398,63 @@ class VmManager:
         delete_cmd = ['lxc', 'exec', vm_name, '--', 'rm', '-f', f'/root/{driver}']
         self.run_command(delete_cmd, "Delete driver tarball after extraction")
 
-        """exports_cmd = f"echo '{nfs_root}/rootfs *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000)' > /etc/exports"
-        lxc_exports = f"lxc exec {vm_name} -- sh -c \"{exports_cmd}\""
-        try:
-            subprocess.run(lxc_exports, shell=True, capture_output=True, text=True, check=True)
-            logging.info("Updated /etc/exports in VM %s", vm_name)
-        except subprocess.CalledProcessError as e:
-            logging.error("Failed to update /etc/exports: %s", e)
-        self.run_command(["lxc", "exec", vm_name, "--", "sudo", "exportfs", "-a"],
-                         "Refresh NFS exports")"""
         for action in [("restart", "Restart NFS server"), ("enable", "Enable NFS server")]:
             cmd = ["lxc", "exec", vm_name, "--", "sudo", "systemctl", action[0], "nfs-kernel-server"]
             self.run_command(cmd, action[1])
+
+    def create_nfs_server_rpi(self, vm_name: str, nfs_root: str ,driver:str ,driver_path:str) -> None:
+        """
+        Configures the NFS server inside the VM.
+        """
+        vmcmd = ["lxc", "exec", vm_name, "--", "sudo"]
+        """for folder in [nfs_root, f"{nfs_root}/rootfs"]:
+            self.run_command(vmcmd + ["mkdir", folder],
+                         f"Create folder {folder} in VM {vm_name}")"""
+        self.run_command(vmcmd + ["mkdir", f"{nfs_root}"],
+                         f"Create folder {nfs_root} in VM {vm_name}")    
+        vmcmd_no_sudo = ["lxc", "exec", vm_name, "--"]
+        self.run_command(vmcmd_no_sudo + ["chown", "-R", "nobody:nogroup", f"{nfs_root}"],
+                         "Change ownership of NFS folder")
+        self.run_command(vmcmd_no_sudo + ["sudo", "chmod", "755", f"{nfs_root}"],
+                         "Set permissions for NFS folder")
+        tarball_cmd = ['lxc', 'file', 'push', driver_path, f'{vm_name}/root/']
+        self.run_command(tarball_cmd, "Push rootfs tarball")
+        #extract_cmd = ['lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
+        #               '-C', f'{nfs_root}/rootfs'] fro nano
+
+        """extract_cmd = [
+        'lxc', 'exec', vm_name, '--', 'tar', '-xf', f'/root/{driver}',
+        '--strip-components=1', '-C', f'{nfs_root}/rootfs'
+        ]"""
+        extract_cmd = [
+        'lxc', 'exec', vm_name, '--', 'tar', '-xf', f'/root/{driver}',
+        '-C', f'{nfs_root}/'
+        ]
+        self.run_command(extract_cmd, "Extract rootfs tarball")
+
+        # Delete the driver tarball from the VM after extraction
+        delete_cmd = ['lxc', 'exec', vm_name, '--', 'rm', '-f', f'/root/{driver}']
+        self.run_command(delete_cmd, "Delete driver tarball after extraction")
+
+        export_line = f"{nfs_root} " \
+                  "*(rw,sync,no_subtree_check,no_root_squash,crossmnt)"
+        self.run_command(
+            ["lxc", "exec", vm_name, "--", "bash", "-c",
+            f"echo '{export_line}' >> /etc/exports"],
+            "Add NFS export to /etc/exports"
+        )
+
+        # NEW: exportfs -a (re‑load exports table)
+        self.run_command(
+            ["lxc", "exec", vm_name, "--", "sudo", "exportfs", "-a"],
+            "Reload NFS exports"
+        )
+
+
+        for action in [("restart", "Restart NFS server"), ("enable", "Enable NFS server")]:
+            cmd = ["lxc", "exec", vm_name, "--", "sudo", "systemctl", action[0], "nfs-kernel-server"]
+            self.run_command(cmd, action[1])
+
 
     # --------------------------------------------------------------------------
     # 7. Additional Configuration
@@ -594,6 +654,63 @@ class VmManager:
 
 
     
+    def setup_tftp_for_rpi_lxc(self, vm_name: str, rpi_version: str) -> None:
+        """
+        Install and configure tftpd-hpa inside an LXC container for Raspberry Pi devices.
+        """
+
+        base_dir = "/var/lib/tftpboot"
+       #  Create version-specific subdirectory
+        version_dir = f"{base_dir}/{rpi_version}"
+
+        # Check if version_dir already exists; if so, skip setup
+        try:
+            self.run_lxc_command(vm_name, ["bash", "-c", f"test -d '{version_dir}'"])
+            logging.info(
+                "TFTP setup skipped: version directory '%s' already exists in VM '%s'",
+                version_dir, vm_name
+            )
+            return
+        except subprocess.CalledProcessError:
+            # Directory does not exist, continue setup
+            pass
+        #  Create tftpboot directory and set permission
+        self.run_lxc_command(vm_name, ["mkdir", "-p", base_dir])
+        self.run_lxc_command(vm_name, ["chown", "-R", "tftp:tftp", base_dir])
+        self.run_lxc_command(vm_name, ["chmod", "-R", "755", base_dir])
+        self.run_lxc_command(vm_name, ["mkdir", "-p", version_dir])
+
+        #  Write tftpd-hpa default config with the correct directory
+        config_script = f"""
+cat << 'EOF' > /etc/default/tftpd-hpa
+TFTP_USERNAME="tftp"
+TFTP_DIRECTORY="{ base_dir }"
+TFTP_ADDRESS=":69"
+TFTP_OPTIONS="--secure"
+EOF
+"""
+        self.run_lxc_command(vm_name, ["bash", "-c", config_script])
+
+        #  Restart and enable the service
+        self.run_lxc_command(vm_name, ["systemctl", "restart", "tftpd-hpa"])
+        self.run_lxc_command(vm_name, ["systemctl", "enable", "tftpd-hpa"])
+
+        #  Download and extract the RPi filesystem tarball
+        tarball_url = f"http://{DRIVER_SERVER_IP}/{rpi_version}.tar.gz"
+        local_tar = f"/root/{rpi_version}.tar.gz"
+        self.run_lxc_command(vm_name, ["wget", "-O", local_tar, tarball_url])
+        self.run_lxc_command(vm_name, ["tar", "-xf", local_tar, "-C", base_dir])
+
+        logging.info(
+            "tftpd-hpa and filesystem setup completed in LXC VM '%s' for RPi version '%s'",
+            vm_name,
+            rpi_version
+        )
+
+
+
+
+
     def update_nbd_config(self, vm_name: str, nfs_server_ip: str, nodes: list) -> None:
                     # Update the configuration file with sections for nodes that are missing.
             logging.info("Setting up nbprofile inside VM %s for new nodes: %s", vm_name, nodes)
@@ -705,7 +822,7 @@ class VmManager:
             ("Dockerfile", "setup", "Push Dockerfile to setup directory"),
             ("lib_setup.sh", "setup", "Push Jetson setup script"),
             ("jetson_setup.sh", "setup", "Push Jetson setup script"),
-            ("restart_jetson.sh", "system", "Push system restart script"),
+            ("restart_services.sh", "system", "Push system restart script"),
             ("configure_PPP.sh", "network", "Push network configuration script"),
             ("fan_control.py", "fan", "Push fan control script")
         ]
@@ -736,49 +853,44 @@ class VmManager:
     # --------------------------------------------------------------------------
     # 9. Tool Installation
     # --------------------------------------------------------------------------
-    def install_library_for_flashing_jetson(self, vm_name: str, nfs_ip_addr: str ) -> None:
+    def install_library(self, vm_name: str, nfs_ip_addr: str ) -> None:
         """
-        Installs necessary libraries and scripts in the VM for flashing Jetson devices.
+        Installs necessary libraries and scripts in the VM for iot  devices.
         """
-        #nfs_root ="/root/nfsroot-jp-3541"
+
         self.run_command(["lxc", "exec", vm_name, "--", "sudo", "apt", "update"], "Update apt")
         install_binutils = ["lxc", "exec", vm_name, "--", "apt", "install", "-y", "binutils"]
+        self.run_lxc_command(vm_name, ["apt", "install", "bzip2"])
         self.run_command(install_binutils, "Install binutils")
         install_nfs = ["lxc", "exec", vm_name, "--", "sudo", "apt", "install", "-y", "nfs-kernel-server"]
         self.run_command(install_nfs, "Install NFS server")
+        self.run_lxc_command(vm_name, ["apt", "install", "-y", "tftpd-hpa"])
         push_5gmmtctool = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "5gmmtctool"), f"{vm_name}/root/"]
         self.run_command(push_5gmmtctool, "Push 5gmmtctool")
 
         #self.add_torch_script(vm_name, "install_torch.sh")
         
     
-    def folder_exists(self, vm_name: str, folder: str) -> bool:
-        """
-        Checks if the folder specified by nfs_root exists in the LXC container.
-        
-        For example, if nfs_root is "/mnt/nfs", this function runs:
-            lxc file list <vm_name>/mnt/nfs
-        and returns True if the folder exists.
-        """
-        # Construct the command using the container name and the folder path.
-        check_command = ["lxc", "exec", vm_name, "--", "test", "-d", folder]
-        try:
-            # Attempt to check if the directory exists inside the container.
-            self.run_command(check_command, f"Check if directory {folder} exists")
-            return True
-        except Exception:
-            # If the command fails (i.e., the folder doesn't exist), return False.
-            return False
+
             
     def configure_nfs_jetson(self ,vm_name: str, nfs_ip_addr: str ,nfs_root:str ,driver :str, user_script_path_jp :str,driver_path:str):
         if self.folder_exists(vm_name, nfs_root):
-            print(f"Folder {nfs_root} already exists in container {vm_name}. Skipping configuration steps.")
+            print(f"Folder {nfs_root} already exists in  {vm_name}. Skipping configuration steps.")
             return
         self.create_nfs_server(vm_name, nfs_root,driver,driver_path)
-        push_nfs_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "nfs_setup.sh"), f"{vm_name}/root/"]
+        push_nfs_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, JETSON_SETUP_NFS), f"{vm_name}/root/"]
         self.run_command(push_nfs_setup, "Push NFS setup script")
         self.push_files_to_vm(vm_name,nfs_root,USER_SCRIPT_PATH,nfs_ip_addr,user_script_path_jp)
-        time.sleep(10)
+        time.sleep(7)
+
+    def configure_nfs_raspberry(self ,vm_name: str,nfs_root:str ,driver :str,driver_path:str):
+        if self.folder_exists(vm_name, nfs_root):
+            print(f"Folder {nfs_root} already exists in  {vm_name}. Skipping configuration steps.")
+            return
+        self.create_nfs_server_rpi(vm_name, nfs_root,driver,driver_path)
+        push_nfs_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, RPI4_SETUP_NFS), f"{vm_name}/root/"]
+        self.run_command(push_nfs_setup, "Push NFS setup script")
+        time.sleep(5)
 
 
     
@@ -808,7 +920,7 @@ class VmManager:
             logging.error("Usage: setup_nfs_jetson('<VM_NAME>', '<nfsroot-v>', ['device1', 'device2', ...])")
             return
 
-        script_path = "/root/nfs_setup.sh"
+        script_path = "/root/"+JETSON_SETUP_NFS
         logging.info("Executing NFS  in VM with %s %s", nfsroot_v,device_names)
         # First argument is now the nfsroot_v, followed by the device names
         args = " ".join([nfsroot_v] + device_names)
@@ -821,6 +933,47 @@ class VmManager:
         except subprocess.CalledProcessError as e:
             logging.error("Error executing NFS setup in VM %s: %s", vm_name, e)
             raise
+
+    # --------------------------------------------------------------------------
+    # 10. NFS rasspbery setup
+    # --------------------------------------------------------------------------
+    def setup_nfs_rpi(self, vm_name: str, nfs_version: str, device_names: list[str]) -> None:
+        """
+            Executes the NFS setup script for Raspberry Pi inside the specified VM.
+
+            Args:
+                vm_name (str): Name of the LXC container (VM).
+                nfs_version (str): Version tag of the NFS root (e.g., "v2").
+                device_names (list[str]): List of device identifiers (e.g., hostnames or MACs).
+
+            Usage:
+                setup_nfs_raspberry("my_vm", "v2", ["raspi-1", "raspi-2"])
+            """
+        if not vm_name or not nfs_version or not device_names:
+            logging.error("Usage: setup_nfs_raspberry('<VM_NAME>', '<nfs_version>', ['device1', 'device2', ...])")
+            return
+
+
+        script_path = "/root/"+RPI4_SETUP_NFS
+        args = " ".join([ nfs_version] + device_names)
+
+        try:
+            # Ensure script is executable
+            subprocess.run(["lxc", "exec", vm_name, "--", "chmod", "+x", script_path], check=True)
+
+            # Execute the script with arguments inside the VM
+            logging.info("Executing Raspberry Pi NFS setup script in VM '%s' with NFS version '%s' and devices %s",
+                        vm_name, nfs_version, device_names)
+
+            subprocess.run(
+                ["lxc", "exec", vm_name, "--", "bash", "-c", f"{script_path} {args}"],
+                check=True
+            )
+
+            logging.info("NFS setup script executed successfully in VM '%s'", vm_name)
+
+        except subprocess.CalledProcessError as e:
+            logging.error("Error executing NFS setup in VM '%s': %s", vm_name, e)
     # --------------------------------------------------------------------------
     # 11. Utility: README Creation
     # --------------------------------------------------------------------------
@@ -839,7 +992,7 @@ class VmManager:
 
 Run the initial setup script with your NFS IP:
 
-./scripts/system/restart_jetson.sh {nfs_ip}
+./scripts/system/restart_services.sh {nfs_ip}
 
 📌 **Replace `{nfs_ip}` with your actual NFS IP.**
 
@@ -958,3 +1111,6 @@ vm_manager = VmManager()
 #vm_manager.create_readme_in_vm("mehdi",  nfs_ip_addr="10.111.67.4", rootfs='/root/nfsroot-jp-3274')
 #ip = IpAddr()
 #ip.update_dhcp_configuration(DHCP_CONFIG_FILE_PATH,"10.111.100.6/24")
+"""push_nfs_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, RPI4_SETUP_NFS), f"{"mehdi"}/root/"]
+VmManager.run_command(push_nfs_setup, "Push NFS setup script")"""
+#vm_manager.setup_nfs_rpi("mehdi","nfsroot_rpi4",['rpi4-3'])
