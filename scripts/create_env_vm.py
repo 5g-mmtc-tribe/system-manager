@@ -514,9 +514,9 @@ class VmManager:
             node_section = f"[nbd_jetson_{node}]"
             # If the node section already exists, skip processing for this node.
             if node_section in existing_config:
-                logging.info("Configuration for node %s already exists.", node)
+                logging.info("Configuration for nbd %s already exists.", node)
                 continue
-
+    
             # Create the node-specific folder under /root.
             node_folder = f"/root/nbd_jetson_{node}"
             self.run_lxc_command(vm_name, ["mkdir", "-p", node_folder])
@@ -532,9 +532,9 @@ class VmManager:
             new_config_content += "readonly = false\n"
             new_config_content += f"listenaddr = {nfs_server_ip}\n\n"
 
-        # Append new sections to the configuration file if any.
-        if new_config_content:
-            self.run_lxc_command(vm_name, ["sh", "-c", f"echo '{new_config_content}' >> /etc/nbd-server/config"])
+            # Append new sections to the configuration file if any.
+            if new_config_content:
+                self.run_lxc_command(vm_name, ["sh", "-c", f"echo '{new_config_content}' >> /etc/nbd-server/config"])
 
 
     def _update_config_file_1(self, vm_name: str, nfs_server_ip: str, nodes: list) -> None:
@@ -636,13 +636,7 @@ class VmManager:
             """
             logging.info("Setting up nbprofile inside VM %s for nodes: %s", vm_name, nodes)
             
-            # Install required packages and prepare the environment.
-            self._install_nbd_packages(vm_name)
 
-            current_config = "[generic]\nallowlist = true\n\n"
-            self.run_lxc_command(
-                vm_name, ["sh", "-c", f"echo '{current_config}' > /etc/nbd-server/config"]
-            )
             
             # Update the configuration file with sections for nodes that are missing.
             self._update_config_file(vm_name, nfs_server_ip, nodes)
@@ -867,7 +861,11 @@ EOF
         self.run_lxc_command(vm_name, ["apt", "install", "-y", "tftpd-hpa"])
         push_5gmmtctool = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "5gmmtctool"), f"{vm_name}/root/"]
         self.run_command(push_5gmmtctool, "Push 5gmmtctool")
-
+                    # Install required packages and prepare the environment.
+        self._install_nbd_packages(vm_name)
+        current_config = "[generic]\nallowlist = true\n\n"
+        self.run_lxc_command(
+         vm_name, ["sh", "-c", f"echo '{current_config}' > /etc/nbd-server/config"])
         #self.add_torch_script(vm_name, "install_torch.sh")
         
     

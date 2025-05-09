@@ -3,7 +3,7 @@
 # Step 1: Create LXC VM for the web portal
 - name: Create LXC VM for the web portal
   shell: |
-    lxc launch ubuntu:20.04 WebPortal --vm --device root,size=80GB -c limits.cpu=4 -c limits.memory=4GiB
+    lxc launch ubuntu:20.04 WebPortal --vm --device root,size=40GB --device enp5s0,nic,network=lxdbr0,ipv4.address={{WEB_PORTAL_IP }},name=enp5s0 -c limits.cpu=2 -c limits.memory=2GiB 
   register: lxc_vm_created
   ignore_errors: yes  # Ignore errors if the VM already exists
 
@@ -55,7 +55,7 @@
   git:
     repo: "https://{{ github_user }}:{{ github_token }}@github.com/5g-mmtc-tribe/5g-testbed-webportal.git"
     dest: /root/testbed-webportal
-    version: dev
+    version: main
   become: yes
   delegate_to: "{{ lxc_vm_ip.stdout.strip() }}"
 
@@ -79,7 +79,7 @@
 
 - name: Run local development server
   shell: |
-    nohup npm run serve &
+    nohup npm run serve -- --port 5055 > server.log 2>&1 &
   args:
     chdir: /root/testbed-webportal
   async: 3600
