@@ -19,6 +19,12 @@
         "user_subnet": "10.111.101.0/24",
         "nfs_ip_addr": "10.111.101.4/24",
         "macvlan_interface": "macvlan_cadjih"
+    },
+    {
+        "user_name": "mmtc",
+        "user_network_id": 89,
+        "user_subnet": "10.111.89.0/24",
+        "nfs_ip_addr": "10.111.89.4/24",
+        "macvlan_interface": "macvlan_mmtc"
     }
-
 ]

@@ -7,8 +7,8 @@ import logging
 from typing import Any, Optional
 import pylxd
 import redis
-from config import DHCP_CONFIG_FILE_PATH, DRIVER_SERVER_IP, IP_CONFIG_FILE_PATH, JETSON_SETUP_NFS,  REDIS_HOST, REDIS_PORT, REDIS_USER_INDEX, ROOT_FS_RPI4, RPI4_SETUP_NFS, VM_INTERFACE ,USER_SCRIPT_PATH ,TOOLS_SCRIPT_PATH ,NBD_SIZE
-from config.constants import BASE_IMAGE_J10, BASE_IMAGE_J20_J40 ,NBD_IMAGE_NAME_J10, NBD_IMAGE_NAME_J20_J40, ROOT_FS_3274
+from config import DHCP_CONFIG_FILE_PATH, DRIVER_SERVER_IP, IP_CONFIG_FILE_PATH, JETSON_SETUP_NFS, JTX2_CONFIG_FILE_PATH,  REDIS_HOST, REDIS_PORT, REDIS_USER_INDEX, ROOT_FS_RPI4, RPI4_SETUP_NFS, VM_INTERFACE ,USER_SCRIPT_PATH ,TOOLS_SCRIPT_PATH ,NBD_SIZE
+from config.constants import BASE_IMAGE_J10, BASE_IMAGE_J20_J40 ,NBD_IMAGE_NAME_J10, NBD_IMAGE_NAME_J20_J40, ROOT_FS_3274, RPI4_CONFIG_FILE_PATH
 from scripts.macvlan import MacVlan
 from scripts.ip_addr_manager import IpAddr
 from switch.switch_manager import SwitchManager
@@ -355,6 +355,10 @@ class VmManager:
         install_command = ["lxc", "exec", vm_name, "--", "sudo", "apt", "install", "-y", "isc-dhcp-server"]
         self.run_command(install_command, "Install DHCP server")
         ip = IpAddr()
+        push_rpi_config = ["lxc", "file", "push",RPI4_CONFIG_FILE_PATH, f"{vm_name}/etc/dhcp/"]
+        self.run_command(push_rpi_config, "Copy rpi config")
+        push_jtx_config = ["lxc", "file", "push",JTX2_CONFIG_FILE_PATH, f"{vm_name}/etc/dhcp/"]
+        self.run_command(push_jtx_config, "push_jtx_config")
         ip.update_dhcp_configuration(DHCP_CONFIG_FILE_PATH, nfs_ip_addr)
         push_cmd = ["lxc", "file", "push",DHCP_CONFIG_FILE_PATH, f"{vm_name}/root/"]
         self.run_command(push_cmd, "Copy DHCP config")
@@ -407,36 +411,34 @@ class VmManager:
         Configures the NFS server inside the VM.
         """
         vmcmd = ["lxc", "exec", vm_name, "--", "sudo"]
-        """for folder in [nfs_root, f"{nfs_root}/rootfs"]:
-            self.run_command(vmcmd + ["mkdir", folder],
-                         f"Create folder {folder} in VM {vm_name}")"""
-        self.run_command(vmcmd + ["mkdir", f"{nfs_root}"],
-                         f"Create folder {nfs_root} in VM {vm_name}")    
         vmcmd_no_sudo = ["lxc", "exec", vm_name, "--"]
+
+        for folder in [nfs_root, f"{nfs_root}/rootfs"]:
+            self.run_command(vmcmd + ["mkdir", folder],
+                         f"Create folder {folder} in VM {vm_name}")
+        
         self.run_command(vmcmd_no_sudo + ["chown", "-R", "nobody:nogroup", f"{nfs_root}"],
                          "Change ownership of NFS folder")
         self.run_command(vmcmd_no_sudo + ["sudo", "chmod", "755", f"{nfs_root}"],
                          "Set permissions for NFS folder")
         tarball_cmd = ['lxc', 'file', 'push', driver_path, f'{vm_name}/root/']
         self.run_command(tarball_cmd, "Push rootfs tarball")
-        #extract_cmd = ['lxc', 'exec', vm_name, '--', 'tar', 'xpzf', f'/root/{driver}',
-        #               '-C', f'{nfs_root}/rootfs'] fro nano
 
-        """extract_cmd = [
-        'lxc', 'exec', vm_name, '--', 'tar', '-xf', f'/root/{driver}',
-        '--strip-components=1', '-C', f'{nfs_root}/rootfs'
-        ]"""
         extract_cmd = [
         'lxc', 'exec', vm_name, '--', 'tar', '-xf', f'/root/{driver}',
-        '-C', f'{nfs_root}/'
+        '--strip-components=1', '-C', f'{nfs_root}/rootfs'
         ]
+        """extract_cmd = [
+        'lxc', 'exec', vm_name, '--', 'tar', '-xf', f'/root/{driver}',
+        '-C', f'{nfs_root}/'
+        ]"""
         self.run_command(extract_cmd, "Extract rootfs tarball")
 
         # Delete the driver tarball from the VM after extraction
         delete_cmd = ['lxc', 'exec', vm_name, '--', 'rm', '-f', f'/root/{driver}']
         self.run_command(delete_cmd, "Delete driver tarball after extraction")
 
-        export_line = f"{nfs_root} " \
+        """export_line = f"{nfs_root} " \
                   "*(rw,sync,no_subtree_check,no_root_squash,crossmnt)"
         self.run_command(
             ["lxc", "exec", vm_name, "--", "bash", "-c",
@@ -447,9 +449,9 @@ class VmManager:
         # NEW: exportfs -a (re‑load exports table)
         self.run_command(
             ["lxc", "exec", vm_name, "--", "sudo", "exportfs", "-a"],
-            "Reload NFS exports"
-        )
-
+            "Reload NFS exports
+        )"""
+         
 
         for action in [("restart", "Restart NFS server"), ("enable", "Enable NFS server")]:
             cmd = ["lxc", "exec", vm_name, "--", "sudo", "systemctl", action[0], "nfs-kernel-server"]
@@ -673,6 +675,8 @@ class VmManager:
         self.run_lxc_command(vm_name, ["chown", "-R", "tftp:tftp", base_dir])
         self.run_lxc_command(vm_name, ["chmod", "-R", "755", base_dir])
         self.run_lxc_command(vm_name, ["mkdir", "-p", version_dir])
+        self.run_lxc_command(vm_name, ["chown", "-R", "tftp:tftp", version_dir ])
+        self.run_lxc_command(vm_name, ["chmod", "-R", "755", version_dir ])
 
         #  Write tftpd-hpa default config with the correct directory
         config_script = f"""
@@ -1112,3 +1116,4 @@ vm_manager = VmManager()
 """push_nfs_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, RPI4_SETUP_NFS), f"{"mehdi"}/root/"]
 VmManager.run_command(push_nfs_setup, "Push NFS setup script")"""
 #vm_manager.setup_nfs_rpi("mehdi","nfsroot_rpi4",['rpi4-3'])
+#vm_manager.create_nfs_server_rpi("mehdi","/root/nfsroot_rpi4","core-image-minimal-rpi4-rootfs.tar.bz2","../config/core-image-minimal-rpi4-rootfs.tar.bz2")

@@ -203,11 +203,11 @@ def configure_and_setup_nfs_nodes(
                 cfg["driver_path"]
             
             )
-            """vm_manager.setup_nfs_rpi(
+            vm_manager.setup_nfs_rpi(
                 user_name,
                 rootfs_dir,
                 [node],
-            )"""
+            )
             vm_manager.setup_tftp_for_rpi_lxc(vm_name,rpi_version)
         elif matched.startswith("j"):
             # Jetson flow
