@@ -500,7 +500,7 @@ def flash_jetson(nfs_ip_address: str, nfspath: str, usb_instance: str, switch_in
     try:
         turn_off_node(switch_interface)
         turn_on_node(switch_interface)
-        logging.info("Flashing Jetson with NFS IP: %s, NFS Path: %s, USB Instance: %s", nfs_ip_address, nfspath, usb_instance ,model ,nvidia_id)
+        logging.info("Flashing Jetson with NFS IP: %s, NFS Path: %s, USB Instance: %s ,model :%s", nfs_ip_address, nfspath, usb_instance ,model )
         jetson = Jetson()
         result = jetson.flash_jetson(nfs_ip_address, nfspath, usb_instance,model ,nvidia_id)
         return result
