@@ -21,8 +21,10 @@ fi
 # Check if the device already exists in the VM configuration
 existing_devices=$(sudo lxc config device list "$vm_name")
 if echo "$existing_devices" | grep -q "$device_name"; then
-  echo "Device $device_name already exists on $vm_name. Removing it..."
-  sudo lxc config device remove "$vm_name" "$device_name"
+  echo "Device '$device_name' already exists on VM '$vm_name'. Nothing to do."
+  exit 0
+  #echo "Device $device_name already exists on $vm_name. Removing it..."
+  #sudo lxc config device remove "$vm_name" "$device_name"
 fi
 
 # Add macvlan device to VM
@@ -41,6 +43,11 @@ sleep 5  # Give it time to initialize
 iface=""
 for i in {1..50}; do
   candidate_iface="eth$i"
+
+  # skip if the interface doesn't exist at all
+  if ! sudo lxc exec "$vm_name" -- ip link show "$candidate_iface" &>/dev/null; then
+    continue
+  fi
   iface_status=$(sudo lxc exec "$vm_name" -- ip link show "$candidate_iface" 2>/dev/null | grep -q "UP" && echo "UP" || echo "DOWN")
   ip_address=$(sudo lxc exec "$vm_name" -- ip -4 addr show "$candidate_iface" 2>/dev/null | grep -oP '(?<=inet\s)\d+\.\d+\.\d+\.\d+(/\d+)?' || echo "None")
   

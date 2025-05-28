@@ -209,6 +209,20 @@ def configure_and_setup_nfs_nodes(
                 [node],
             )
             vm_manager.setup_tftp_for_rpi_lxc(vm_name,rpi_version)
+        elif matched.startswith("jtx"):
+            vm_manager.configure_nfs_jtx2(
+                vm_name,
+                cfg["rootfs"],
+                cfg["driver"],
+                cfg["driver_path"]
+            
+            )
+            vm_manager.setup_nfs_jtx2(
+                user_name,
+                rootfs_dir,
+                [node],
+            )
+            vm_manager.setup_tftp_for_jtx2_lxc(vm_name)
         elif matched.startswith("j"):
             # Jetson flow
             vm_manager.configure_nfs_jetson(

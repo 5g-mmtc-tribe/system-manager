@@ -457,6 +457,57 @@ class VmManager:
             cmd = ["lxc", "exec", vm_name, "--", "sudo", "systemctl", action[0], "nfs-kernel-server"]
             self.run_command(cmd, action[1])
 
+    def create_nfs_server_jtx2(self, vm_name: str, nfs_root: str ,driver:str ,driver_path:str) -> None:
+        """
+        Configures the NFS server inside the VM.
+        """
+        vmcmd = ["lxc", "exec", vm_name, "--", "sudo"]
+        vmcmd_no_sudo = ["lxc", "exec", vm_name, "--"]
+
+        for folder in [nfs_root, f"{nfs_root}/rootfs"]:
+            self.run_command(vmcmd + ["mkdir", folder],
+                         f"Create folder {folder} in VM {vm_name}")
+        
+        self.run_command(vmcmd_no_sudo + ["chown", "-R", "nobody:nogroup", f"{nfs_root}"],
+                         "Change ownership of NFS folder")
+        self.run_command(vmcmd_no_sudo + ["sudo", "chmod", "755", f"{nfs_root}"],
+                         "Set permissions for NFS folder")
+        tarball_cmd = ['lxc', 'file', 'push', driver_path, f'{vm_name}/root/']
+        self.run_command(tarball_cmd, "Push rootfs tarball")
+
+        extract_cmd = [
+        'lxc', 'exec', vm_name, '--', 'tar', '-xf', f'/root/{driver}',
+        '--strip-components=1', '-C', f'{nfs_root}/rootfs'
+        ]
+        """extract_cmd = [
+        'lxc', 'exec', vm_name, '--', 'tar', '-xf', f'/root/{driver}',
+        '-C', f'{nfs_root}/'
+        ]"""
+        self.run_command(extract_cmd, "Extract rootfs tarball")
+
+        # Delete the driver tarball from the VM after extraction
+        delete_cmd = ['lxc', 'exec', vm_name, '--', 'rm', '-f', f'/root/{driver}']
+        self.run_command(delete_cmd, "Delete driver tarball after extraction")
+
+        """export_line = f"{nfs_root} " \
+                  "*(rw,sync,no_subtree_check,no_root_squash,crossmnt)"
+        self.run_command(
+            ["lxc", "exec", vm_name, "--", "bash", "-c",
+            f"echo '{export_line}' >> /etc/exports"],
+            "Add NFS export to /etc/exports"
+        )
+
+        # NEW: exportfs -a (re‑load exports table)
+        self.run_command(
+            ["lxc", "exec", vm_name, "--", "sudo", "exportfs", "-a"],
+            "Reload NFS exports"
+        )
+         """
+
+        for action in [("restart", "Restart NFS server"), ("enable", "Enable NFS server")]:
+            cmd = ["lxc", "exec", vm_name, "--", "sudo", "systemctl", action[0], "nfs-kernel-server"]
+            self.run_command(cmd, action[1])
+
 
     # --------------------------------------------------------------------------
     # 7. Additional Configuration
@@ -509,7 +560,7 @@ class VmManager:
             if "j20" in node or "j40" in node:
                base_image_path = BASE_IMAGE_J20_J40 
                base_image_name = NBD_IMAGE_NAME_J20_J40
-            elif "j10" in node:
+            elif "j10" or "jtx2" in node:
                  base_image_path = BASE_IMAGE_J10
                  base_image_name = NBD_IMAGE_NAME_J10
 
@@ -649,6 +700,37 @@ class VmManager:
             logging.info("nbprofile setup completed in VM %s", vm_name)
 
 
+    def setup_tftp_server(self, vm_name: str)-> None:
+        """
+         Install and configure tftpd-hpa inside an LXC container.
+
+        """
+        self.run_lxc_command(vm_name, ["apt", "install", "-y", "tftpd-hpa"])
+        base_dir = "/var/lib/tftpboot"
+               #  Create tftpboot directory and set permission
+        self.run_lxc_command(vm_name, ["mkdir", "-p", base_dir])
+        self.run_lxc_command(vm_name, ["chown", "-R", "tftp:tftp", base_dir])
+        self.run_lxc_command(vm_name, ["chmod", "-R", "755", base_dir])
+
+        #  Write tftpd-hpa default config with the correct directory
+        config_script = f"""
+cat << 'EOF' > /etc/default/tftpd-hpa
+TFTP_USERNAME="tftp"
+TFTP_DIRECTORY="{ base_dir }"
+TFTP_ADDRESS=":69"
+TFTP_OPTIONS="--secure"
+EOF
+"""
+        self.run_lxc_command(vm_name, ["bash", "-c", config_script])
+
+        #  Restart and enable the service
+        self.run_lxc_command(vm_name, ["systemctl", "restart", "tftpd-hpa"])
+        self.run_lxc_command(vm_name, ["systemctl", "enable", "tftpd-hpa"])
+        logging.info(
+            "tftpd-hpa and filesystem setup completed in LXC VM '%s",
+            vm_name
+
+        )
     
     def setup_tftp_for_rpi_lxc(self, vm_name: str, rpi_version: str) -> None:
         """
@@ -671,34 +753,18 @@ class VmManager:
             # Directory does not exist, continue setup
             pass
         #  Create tftpboot directory and set permission
-        self.run_lxc_command(vm_name, ["mkdir", "-p", base_dir])
-        self.run_lxc_command(vm_name, ["chown", "-R", "tftp:tftp", base_dir])
-        self.run_lxc_command(vm_name, ["chmod", "-R", "755", base_dir])
         self.run_lxc_command(vm_name, ["mkdir", "-p", version_dir])
         self.run_lxc_command(vm_name, ["chown", "-R", "tftp:tftp", version_dir ])
         self.run_lxc_command(vm_name, ["chmod", "-R", "755", version_dir ])
-
-        #  Write tftpd-hpa default config with the correct directory
-        config_script = f"""
-cat << 'EOF' > /etc/default/tftpd-hpa
-TFTP_USERNAME="tftp"
-TFTP_DIRECTORY="{ base_dir }"
-TFTP_ADDRESS=":69"
-TFTP_OPTIONS="--secure"
-EOF
-"""
-        self.run_lxc_command(vm_name, ["bash", "-c", config_script])
-
-        #  Restart and enable the service
-        self.run_lxc_command(vm_name, ["systemctl", "restart", "tftpd-hpa"])
-        self.run_lxc_command(vm_name, ["systemctl", "enable", "tftpd-hpa"])
 
         #  Download and extract the RPi filesystem tarball
         tarball_url = f"http://{DRIVER_SERVER_IP}/{rpi_version}.tar.gz"
         local_tar = f"/root/{rpi_version}.tar.gz"
         self.run_lxc_command(vm_name, ["wget", "-O", local_tar, tarball_url])
         self.run_lxc_command(vm_name, ["tar", "-xf", local_tar, "-C", base_dir])
-
+                #  Restart and enable the service
+        self.run_lxc_command(vm_name, ["systemctl", "restart", "tftpd-hpa"])
+        self.run_lxc_command(vm_name, ["systemctl", "enable", "tftpd-hpa"])
         logging.info(
             "tftpd-hpa and filesystem setup completed in LXC VM '%s' for RPi version '%s'",
             vm_name,
@@ -706,7 +772,53 @@ EOF
         )
 
 
+    def setup_tftp_for_jtx2_lxc(self, vm_name: str) -> None:
+        """
+        Install and configure tftpd-hpa inside an LXC container for Jtx2 (Jetsons) devices.
+        """
 
+        base_dir = "/var/lib/tftpboot"
+       #  Create version-specific subdirectory
+        jt_dirctory =f"{base_dir}/t186"
+        tftp_jtx2_directory = f"{jt_dirctory}/jp3274"
+
+
+        # Check if version_dir already exists; if so, skip setup
+        try:
+            self.run_lxc_command(vm_name, ["bash", "-c", f"test -d '{tftp_jtx2_directory }'"])
+            logging.info(
+                "TFTP setup skipped: version directory '%s' already exists in VM '%s'",
+                tftp_jtx2_directory , vm_name
+            )
+            return
+        except subprocess.CalledProcessError:
+            # Directory does not exist, continue setup
+            pass
+
+        self.run_lxc_command(vm_name, ["mkdir", "-p",  jt_dirctory])
+        self.run_lxc_command(vm_name, ["chown", "-R", "tftp:tftp",  jt_dirctory])
+        self.run_lxc_command(vm_name, ["chmod", "-R", "755",  jt_dirctory])
+        self.run_lxc_command(vm_name, ["mkdir", "-p",   tftp_jtx2_directory])
+        self.run_lxc_command(vm_name, ["chown", "-R", "tftp:tftp",   tftp_jtx2_directory])
+        self.run_lxc_command(vm_name, ["chmod", "-R", "755",   tftp_jtx2_directory])
+
+
+        #  Restart and enable the service
+        self.run_lxc_command(vm_name, ["systemctl", "restart", "tftpd-hpa"])
+        self.run_lxc_command(vm_name, ["systemctl", "enable", "tftpd-hpa"])
+
+        #  Download and extract the RPi filesystem tarball
+        image_url = f"http://{DRIVER_SERVER_IP}/jtx2/Image"
+        tegra_url = f"http://{DRIVER_SERVER_IP}/jtx2/tegra186-p3636-0001-p3509-0000-a01.dtb"
+
+        self.run_lxc_command(vm_name, ["wget", "-P",  tftp_jtx2_directory, image_url])
+        self.run_lxc_command(vm_name, ["wget", "-P",  tftp_jtx2_directory, tegra_url])
+
+
+        logging.info(
+            "tftpd-hpa and filesystem setup completed in LXC VM '%s' for jetson JTX2",
+            vm_name
+        )
 
 
     def update_nbd_config(self, vm_name: str, nfs_server_ip: str, nodes: list) -> None:
@@ -862,7 +974,9 @@ EOF
         self.run_command(install_binutils, "Install binutils")
         install_nfs = ["lxc", "exec", vm_name, "--", "sudo", "apt", "install", "-y", "nfs-kernel-server"]
         self.run_command(install_nfs, "Install NFS server")
-        self.run_lxc_command(vm_name, ["apt", "install", "-y", "tftpd-hpa"])
+        # install tftp sever 
+        self.setup_tftp_server(vm_name)
+
         push_5gmmtctool = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "5gmmtctool"), f"{vm_name}/root/"]
         self.run_command(push_5gmmtctool, "Push 5gmmtctool")
                     # Install required packages and prepare the environment.
@@ -890,6 +1004,15 @@ EOF
             print(f"Folder {nfs_root} already exists in  {vm_name}. Skipping configuration steps.")
             return
         self.create_nfs_server_rpi(vm_name, nfs_root,driver,driver_path)
+        push_nfs_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, RPI4_SETUP_NFS), f"{vm_name}/root/"]
+        self.run_command(push_nfs_setup, "Push NFS setup script")
+        time.sleep(5)
+
+    def configure_nfs_jtx2(self ,vm_name: str,nfs_root:str ,driver :str,driver_path:str):
+        if self.folder_exists(vm_name, nfs_root):
+            print(f"Folder {nfs_root} already exists in  {vm_name}. Skipping configuration steps.")
+            return
+        self.create_nfs_server_jtx2(vm_name, nfs_root,driver,driver_path)
         push_nfs_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, RPI4_SETUP_NFS), f"{vm_name}/root/"]
         self.run_command(push_nfs_setup, "Push NFS setup script")
         time.sleep(5)
@@ -976,7 +1099,55 @@ EOF
 
         except subprocess.CalledProcessError as e:
             logging.error("Error executing NFS setup in VM '%s': %s", vm_name, e)
-    # --------------------------------------------------------------------------
+
+    def setup_nfs_jtx2(self ,
+        vm_name: str,
+        nfs_version: str,
+        device_names: list[str]
+    ) -> None:
+        """
+        Executes the NFS setup script for JTX2 inside the specified LXC VM.
+
+        Args:
+            vm_name (str): Name of the LXC container.
+            nfs_version (str): Version tag of the NFS root (e.g., "v2").
+            device_names (List[str]): List of device identifiers.
+            script_name (str): Name of the setup script (defaults to JTX2_SETUP_NFS).
+
+        Logs an error and returns if any argument is missing or if execution fails.
+        """
+        if not vm_name or not nfs_version or not device_names:
+            logging.error(
+                "Usage: setup_nfs_jtx2('<VM_NAME>', '<nfs_version>', ['device1', 'device2', ...])"
+            )
+            return
+
+        script_path = "/root/"+RPI4_SETUP_NFS
+        args = [str(script_path), nfs_version] + device_names
+
+        try:
+            # Ensure script is executable
+            subprocess.run(
+                ["lxc", "exec", vm_name, "--", "chmod", "+x", str(script_path)],
+                check=True
+            )
+
+            logging.info(
+                "Executing JTX2 NFS setup script in VM '%s' with version '%s' on devices %s",
+                vm_name, nfs_version, device_names
+            )
+
+            # Execute the script inside the VM
+            subprocess.run(
+                ["lxc", "exec", vm_name, "--", "bash", "-c", " ".join(args)],
+                check=True
+            )
+
+            logging.info("NFS setup for JTX2 completed successfully in VM '%s'", vm_name)
+
+        except subprocess.CalledProcessError as e:
+            logging.error("Error during NFS setup for JTX2 in VM '%s': %s", vm_name, e)
+        # --------------------------------------------------------------------------
     # 11. Utility: README Creation
     # --------------------------------------------------------------------------
     @staticmethod
@@ -1000,6 +1171,8 @@ Run the initial setup script with your NFS IP:
 
 when Restart the Jetson execute the same scripts.
 
+### 2. run the docker container 
+sudo docker run -it --rm --privileged -v "$(pwd):/workspace" --net host mmtc-docker
 
 ##  Install Required Libraries *(Optional)*
 
