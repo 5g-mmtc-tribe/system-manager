@@ -22,6 +22,12 @@
       "driver": "core-image-minimal-rpi4-rootfs.tar.bz2",
       "driver_path": "../config/core-image-minimal-rpi4-rootfs.tar.bz2",
       "user_script_path": null
+    },
+    "jtx2": {
+      "rootfs": "/root/nfsroot_jtx2",
+      "driver": "rootfs-jp3274-tx2-nx-noeula-user.tar.gz",
+      "driver_path": "../config/rootfs-jp3274-tx2-nx-noeula-user.tar.gz",
+      "user_script_path": null
     }
   }
   

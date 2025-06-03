@@ -119,7 +119,10 @@ class IpAddr:
             range {plage}.{subnet_low} {plage}.{subnet_up};
             option routers {net};
             option domain-name-servers 8.8.8.8, 8.8.4.4;
-            }}"""
+            }}
+include "/etc/dhcp/tabhosts-rpi4.conf";
+include "/etc/dhcp/tabhosts-jtx2.conf";
+            """
 
             # Remove existing file if it exists
             if os.path.exists(file_path):

@@ -54,21 +54,20 @@
         - libxml2-utils
       state: present
 
-  #-  name : configure var jetson 3541
-  #   include_vars :
-  #    file : ../vars/jetson_jp3541.yml
+  -  name : configure var jetson 3541
+     include_vars :
+      file : ../vars/jetson_jp3541.yml
 
-  #- name: Configure Jetson JP3541 system
-  #  import_tasks: 
-  #    file : jetson_jp3541.yml
+  - name: Configure Jetson JP3541 system
+    import_tasks: 
+      file : jetson_jp3541.yml
 
-  #-  name : configure var jetson 3274
-  #   include_vars :
-  #    file : "../vars/jetson_jp3274.yml"
+  -  name : configure var jetson 3274
+     include_vars :
+      file : "../vars/jetson_jp3274.yml"
 
-  #- name: Configure Jetson jp3274system
-  #  import_tasks: jetson_jp3274.yml
-
+  - name: Configure Jetson jp3274system
+    import_tasks: jetson_jp3274.yml
 
 
     #-------------------------------------------

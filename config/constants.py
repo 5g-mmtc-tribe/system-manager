@@ -26,7 +26,8 @@ NBD_SIZE = 16384
 CONFIG_DIR = os.path.abspath(os.path.join(BASE_DIR, "../config"))
 IP_CONFIG_FILE_PATH = os.path.join(BASE_DIR, "ipconfig.txt")
 DHCP_CONFIG_FILE_PATH = os.path.join(CONFIG_DIR, "dhcpConfig.txt")
-
+RPI4_CONFIG_FILE_PATH = os.path.join(CONFIG_DIR, "tabhosts-rpi4.conf")
+JTX2_CONFIG_FILE_PATH = os.path.join(CONFIG_DIR, "tabhosts-jtx2.conf")
 #--- nfs 
 ROOT_FS_3274 = "/root/nfsroot-jp-3274"
 ROOT_FS_3541 = "/root/nfsroot-jp-3541"

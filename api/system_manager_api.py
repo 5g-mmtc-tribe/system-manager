@@ -203,12 +203,26 @@ def configure_and_setup_nfs_nodes(
                 cfg["driver_path"]
             
             )
-            """vm_manager.setup_nfs_rpi(
+            vm_manager.setup_nfs_rpi(
                 user_name,
                 rootfs_dir,
                 [node],
-            )"""
+            )
             vm_manager.setup_tftp_for_rpi_lxc(vm_name,rpi_version)
+        elif matched.startswith("jtx"):
+            vm_manager.configure_nfs_jtx2(
+                vm_name,
+                cfg["rootfs"],
+                cfg["driver"],
+                cfg["driver_path"]
+            
+            )
+            vm_manager.setup_nfs_jtx2(
+                user_name,
+                rootfs_dir,
+                [node],
+            )
+            vm_manager.setup_tftp_for_jtx2_lxc(vm_name)
         elif matched.startswith("j"):
             # Jetson flow
             vm_manager.configure_nfs_jetson(
@@ -486,7 +500,7 @@ def flash_jetson(nfs_ip_address: str, nfspath: str, usb_instance: str, switch_in
     try:
         turn_off_node(switch_interface)
         turn_on_node(switch_interface)
-        logging.info("Flashing Jetson with NFS IP: %s, NFS Path: %s, USB Instance: %s", nfs_ip_address, nfspath, usb_instance ,model ,nvidia_id)
+        logging.info("Flashing Jetson with NFS IP: %s, NFS Path: %s, USB Instance: %s ,model :%s", nfs_ip_address, nfspath, usb_instance ,model )
         jetson = Jetson()
         result = jetson.flash_jetson(nfs_ip_address, nfspath, usb_instance,model ,nvidia_id)
         return result
