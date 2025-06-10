@@ -2,3 +2,5 @@
 #github_user : ""  # Replace with your username
 #github_token : ""  # Replace with your password
 WEB_PORTAL_IP : "10.71.241.184"
+
+repo_path: "{{ playbook_dir | dirname }}/.."
