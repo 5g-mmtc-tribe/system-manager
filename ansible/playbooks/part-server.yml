@@ -1,0 +1,6 @@
+- name: Configure Server
+  hosts: sys
+  gather_facts: false
+  roles:
+   - server
+
