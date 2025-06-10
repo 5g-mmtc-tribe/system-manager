@@ -15,6 +15,7 @@
   gather_facts: no
   roles:
     - webportal
+
 #  vars_prompt:
 #    - name: "github_user"
 #      prompt: "Please enter your GitHub username"
