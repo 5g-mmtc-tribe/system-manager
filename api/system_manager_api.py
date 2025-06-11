@@ -212,8 +212,10 @@ def configure_and_setup_nfs_nodes(
         elif matched.startswith("jtx"):
             vm_manager.configure_nfs_jtx2(
                 vm_name,
+                nfs_ip_addr,
                 cfg["rootfs"],
                 cfg["driver"],
+                cfg.get("user_script_path"),
                 cfg["driver_path"]
             
             )

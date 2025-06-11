@@ -9,7 +9,7 @@
 
 # Task 1: Configure Netplan for interface renaming and static IP
 - name: Configure Netplan for renaming and static IP
-  copy:
+  copy: 
     dest: /etc/netplan/01-network-manager-all.yaml
     content: |
       # Let NetworkManager manage all devices on this system

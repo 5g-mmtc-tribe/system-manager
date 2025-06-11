@@ -8,7 +8,7 @@ from typing import Any, Optional
 import pylxd
 import redis
 from config import DHCP_CONFIG_FILE_PATH, DRIVER_SERVER_IP, IP_CONFIG_FILE_PATH, JETSON_SETUP_NFS, JTX2_CONFIG_FILE_PATH,  REDIS_HOST, REDIS_PORT, REDIS_USER_INDEX, ROOT_FS_RPI4, RPI4_SETUP_NFS, VM_INTERFACE ,USER_SCRIPT_PATH ,TOOLS_SCRIPT_PATH ,NBD_SIZE
-from config.constants import BASE_IMAGE_J10, BASE_IMAGE_J20_J40 ,NBD_IMAGE_NAME_J10, NBD_IMAGE_NAME_J20_J40, ROOT_FS_3274, RPI4_CONFIG_FILE_PATH
+from config.constants import BASE_IMAGE_J10, BASE_IMAGE_J20_J40, BASE_IMAGE_JTX ,NBD_IMAGE_NAME_J10, NBD_IMAGE_NAME_J20_J40, NBD_IMAGE_NAME_JTX, ROOT_FS_3274, RPI4_CONFIG_FILE_PATH
 from scripts.macvlan import MacVlan
 from scripts.ip_addr_manager import IpAddr
 from switch.switch_manager import SwitchManager
@@ -560,9 +560,12 @@ class VmManager:
             if "j20" in node or "j40" in node:
                base_image_path = BASE_IMAGE_J20_J40 
                base_image_name = NBD_IMAGE_NAME_J20_J40
-            elif "j10" or "jtx2" in node:
+            elif "j10"  in node:
                  base_image_path = BASE_IMAGE_J10
                  base_image_name = NBD_IMAGE_NAME_J10
+            elif "jtx2" in node :
+                 base_image_path = BASE_IMAGE_JTX
+                 base_image_name = NBD_IMAGE_NAME_JTX
 
             node_section = f"[nbd_jetson_{node}]"
             # If the node section already exists, skip processing for this node.
@@ -955,7 +958,8 @@ EOF
             self.run_command(push_command, description)
 
         # Create a README in the VM after pushing all files
-        VmManager.create_readme_in_vm(vm_name, nfs_ip_addr, nfs_root)
+        VmManager.create_readme_in_vm_j20_j40(vm_name, nfs_ip_addr, nfs_root)
+        VmManager.create_readme_in_vm_nano_jtx(vm_name, nfs_ip_addr, nfs_root)
 
         print("All files successfully pushed and organized in the VM.")
 
@@ -976,10 +980,13 @@ EOF
         self.run_command(install_nfs, "Install NFS server")
         # install tftp sever 
         self.setup_tftp_server(vm_name)
-
+        # 1. Push the CLI script
         push_5gmmtctool = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, "5gmmtctool"), f"{vm_name}/root/"]
         self.run_command(push_5gmmtctool, "Push 5gmmtctool")
-                    # Install required packages and prepare the environment.
+        # 2. Push the README
+        push_readme = ["lxc", "file", "push",os.path.join(USER_SCRIPT_PATH, "VM_README.txt"),f"{vm_name}/root/"]
+        self.run_command(push_readme, "Push VM_README.txt")
+        # Install required packages and prepare the environment.    
         self._install_nbd_packages(vm_name)
         current_config = "[generic]\nallowlist = true\n\n"
         self.run_lxc_command(
@@ -1008,13 +1015,14 @@ EOF
         self.run_command(push_nfs_setup, "Push NFS setup script")
         time.sleep(5)
 
-    def configure_nfs_jtx2(self ,vm_name: str,nfs_root:str ,driver :str,driver_path:str):
+    def configure_nfs_jtx2(self ,vm_name: str,nfs_ip_addr: str ,nfs_root:str ,driver :str,user_script_path_jp :str,driver_path:str):
         if self.folder_exists(vm_name, nfs_root):
             print(f"Folder {nfs_root} already exists in  {vm_name}. Skipping configuration steps.")
             return
         self.create_nfs_server_jtx2(vm_name, nfs_root,driver,driver_path)
         push_nfs_setup = ["lxc", "file", "push", os.path.join(USER_SCRIPT_PATH, RPI4_SETUP_NFS), f"{vm_name}/root/"]
         self.run_command(push_nfs_setup, "Push NFS setup script")
+        self.push_files_to_vm(vm_name,nfs_root,USER_SCRIPT_PATH,nfs_ip_addr,user_script_path_jp)
         time.sleep(5)
 
 
@@ -1151,7 +1159,7 @@ EOF
     # 11. Utility: README Creation
     # --------------------------------------------------------------------------
     @staticmethod
-    def create_readme_in_vm(vm_name: str, nfs_ip_addr: str, rootfs:str)  -> None:
+    def create_readme_in_vm_j20_j40(vm_name: str, nfs_ip_addr: str, rootfs:str)  -> None:
         """
         Creates a README.md file inside the VM with setup instructions.
         """
@@ -1161,57 +1169,126 @@ EOF
         
 # Jetson Configuration and Maintenance Guide
 
+# instruction for 	Jetson-Xavier-NX (j20)	 jetson-Orin_nx (j40)
+
 ## 1. Jetson Initial Setup
 
 Run the initial setup script with your NFS IP:
 
 ./scripts/system/restart_services.sh {nfs_ip}
 
-📌 **Replace `{nfs_ip}` with your actual NFS IP.**
+📌 Replace {nfs_ip} with your actual NFS IP.
 
 when Restart the Jetson execute the same scripts.
 
 ### 2. run the docker container 
 sudo docker run -it --rm --privileged -v "$(pwd):/workspace" --net host mmtc-docker
 
-##  Install Required Libraries *(Optional)*
+##  Install Required Libraries (Optional)
 
 Install necessary libraries using:
 
 ./scripts/setup/lib_setup.sh
 
-##  Network Configuration *(Optional)*
+##  Network Configuration (Optional)
 
 Configure network connectivity:
 
 ./scripts/network/configure_PPP.sh
 
 
-##  Fan Control *(Optional)*
+##  Fan Control (Optional)
 
 Manage Jetson fan speed:
 
 ./scripts/fan/fan_control.py
 
 """    
-        touch_cmd = f'lxc exec {vm_name} -- bash -c "touch {rootfs}/rootfs/home/mmtc/README.md"'
+        touch_cmd = f'lxc exec {vm_name} -- bash -c "touch {rootfs}/rootfs/home/mmtc/README_j20_j40.md"'
         try:
             subprocess.run(touch_cmd, shell=True, check=True)
-            logging.info("Created README.md in VM %s", vm_name)
+            logging.info("Created README_j20_j40.md in VM %s", vm_name)
         except subprocess.CalledProcessError as e:
-            logging.error("Failed to create README.md: %s", e)
+            logging.error("Failed to create README_j20_j40.md: %s", e)
             raise
         write_cmd = (
-            f'lxc exec {vm_name} -- bash -c "cat > {rootfs}/rootfs/home/mmtc/README.md << \'EOF\'\n'
+            f'lxc exec {vm_name} -- bash -c "cat > {rootfs}/rootfs/home/mmtc/README_j20_j40.md << \'EOF\'\n'
             f'{content}\nEOF"'
         )
         try:
             subprocess.run(write_cmd, shell=True, check=True)
-            logging.info("Populated README.md in VM %s", vm_name)
+            logging.info("Populated README_j20_j40.md in VM %s", vm_name)
         except subprocess.CalledProcessError as e:
-            logging.error("Failed to write to README.md: %s", e)
+            logging.error("Failed to write to README_j20_j40.md: %s", e)
             raise
+    @staticmethod
+    def create_readme_in_vm_nano_jtx(vm_name: str, nfs_ip_addr: str, rootfs:str)  -> None:
+        """
+        Creates a README.md file inside the VM with setup instructions.
+        """
+    
+        nfs_ip = nfs_ip_addr.split('/')[0]
+        content = f"""
+        
+# Jetson Configuration  and Maintenance Guide
 
+# instruction for Jetson-Nano  (j10) Jetson-TX2-NX  (jtx2)
+
+## 1.Install Required Libraries 
+
+Install necessary libraries using:
+
+./scripts/setup/lib_setup.sh
+
+## 2. Jetson Initial Setup
+
+Run the initial setup script with your NFS IP and hostname:
+
+./scripts/setup/jetson_setup.sh {nfs_ip} jtx-2 or j10-1
+
+📌 Replace {nfs_ip} with your actual NFS IP.
+
+when Restart the Jetson execute the same scripts.
+
+### 3. run the docker container  if not already run 
+sudo docker run -it --rm --privileged -v "$(pwd):/workspace" --net host mmtc-docker
+
+### restart process 
+Run the initial setup script with your NFS IP:
+
+./scripts/system/restart_services.sh {nfs_ip}
+
+##  Network Configuration (Optional)
+
+Configure network connectivity:
+
+./scripts/network/configure_PPP.sh
+
+
+##  Fan Control (Optional)
+
+Manage Jetson fan speed:
+
+./scripts/fan/fan_control.py
+
+"""    
+        touch_cmd = f'lxc exec {vm_name} -- bash -c "touch {rootfs}/rootfs/home/mmtc/README_j10_jtx.md"'
+        try:
+            subprocess.run(touch_cmd, shell=True, check=True)
+            logging.info("Created README_j10_jtx.md in VM %s", vm_name)
+        except subprocess.CalledProcessError as e:
+            logging.error("Failed to create README_j10_jtx.md: %s", e)
+            raise
+        write_cmd = (
+            f'lxc exec {vm_name} -- bash -c "cat > {rootfs}/rootfs/home/mmtc/README_j10_jtx.md << \'EOF\'\n'
+            f'{content}\nEOF"'
+        )
+        try:
+            subprocess.run(write_cmd, shell=True, check=True)
+            logging.info("Populated README_j10_jtx.md in VM %s", vm_name)
+        except subprocess.CalledProcessError as e:
+            logging.error("Failed to write to README_j10_jtx.md: %s", e)
+            raise
 # --------------------------------------------------------------------------
 # 12. External Function: Jetson Setup
 # --------------------------------------------------------------------------

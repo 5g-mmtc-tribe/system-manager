@@ -1,112 +1,172 @@
 #!/usr/bin/env python3
+"""
+Extra tools (clean):
+  • get-vm-ip        – prints the IPv4 address of interface enp6s0
+  • list-dhcp-leases – prints a table of <MAC, IP, hostname, expiry>
+  • restart-services – restarts & enables nfs-kernel-server and isc-dhcp-server
+"""
 
 import argparse
-import subprocess
+import ipaddress
 import os
+import re
+import subprocess
+from datetime import datetime, timezone
 
-from config import DHCP_CONFIG_FILE_PATH
+LEASES_FILE = "/var/lib/dhcp/dhcpd.leases"
+VM_INTERFACE = "enp6s0"          # Change here if you move to another NIC
+
 
 class VmManager:
     @staticmethod
     def run_command(command, description):
-        print(f"Running command: {description}")
+        print(f"\n==> {description}")
         try:
-            result = subprocess.run(command, capture_output=True, text=True, check=True)
-            print("STDOUT:", result.stdout)
+            result = subprocess.run(
+                command, capture_output=True, text=True, check=True
+            )
+            if result.stdout.strip():
+                print(result.stdout.rstrip())
         except subprocess.CalledProcessError as e:
-            print(f"Failed to execute command {description}: {e}")
-            print("STDOUT:\n", e.stdout)
-            print("STDERR:\n", e.stderr)
+            print(f"[ERROR] {e}")
+            if e.stdout:
+                print("STDOUT:\n", e.stdout)
+            if e.stderr:
+                print("STDERR:\n", e.stderr)
 
-def reconfigure_dhcp_cmd():
-    # Install the DHCP server
-    command_librray_install = ["sudo", "apt", "install", "-y", "isc-dhcp-server"]
-    VmManager.run_command(command_librray_install, "Install the DHCP server")
-    
-    # Copy the DHCP server config file
-    command_librray_install = ["sudo", "cp", DHCP_CONFIG_FILE_PATH, "/etc/dhcp/dhcpd.conf"]
-    VmManager.run_command(command_librray_install, "Copy DHCP config")
 
-    # Restart and enable DHCP server
-    command_librray_install = ["sudo", "systemctl", "restart", "isc-dhcp-server"]
-    VmManager.run_command(command_librray_install, "Restart DHCP server")
-    
-    command_librray_install = ["sudo", "systemctl", "enable", "isc-dhcp-server"]
-    VmManager.run_command(command_librray_install, "Enable DHCP server")
+# ---------------------------------------------------------------------------
+# 1. Get the VM IP on `enp6s0`
+# ---------------------------------------------------------------------------
+def get_vm_ip(interface=VM_INTERFACE):
+    cmd = ["ip", "-o", "-4", "addr", "show", "dev", interface]
+    try:
+        output = subprocess.check_output(cmd, text=True).strip()
+    except subprocess.CalledProcessError:
+        raise RuntimeError(f"Interface {interface!r} not found or no IPv4 address")
 
-def download_rootfs_cmd(model):
-    # Download root filesystem based on the model
-    url = f"http://193.55.250.148/rootfs-{model}-user.tar.gz"
-    command = ["sudo", "wget", "-O", "/root/rootfs-noeula-user.tar.gz", url]
-    VmManager.run_command(command, "Download root filesystem")
-    
-    # Create NFS root directory if not exists
-    if not os.path.exists('/root/nfsroot'):
-        command_create_nfs_folder = ["sudo", "mkdir", "-p", "/root/nfsroot"]
-        VmManager.run_command(command_create_nfs_folder, "Create NFS folder to be used on the Jetson (on the host)")
+    m = re.search(r"\binet\s+(\d+\.\d+\.\d+\.\d+)/\d+\b", output)
+    if not m:
+        raise RuntimeError(f"No IPv4 address on interface {interface!r}")
+    ip_str = m.group(1)
+    ip = ipaddress.ip_address(ip_str)
+    print(f"{interface}: {ip}")
+    return ip
 
-    # Extract the root filesystem
-    command = ["sudo", "tar", "xpzf", "/root/rootfs-noeula-user.tar.gz", "-C", "/root/nfsroot/"]
-    VmManager.run_command(command, "Extract root filesystem")
 
-def create_nfs_server():
-    # Check if the root filesystem file exists
-    if not os.path.exists('/root/rootfs-noeula-user.tar.gz') or not os.path.exists('/root/nfsroot'):
-        print("Error: The root filesystem does not appear to be downloaded or extracted.")
-        print("Please run 'download-rootfs' command first.")
+# ---------------------------------------------------------------------------
+# 2. Parse isc-dhcp-server leases
+# ---------------------------------------------------------------------------
+LEASE_BLOCK_RE = re.compile(
+    r"lease\s+(?P<ip>\d+\.\d+\.\d+\.\d+)\s+{(?P<body>[^}]*)}",
+    re.IGNORECASE | re.DOTALL,
+)
+MAC_RE   = re.compile(r"hardware ethernet\s+((?:[0-9A-Fa-f]{2}:){5}[0-9A-Fa-f]{2})")
+ENDS_RE  = re.compile(r"ends\s+\d\s+([0-9]{4}/[0-9]{2}/[0-9]{2}\s+[0-9]{2}:[0-9]{2}:[0-9]{2})")
+HOST_RE  = re.compile(r'client-hostname\s+"([^"]+)"')
+
+def parse_dhcp_leases(path=LEASES_FILE):
+    if not os.path.exists(path):
+        raise FileNotFoundError(f"DHCP leases file {path} not found")
+
+    leases = {}
+    with open(path, "r", encoding="utf-8") as fh:
+        data = fh.read()
+
+    for m in LEASE_BLOCK_RE.finditer(data):
+        ip   = m.group("ip")
+        body = m.group("body")
+
+        mac_m  = MAC_RE.search(body)
+        ends_m = ENDS_RE.search(body)
+        mac  = mac_m.group(1).lower()   if mac_m  else "-"
+        date = ends_m.group(1)          if ends_m else None
+        host_m = HOST_RE.search(body)
+        host = host_m.group(1) if host_m else "-"
+
+        if date is None:
+            # incomplete block → skip
+            continue
+
+        ends_dt = datetime.strptime(date, "%Y/%m/%d %H:%M:%S").replace(
+            tzinfo=timezone.utc
+        )
+        prev = leases.get(ip)
+        if prev is None or ends_dt > prev["ends"]:
+            leases[ip] = {"mac": mac, "host": host, "ends": ends_dt}
+
+    return leases
+
+
+def print_leases(leases):
+    if not leases:
+        print("No active leases found.")
         return
+    print(f"{'IP':<15} {'MAC':<17} {'HOST':<20} EXPIRES (UTC)")
+    for ip, info in sorted(leases.items()):
+        print(
+            f"{ip:<15} {info['mac']:<17} {info['host']:<20} "
+            f"{info['ends'].strftime('%Y-%m-%d %H:%M:%S')}"
+        )
 
-    # Change NFS folder privileges
-    command_chown_nfs_folder = ["sudo", "chown", "-R", "nobody:nogroup", "/root/nfsroot"]
-    VmManager.run_command(command_chown_nfs_folder, "Change NFS folder privileges")
 
-    command_chmod_nfs_folder = ["sudo", "chmod", "755", "/root/nfsroot"]
-    VmManager.run_command(command_chmod_nfs_folder, "Change NFS folder permissions")
+# ---------------------------------------------------------------------------
+# 3. Service helpers (NFS & DHCP)
+# ---------------------------------------------------------------------------
+def restart_nfs():
+    VmManager.run_command(
+        ["sudo", "systemctl", "restart", "nfs-kernel-server"], "Restart NFS"
+    )
+    VmManager.run_command(
+        ["sudo", "systemctl", "enable", "nfs-kernel-server"], "Enable NFS (boot)"
+    )
 
-    # Install NFS server
-    command_install_nfs_server = ["sudo", "apt", "install", "-y", "nfs-kernel-server"]
-    VmManager.run_command(command_install_nfs_server, "Install NFS server")
 
-    # Configure NFS exports
-    nfs_export_config = '/root/nfsroot *(async,rw,no_root_squash,no_all_squash,no_subtree_check,insecure,anonuid=1000,anongid=1000)'
-    command_configure_exports = f"echo '{nfs_export_config}' | sudo tee /etc/exports"
-    VmManager.run_command(["sh", "-c", command_configure_exports], "Configure NFS exports")
+def restart_dhcp():
+    VmManager.run_command(
+        ["sudo", "systemctl", "restart", "isc-dhcp-server"], "Restart DHCP server"
+    )
+    VmManager.run_command(
+        ["sudo", "systemctl", "enable", "isc-dhcp-server"], "Enable DHCP (boot)"
+    )
 
-    # Refresh exported NFS configuration to NFS service
-    command_refresh_nfs = ["sudo", "exportfs", "-a"]
-    VmManager.run_command(command_refresh_nfs, "Refresh exported NFS configuration to NFS service")
 
-    # Restart and enable NFS service
-    command_restart_nfs = ["sudo", "systemctl", "restart", "nfs-kernel-server"]
-    VmManager.run_command(command_restart_nfs, "Restart NFS service")
-
-    command_enable_nfs = ["sudo", "systemctl", "enable", "nfs-kernel-server"]
-    VmManager.run_command(command_enable_nfs, "Enable NFS service")
-
+# ---------------------------------------------------------------------------
+# 4. main()
+# ---------------------------------------------------------------------------
 def main():
-    parser = argparse.ArgumentParser(description="Manage server configurations")
-    subparsers = parser.add_subparsers(dest="command")
+    parser = argparse.ArgumentParser(
+        description="Lightweight VM management helpers"
+    )
+    subparsers = parser.add_subparsers(dest="command", required=True)
 
-    # Subparser for reconfigure_dhcp command
-    subparser_dhcp = subparsers.add_parser("reconfigure-dhcp", help="Reconfigure DHCP server")
+    # get-vm-ip
+    subparsers.add_parser(
+        "get-vm-ip", help=f"Print IPv4 address of {VM_INTERFACE}"
+    )
 
-    # Subparser for download_rootfs command
-    subparser_download = subparsers.add_parser("download-rootfs", help="Download and extract root filesystem")
-    subparser_download.add_argument("--model", required=True, help="Model name for the root filesystem")
+    # list-dhcp-leases
+    subparsers.add_parser(
+        "list-dhcp-leases", help="Print active leases served by isc-dhcp-server"
+    )
 
-    # Subparser for create_nfs_server command
-    subparser_nfs = subparsers.add_parser("create-nfs-server", help="Create NFS server")
+    # restart-services
+    subparsers.add_parser(
+        "restart-services",
+        help="Restart & enable nfs-kernel-server and isc-dhcp-server",
+    )
 
     args = parser.parse_args()
 
-    if args.command == "reconfigure-dhcp":
-        reconfigure_dhcp_cmd()
-    elif args.command == "download-rootfs":
-        download_rootfs_cmd(args.model)
-    elif args.command == "create-nfs-server":
-        create_nfs_server()
-    else:
-        parser.print_help()
+    if args.command == "get-vm-ip":
+        get_vm_ip()
+    elif args.command == "list-dhcp-leases":
+        leases = parse_dhcp_leases()
+        print_leases(leases)
+    elif args.command == "restart-services":
+        restart_nfs()
+        restart_dhcp()
+
 
 if __name__ == "__main__":
     main()
