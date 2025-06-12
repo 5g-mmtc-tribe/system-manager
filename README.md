@@ -139,3 +139,6 @@ For a full description of the manual configuration, please refer to [docs/vm_ser
 ssh -oHostKeyAlgorithms=+ssh-rsa \
     -oPubkeyAcceptedAlgorithms=+ssh-rsa \
    root@10.111.113.6
+- run anisble some part of playbook
+  cd ansible 
+  ansible-playbook -i inventory/production.ini playbooks/site.yml --ask-become-pass --tags sys

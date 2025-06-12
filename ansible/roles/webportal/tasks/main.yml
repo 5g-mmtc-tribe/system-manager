@@ -3,7 +3,7 @@
 # Step 1: Create LXC VM for the web portal
 - name: Create LXC VM for the web portal
   shell: |
-    lxc launch ubuntu:20.04 WebPortal --vm --device root,size=40GB --device enp5s0,nic,network=lxdbr0,ipv4.address={{WEB_PORTAL_IP }},name=enp5s0 -c limits.cpu=2 -c limits.memory=2GiB 
+    lxc launch ubuntu:20.04 WebPortal --vm --device root,size=40GB  -c limits.cpu=2 -c limits.memory=2GiB 
   register: lxc_vm_created
   ignore_errors: yes  # Ignore errors if the VM already exists
 
@@ -51,14 +51,22 @@
 
 
 # Step 8: Clone the WebPortal repository from GitHub (using personal access token)
-- name: Clone WebPortal project repository from GitHub (private)
+#- name: Clone WebPortal project repository from GitHub (private)
+#  git:
+#    repo: "https://{{ github_user }}:{{ github_token }}@github.com/5g-mmtc-tribe/5g-testbed-webportal.git"
+#    dest: /root/testbed-webportal
+#    version: main
+#  become: yes
+#  delegate_to: "{{ lxc_vm_ip.stdout.strip() }}"
+
+- name: Clone WebPortal project repository from a local copy
   git:
-    repo: "https://{{ github_user }}:{{ github_token }}@github.com/5g-mmtc-tribe/5g-testbed-webportal.git"
+    repo: "{{repo_path}}/5g-testbed-webportal"
     dest: /root/testbed-webportal
     version: main
   become: yes
   delegate_to: "{{ lxc_vm_ip.stdout.strip() }}"
-
+  
 # Step 9: Install Node.js 13.14.0 on WebPortal VM (running as root)
 - name: Install Node.js 13.14.0 on WebPortal VM
   shell: |
@@ -91,7 +99,7 @@
 - name: Wait for Web Portal to start
   wait_for:
     host: "{{ lxc_vm_ip.stdout.strip() }}"
-    port: 8080
+    port: 5055
     delay: 5
     timeout: 300
 
@@ -99,4 +107,4 @@
 # Step 13: Display message that the app is running with its IP
 - name: run the app 
   debug:
-    msg: " the server start at {{ lxc_vm_ip.stdout.strip() }}:8080 "
+    msg: " the server start at {{ lxc_vm_ip.stdout.strip() }}:5055 "
