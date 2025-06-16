@@ -27,7 +27,7 @@
       "rootfs": "/root/nfsroot_jtx2",
       "driver": "rootfs-jp3274-tx2-nx-noeula-user.tar.gz",
       "driver_path": "../config/rootfs-jp3274-tx2-nx-noeula-user.tar.gz",
-      "user_script_path": null
+      "user_script_path": "jetson/jp3274/"
     }
   }
   

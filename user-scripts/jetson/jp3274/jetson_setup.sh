@@ -2,15 +2,24 @@
 set -e
 
 # Check for required command-line argument for the NBD server IP.
-if [ "$#" -lt 1 ]; then
-  echo "Usage: $0 <NBD_server_IP>"
-  exit 1
+if [[ $# -lt 1 ]]; then
+    echo "Usage: $0 <NBD_server_IP> [hostname]"
+    exit 1
 fi
 
 nbd_server_ip="$1"
 
-# Get the hostname and set workspace and docker data-root based on it
-HOSTNAME=$(hostname)
+# ── Hostname ────────────────────────────────────────────────────────────────
+# • If the caller provided it as the 2nd argument, use that.
+# • Otherwise ask interactively.
+# • If they just press Enter, use the system’s own ‘hostname’ command.
+if [[ $# -ge 2 ]]; then
+    HOSTNAME="$2"
+else
+    read -rp "Hostname to embed in paths (default: $(hostname)): " HOSTNAME
+    [[ -z "$HOSTNAME" ]] && HOSTNAME="$(hostname)"
+fi
+echo "→ Using hostname: $HOSTNAME"
 workspace_dir="/mnt/Workspace_${HOSTNAME}"
 docker_data_root="${workspace_dir}/var-lib/docker"
 

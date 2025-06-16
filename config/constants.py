@@ -58,3 +58,5 @@ NBD_IMAGE_NAME_J20_J40 ="nbd_jetson_jp3541.img"
 
 BASE_IMAGE_J10 = os.path.join(BASE_DIR, "nbd_jetson_jp3274.img")
 NBD_IMAGE_NAME_J10 ="nbd_jetson_jp3274.img"
+BASE_IMAGE_JTX = os.path.join(BASE_DIR, "nbd_jetson_jp3274_tx2.img")
+NBD_IMAGE_NAME_JTX ="nbd_jetson_jp3274_tx2.img"
