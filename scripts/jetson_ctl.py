@@ -15,6 +15,7 @@ class Jetson:
         self.orin_id = "ID 0955-7323 NVIDIA Corp. APX"
         self.xavier_kit ="jetson-xavier-nx-devkit"
         self.orin_kit ="jetson-orin-nano-devkit"
+        self.jetson_agx = "jetson-agx-orin-devkit"
         # self.orin_kit ="jetson-orin-nano-devkit-nvme"
         self.nano_kit ="jetson-nano-devkit-emmc"
         self .TEGRA_3274 ="Linux_for_Tegra_jp3274"
@@ -153,6 +154,10 @@ class Jetson:
             kit = self.nano_kit
             tegra_folder= self.TEGRA_3274
             rcm = ''
+        elif model =="Jetson-AGX-32":
+            kit = self.jetson_agx
+            tegra_folder= self.TEGRA_3541
+            rcm = '--rcm-boot'
         else:
             print("Unknown model provided")
             return {
