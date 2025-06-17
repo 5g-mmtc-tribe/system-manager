@@ -17,6 +17,12 @@
       "driver_path": "../config/rootfs-jp3274.tar.gz",
       "user_script_path": "jetson/jp3274/"
     },
+    "jagx32" : {
+      "rootfs": "/root/nfsroot-jp-3541",
+      "driver": "rootfs-basic-jp3541-noeula-user.tar.gz",
+      "driver_path": "../config/rootfs-basic-jp3541-noeula-user.tar.gz",
+      "user_script_path": "jetson/jp3541/"
+    },
     "rpi4": {
       "rootfs": "/root/nfsroot_rpi4",
       "driver": "core-image-minimal-rpi4-rootfs.tar.bz2",

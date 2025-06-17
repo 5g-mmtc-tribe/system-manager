@@ -557,7 +557,7 @@ class VmManager:
         new_config_content = ""
         for node in nodes:
 
-            if "j20" in node or "j40" in node:
+            if "j20" in node or "j40" or "jagx32" in node:
                base_image_path = BASE_IMAGE_J20_J40 
                base_image_name = NBD_IMAGE_NAME_J20_J40
             elif "j10"  in node:
