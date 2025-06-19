@@ -131,6 +131,18 @@
       dest: "{{ nbd_jp3274_dest }}"
       mode: '0644'
     when: not nbd_jp3274_stat.stat.exists
+
+  - name: Check if nbd_jetson_jp3274_tx2.img exists
+    stat:
+      path: "{{ nbd_jp3274_tx2_dest }}"
+    register: nbd_jp3274_tx2_stat
+
+  - name: Download nbd_jetson_jp3274_tx2.img if not exists
+    get_url:
+      url: "{{ nbd_jp3274_tx2_url }}"
+      dest: "{{ nbd_jp3274_tx2_dest }}"
+      mode: '0644'
+    when: not nbd_jp3274_tx2_stat.exists
   #-------------------------------------------
   # Initialize active_users.json
   #-------------------------------------------

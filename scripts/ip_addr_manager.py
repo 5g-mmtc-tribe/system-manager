@@ -1,10 +1,13 @@
-import os 
+import os
+
+from config import BASE_SUBNET, DHCP_CONFIG_FILE_PATH, IP_CONFIG_FILE_PATH 
+
 class IpAddr:
 
     def __init__(self):
         pass
 
-    def user_subnet(self, user_id, n=2 ,base_subnet="10.111.0.0/24"):
+    def user_subnet(self, user_id, n=2 ,base_subnet=BASE_SUBNET):
         # Start with a base subnet (e.g., "192.168.0.0/24")
         
         # Split the subnet into its components
@@ -54,7 +57,7 @@ class IpAddr:
         return macvlan_interface_ip
 
     def vlan_ip(self, user_id, n=3):
-        user_subnet = self.user_subnet(user_id,2,"10.111.0.0/24")
+        user_subnet = self.user_subnet(user_id,2,BASE_SUBNET)
         print(user_subnet)
         
         # Split the subnet into its components
@@ -85,11 +88,23 @@ class IpAddr:
         return jetson_ip 
     
     def update_network_config(self,file_path, new_ip):
-        # Check if file exists
+        # Create file with a default template if it doesn't exist
         if not os.path.exists(file_path):
-            print(f"Error: File '{file_path}' not found.")
+            print(f"File '{file_path}' not found. Creating with default content.")
+            default_content = """# Network configuration
+network:
+    version: 2
+    ethernets:
+        enp5s0:
+            dhcp4: true
+        enp6s0:
+            dhcp4: no
+            addresses:
+              - {ip}/24
+""".format(ip=new_ip)
+            with open(file_path, 'w') as file:
+                file.write(default_content)
             return
-
         # Read the file content
         with open(file_path, 'r') as file:
             lines = file.readlines()
@@ -142,5 +157,5 @@ ip = IpAddr()
 # print(subnet)
 #print(ip.nfs_interface_ip(6))
 # print(ip.macvlan_interface_ip(5))
-#ip.update_dhcp_configuration("/home/mehdi/system-manager/api/dhcpConfig.txt","10.111.100.6/24")
-#ip.update_network_config("/home/mehdi/system-manager/config/ipconfig.txt","192.168.0.11/24","10.111.150.110/24")
+#ip.update_dhcp_configuration(DHCP_CONFIG_FILE_PATH ,"10.111.100.6/24")
+#ip.update_network_config(IP_CONFIG_FILE_PATH,"10.111.150.140/24")

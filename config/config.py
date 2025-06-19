@@ -52,6 +52,8 @@ SWITCH_CONFIG_PATH = os.path.join(BASE_DIR,root_file_relative, "switch_config.js
 ACTIVE_USERS_PATH  = os.path.join(BASE_DIR, "active_users.json")
 NODE_CONFIG_PATH  = os.path.join(BASE_DIR, "nfs_node_configs.json")
 
+# default user subnet 
+BASE_SUBNET ="10.111.0.0/24"
 # If you have a separate CSV in a different location, you can keep it as-is:
 RESSOURCE_CSV_PATH = os.getenv(
     "RESSOURCE_CSV_PATH",

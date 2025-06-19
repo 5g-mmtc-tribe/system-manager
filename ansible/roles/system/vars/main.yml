@@ -1,10 +1,16 @@
 # Base path for system manager (adjust as needed)
 system_manager_base_path: "{{ playbook_dir | dirname}}/.."
+# Additional NBD image files from the same server
+# nano
 nbd_jp3541_url: "http://193.55.250.147/nbd-images/nbd_jetson_jp3541.img"
 nbd_jp3541_dest: "{{ system_manager_base_path }}/config/nbd_jetson_jp3541.img"
-# Additional NBD image files from the same server
+# xavier , Orin 
 nbd_jp3274_url: "http://193.55.250.147/nbd-images/nbd_jetson_jp3274.img"
 nbd_jp3274_dest: "{{ system_manager_base_path }}/config/nbd_jetson_jp3274.img"
+# tx2
+nbd_jp3274_tx2_url: "http://193.55.250.147/nbd-images/nbd_jetson_jp3274_tx2.img"
+nbd_jp3274_tx2_dest: "{{ system_manager_base_path }}/config/nbd_jetson_jp3274_tx2.img"
+
 
 # Rootfs tarball for Jetson (downloaded separately)
 
